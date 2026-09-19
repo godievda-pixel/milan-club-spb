@@ -23,7 +23,8 @@ async function call(method, payload = {}) {
   return data.result;
 }
 
-const me = await call('getMe');\nconsole.log(`Bot ID: ${me.id}`);
+const me = await call('getMe');
+console.log(`Bot ID: ${me.id}`);
 await call('setChatMenuButton', {
   menu_button: {
     type: 'web_app',
