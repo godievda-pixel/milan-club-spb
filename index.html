@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#080808" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Milan Club San Pietroburgo</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand" data-route="home" aria-label="На главную">
+        <span class="brand-mark">M</span>
+        <span class="brand-copy">
+          <strong>MILAN CLUB</strong>
+          <small>SAN PIETROBURGO</small>
+        </span>
+      </button>
+      <button class="profile-chip" data-route="profile" aria-label="Профиль">
+        <span class="profile-dot"></span>
+        <span>Профиль</span>
+      </button>
+    </header>
+
+    <main id="app" class="content" aria-live="polite"></main>
+
+    <nav class="bottom-nav" aria-label="Основная навигация">
+      <button class="nav-item active" data-route="home">
+        <span class="nav-icon">⌂</span><span>Главная</span>
+      </button>
+      <button class="nav-item" data-route="matches">
+        <span class="nav-icon">◫</span><span>Матчи</span>
+      </button>
+      <button class="nav-item nav-main" data-route="watch">
+        <span class="nav-main-circle">M</span><span>Просмотры</span>
+      </button>
+      <button class="nav-item" data-route="club">
+        <span class="nav-icon">◇</span><span>Fan Club</span>
+      </button>
+      <button class="nav-item" data-route="more">
+        <span class="nav-icon">•••</span><span>Ещё</span>
+      </button>
+    </nav>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
