@@ -4,7 +4,7 @@ const files = [
   'index.html',
   'styles.css',
   'app.js',
-  'telegram.js',
+  'telegram.js',\n  'data.js',
   'manifest.webmanifest'
 ];
 
