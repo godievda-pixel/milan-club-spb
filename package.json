@@ -1,0 +1,10 @@
+{
+  "name": "milan-club-spb",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check app.js && node --check telegram.js && node --check scripts/setup-bot.mjs",
+    "configure-bot": "node scripts/setup-bot.mjs"
+  }
+}
