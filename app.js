@@ -51,7 +51,8 @@ function saveBar(data) {
 let currentRoute = 'home';
 let filter = 'Все';
 let editingBar = false;
-const app = document.querySelector('#app');\nconst routeStack = ['home'];
+const app = document.querySelector('#app');
+const routeStack = ['home'];
 
 function esc(s='') { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
 function joined() { return localStorage.getItem('milanclub:rsvp:lecce') === '1'; }
@@ -302,4 +303,5 @@ document.addEventListener('submit', e => {
   toast('Бар сохранён');
 });
 
-render('home', {push:false});\nTelegramBridge.applyProfileChip();
+render('home', {push:false});
+TelegramBridge.applyProfileChip();
