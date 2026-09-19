@@ -4,7 +4,7 @@ const TelegramBridge = window.MilanTelegram || {
 };
 TelegramBridge.init();
 
-const CLUB_NAME = 'AC AC Milan Club San Pietroburgo';
+const CLUB_NAME = 'AC Milan Club San Pietroburgo';
 let clubSettings = {
   club_name: CLUB_NAME,
   subtitle: 'Sempre con te sarò · Sempre rossonero'
@@ -112,7 +112,7 @@ let menu = {
 
 let contacts = [
   {name:'Даниил', role:'Организация просмотров', initials:'Д'},
-  {name:'AC AC Milan Club San Pietroburgo', role:'Членство и мероприятия', initials:'M'}
+  {name:'AC Milan Club San Pietroburgo', role:'Членство и мероприятия', initials:'M'}
 ];
 
 let remoteBar = null;
@@ -376,7 +376,7 @@ function renderClub() {
     <h1 class="page-title club-name-title">AC Milan Club<br>San Pietroburgo</h1>
     <p class="page-subtitle">Сообщество rossoneri в Санкт-Петербурге: матчи, просмотры, история и люди клуба.</p>
     <div class="club-logo-showcase">
-      <img src="assets/milan-club-logo-light.webp" alt="AC AC Milan Club San Pietroburgo">
+      <img src="assets/milan-club-logo-light.webp" alt="AC Milan Club San Pietroburgo">
     </div>
     <div class="stats-grid">
       <div class="stat-card"><strong>SPB</strong><span>наш город</span></div>
@@ -453,7 +453,7 @@ function renderContacts() {
 
 function renderAdmin() {
   if (!isAdmin()) {
-    return `<section class="page"><div class="eyebrow">AC AC Milan Club San Pietroburgo</div><h1 class="page-title">Админка</h1><div class="notice">Нужны права администратора.</div></section>`;
+    return `<section class="page"><div class="eyebrow">AC Milan Club San Pietroburgo</div><h1 class="page-title">Админка</h1><div class="notice">Нужны права администратора.</div></section>`;
   }
 
   const bar = getBar();
@@ -535,7 +535,7 @@ function renderProfile() {
     <h1 class="page-title">Профиль</h1>
     <p class="page-subtitle">Telegram-профиль подставляется автоматически при запуске Mini App.</p>
     <article class="profile-card">
-      <div class="profile-identity">${photo}<div><div class="member-number">AC AC Milan Club San Pietroburgo · #${memberNumber}</div><div class="member-name">${name}</div><div class="member-handle">${username}</div></div></div>
+      <div class="profile-identity">${photo}<div><div class="member-number">AC Milan Club San Pietroburgo · #${memberNumber}</div><div class="member-name">${name}</div><div class="member-handle">${username}</div></div></div>
       <div class="stats-grid">
         <div class="stat-card"><strong>${visits}</strong><span>просмотров</span></div>
         <div class="stat-card"><strong>—</strong><span>любимый игрок</span></div>
