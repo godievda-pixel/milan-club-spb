@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "check": "node --check app.js && node --check telegram.js && node --check scripts/setup-bot.mjs",
-    "configure-bot": "node scripts/setup-bot.mjs"
+    "configure-bot": "node scripts/setup-bot.mjs",
+    "build": "node scripts/build.mjs",
+    "deploy": "npm run build && npx wrangler@latest deploy"
   }
 }
