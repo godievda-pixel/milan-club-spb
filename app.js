@@ -35,6 +35,8 @@ let contacts = [
 let remoteBar = null;
 let historyEntries = [];
 let watchParties = [];
+let menuCategories = [];
+let menuItems = [];
 let memberState = null;
 let remoteLoaded = false;
 const Backend = window.MilanBackend || null;
@@ -133,9 +135,11 @@ function applyRemoteData(data) {
   historyEntries = Array.isArray(data.history) ? data.history : [];
 
   if (Array.isArray(data.menu_categories)) {
+    menuCategories = data.menu_categories;
+    menuItems = Array.isArray(data.menu_items) ? data.menu_items : [];
     const nextMenu = {};
-    for (const category of data.menu_categories) {
-      const items = (data.menu_items || [])
+    for (const category of menuCategories) {
+      const items = menuItems
         .filter(i => i.category_id === category.id)
         .map(i => [i.name, i.volume || i.description || '', i.price_rub == null ? '' : `${i.price_rub} ₽`]);
       nextMenu[category.name] = items;
@@ -295,6 +299,7 @@ function renderMore() {
       <button class="more-tile" data-route="contacts"><span class="tile-icon">↗</span><div><strong>Контакты</strong><span>Кому написать по просмотрам и членству</span></div></button>
       <button class="more-tile" data-route="club"><span class="tile-icon">◇</span><div><strong>История</strong><span>Люди и события Milan Club SPB</span></div></button>
       <button class="more-tile" data-route="profile"><span class="tile-icon">◎</span><div><strong>Мой профиль</strong><span>Карточка участника и посещения</span></div></button>
+      ${isAdmin() ? '<button class="more-tile admin-tile" data-route="admin"><span class="tile-icon">⚙</span><div><strong>Админка</strong><span>Просмотры, меню, контакты и история</span></div></button>' : ''}
     </div>
   </section>`;
 }
@@ -344,6 +349,78 @@ function renderContacts() {
   </section>`;
 }
 
+function renderAdmin() {
+  if (!isAdmin()) {
+    return `<section class="page"><div class="eyebrow">Milan Club SPB</div><h1 class="page-title">Админка</h1><div class="notice">Нужны права администратора.</div></section>`;
+  }
+
+  const bar = getBar();
+  const matchOptions = fixtures.map(f => `<option value="${esc(f.id)}">${esc(f.home)} — ${esc(f.away)} · ${f.date} ${f.month} · ${esc(f.time)}</option>`).join('');
+  const categoryOptions = menuCategories.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+
+  return `<section class="page">
+    <div class="eyebrow">Управление Milan Club</div>
+    <h1 class="page-title">Админка</h1>
+    <p class="page-subtitle">Все изменения сохраняются в общей базе и сразу появляются у всех участников.</p>
+
+    <article class="admin-card">
+      <h2>Совместный просмотр</h2>
+      <form class="bar-form" id="adminWatchForm">
+        <label><span>Матч</span><select name="match_id" required>${matchOptions}</select></label>
+        <label><span>Лимит мест</span><input name="capacity" type="number" min="1" placeholder="Например, 60"></label>
+        <label><span>Комментарий</span><input name="note" placeholder="Бронь столов, депозит, важная информация"></label>
+        <label class="check-row"><input name="published" type="checkbox" checked><span>Опубликовать просмотр сразу</span></label>
+        <button type="submit" class="primary-btn">СОХРАНИТЬ ПРОСМОТР</button>
+      </form>
+    </article>
+
+    <article class="admin-card">
+      <h2>Категория меню</h2>
+      <form class="bar-form" id="adminCategoryForm">
+        <label><span>Название</span><input name="name" placeholder="Пиво, Закуски, Горячее" required></label>
+        <button type="submit" class="primary-btn">ДОБАВИТЬ КАТЕГОРИЮ</button>
+      </form>
+    </article>
+
+    <article class="admin-card">
+      <h2>Позиция меню</h2>
+      <form class="bar-form" id="adminMenuItemForm">
+        <label><span>Категория</span><select name="category_id" required>${categoryOptions || '<option value="">Сначала создайте категорию</option>'}</select></label>
+        <label><span>Название</span><input name="name" required placeholder="Например, Guinness"></label>
+        <label><span>Объём / подпись</span><input name="volume" placeholder="0,5 л"></label>
+        <label><span>Цена, ₽</span><input name="price_rub" type="number" min="0" placeholder="690"></label>
+        <button type="submit" class="primary-btn" ${categoryOptions ? '' : 'disabled'}>ДОБАВИТЬ ПОЗИЦИЮ</button>
+      </form>
+    </article>
+
+    <article class="admin-card">
+      <h2>Контакт</h2>
+      <form class="bar-form" id="adminContactForm">
+        <label><span>Имя</span><input name="name" required></label>
+        <label><span>Роль</span><input name="role" placeholder="Организация просмотров"></label>
+        <label><span>Telegram username</span><input name="telegram_username" placeholder="@username"></label>
+        <button type="submit" class="primary-btn">ДОБАВИТЬ КОНТАКТ</button>
+      </form>
+    </article>
+
+    <article class="admin-card">
+      <h2>История фан-клуба</h2>
+      <form class="bar-form" id="adminHistoryForm">
+        <label><span>Год / период</span><input name="period_label" required placeholder="2018"></label>
+        <label><span>Заголовок</span><input name="title" required placeholder="Первый большой просмотр"></label>
+        <label><span>Текст</span><textarea name="body" rows="4" placeholder="Короткая история события"></textarea></label>
+        <button type="submit" class="primary-btn">ДОБАВИТЬ В ИСТОРИЮ</button>
+      </form>
+    </article>
+
+    <article class="admin-card admin-summary">
+      <h2>Текущая площадка</h2>
+      <p><strong>${esc(bar.name)}</strong><br>${esc(bar.address)}</p>
+      <button class="secondary-wide" data-route="bar">ИЗМЕНИТЬ БАР →</button>
+    </article>
+  </section>`;
+}
+
 function renderProfile() {
   const tgUser = TelegramBridge.user();
   const name = esc(TelegramBridge.fullName());
@@ -374,7 +451,7 @@ function renderProfile() {
   </section>`;
 }
 
-const routes = { home:renderHome, matches:renderMatches, watch:renderWatch, club:renderClub, more:renderMore, bar:renderBar, contacts:renderContacts, profile:renderProfile };
+const routes = { home:renderHome, matches:renderMatches, watch:renderWatch, club:renderClub, more:renderMore, bar:renderBar, contacts:renderContacts, admin:renderAdmin, profile:renderProfile };
 
 function render(route=currentRoute, {push=true}={}) {
   const nextRoute = routes[route] ? route : 'home';
@@ -456,6 +533,85 @@ document.addEventListener('submit', async e => {
       toast(error?.message || 'Не удалось активировать администратора');
       if (button) button.disabled = false;
     }
+    return;
+  }
+
+  if (e.target.id === 'adminWatchForm') {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    try {
+      await Backend.saveWatchParty({
+        match_id: data.match_id,
+        venue_id: getBar().id,
+        capacity: data.capacity || null,
+        note: data.note || '',
+        published: new FormData(e.target).has('published')
+      });
+      TelegramBridge.haptic('success');
+      await refreshPublicData();
+      render('admin', {push:false});
+      toast('Просмотр сохранён');
+    } catch (error) {
+      TelegramBridge.haptic('error');
+      toast(error?.message || 'Не удалось сохранить просмотр');
+    }
+    return;
+  }
+
+  if (e.target.id === 'adminCategoryForm') {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    try {
+      await Backend.saveMenuCategory({ venue_id:getBar().id, name:data.name });
+      TelegramBridge.haptic('success');
+      await refreshPublicData();
+      render('admin', {push:false});
+      toast('Категория добавлена');
+    } catch (error) { TelegramBridge.haptic('error'); toast(error?.message || 'Ошибка'); }
+    return;
+  }
+
+  if (e.target.id === 'adminMenuItemForm') {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    try {
+      await Backend.saveMenuItem({
+        category_id:data.category_id,
+        name:data.name,
+        volume:data.volume || '',
+        price_rub:data.price_rub || null
+      });
+      TelegramBridge.haptic('success');
+      await refreshPublicData();
+      render('admin', {push:false});
+      toast('Позиция добавлена');
+    } catch (error) { TelegramBridge.haptic('error'); toast(error?.message || 'Ошибка'); }
+    return;
+  }
+
+  if (e.target.id === 'adminContactForm') {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    try {
+      await Backend.saveContact(data);
+      TelegramBridge.haptic('success');
+      await refreshPublicData();
+      render('admin', {push:false});
+      toast('Контакт добавлен');
+    } catch (error) { TelegramBridge.haptic('error'); toast(error?.message || 'Ошибка'); }
+    return;
+  }
+
+  if (e.target.id === 'adminHistoryForm') {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    try {
+      await Backend.saveHistory(data);
+      TelegramBridge.haptic('success');
+      await refreshPublicData();
+      render('admin', {push:false});
+      toast('Запись добавлена');
+    } catch (error) { TelegramBridge.haptic('error'); toast(error?.message || 'Ошибка'); }
     return;
   }
 
