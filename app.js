@@ -180,6 +180,7 @@ function renderHome() {
     <p class="page-subtitle">Матчи, совместные просмотры и жизнь Milan Club в одном месте.</p>
 
     <article class="hero">
+      <img class="hero-club-watermark" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
       <div class="hero-top"><span class="competition">${competitionShort(next.competition)}</span><span class="live-badge">Ближайший матч</span></div>
       <div class="versus">
         <div class="team"><div class="team-badge">ACM</div><strong>Milan</strong></div>
@@ -276,6 +277,9 @@ function renderClub() {
     <div class="eyebrow">Milano × San Pietroburgo</div>
     <h1 class="page-title">Fan Club</h1>
     <p class="page-subtitle">Черновая структура истории клуба. Факты, даты и фотографии позже заменим на ваши реальные материалы.</p>
+    <div class="club-logo-showcase">
+      <img src="assets/milan-club-logo-light.webp" alt="Milan Club Saint Petersburg 2016">
+    </div>
     <div class="stats-grid">
       <div class="stat-card"><strong>SPB</strong><span>наш город</span></div>
       <div class="stat-card"><strong>∞</strong><span>forza milan</span></div>
@@ -646,3 +650,25 @@ render('home', {push:false});
 TelegramBridge.applyProfileChip();
 refreshPublicData();
 refreshMemberState();
+
+
+const formControlSelector = 'input, textarea, select, [contenteditable="true"]';
+document.addEventListener('focusin', event => {
+  if (!event.target.matches?.(formControlSelector)) return;
+  document.body.classList.add('form-focus');
+  window.setTimeout(() => {
+    event.target.scrollIntoView?.({block:'center', inline:'nearest', behavior:'smooth'});
+  }, 220);
+});
+
+document.addEventListener('focusout', event => {
+  if (!event.target.matches?.(formControlSelector)) return;
+  window.setTimeout(() => {
+    if (!document.activeElement?.matches?.(formControlSelector)) {
+      document.body.classList.remove('form-focus');
+    }
+  }, 120);
+});
+
+document.addEventListener('gesturestart', event => event.preventDefault(), {passive:false});
+document.addEventListener('gesturechange', event => event.preventDefault(), {passive:false});
