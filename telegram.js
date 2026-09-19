@@ -15,8 +15,16 @@
     return [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || 'Milanista';
   }
 
+  function setStaticViewportHeight() {
+    const h = Math.round(tg?.viewportStableHeight || window.innerHeight || document.documentElement.clientHeight || 0);
+    if (h > 0) document.documentElement.style.setProperty('--app-static-height', `${h}px`);
+  }
+
   function init() {
-    if (!tg) return;
+    if (!tg) {
+      setStaticViewportHeight();
+      return;
+    }
     try {
       tg.ready();
       tg.expand();
@@ -25,7 +33,12 @@
       tg.setBottomBarColor?.('#080808');
       tg.disableVerticalSwipes?.();
       document.body.classList.add('telegram-miniapp');
-    } catch (_) {}
+      window.requestAnimationFrame(setStaticViewportHeight);
+      window.setTimeout(setStaticViewportHeight, 180);
+      window.addEventListener('orientationchange', () => window.setTimeout(setStaticViewportHeight, 350), {passive:true});
+    } catch (_) {
+      setStaticViewportHeight();
+    }
   }
 
   function showBack(show) {
