@@ -76,11 +76,13 @@
     const label = chip.querySelector('.profile-label');
     const img = chip.querySelector('.profile-photo');
     const dot = chip.querySelector('.profile-dot');
+    const icon = chip.querySelector('.profile-chip-icon');
     if (label) label.textContent = u.first_name || u.username || 'Профиль';
     if (u.photo_url && img) {
       img.src = u.photo_url;
       img.hidden = false;
       if (dot) dot.hidden = true;
+      if (icon) icon.hidden = true;
     }
   }
 
