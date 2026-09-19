@@ -16,6 +16,6 @@ jobs:
       - name: Configure menu button
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          MINI_APP_URL: ${{ secrets.MINI_APP_URL }}
+          MINI_APP_URL: https://milan-club-spb.ciao-web.workers.dev
           MENU_BUTTON_TEXT: Milan Club
         run: npm run configure-bot
