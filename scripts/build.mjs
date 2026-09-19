@@ -16,4 +16,6 @@ for (const file of files) {
   await cp(file, `dist/${file}`);
 }
 
-console.log(`Built ${files.length} static assets into dist/`);
+await cp('assets', 'dist/assets', {recursive: true});
+
+console.log(`Built ${files.length} static files + assets into dist/`);
