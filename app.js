@@ -334,7 +334,7 @@ function renderWatch() {
   const parties = fixtures.filter(f => f.watched && f.partyId);
   if (!parties.length) {
     return `<section class="page">
-      <div class="eyebrow">Matchday together</div>
+      <div class="eyebrow">${esc(clubName())}</div>
       <h1 class="page-title">Просмотры</h1>
       <p class="page-subtitle">Как только организаторы опубликуют совместный просмотр, он появится здесь у всех участников.</p>
       <div class="notice">Сейчас активных просмотров нет. Матчи продолжают отображаться в календаре.</div>
@@ -344,19 +344,27 @@ function renderWatch() {
   const first = parties[0];
   const bar = getBar();
   return `<section class="page">
-    <div class="eyebrow">Matchday together</div>
+    <div class="eyebrow">${esc(clubName())}</div>
     <h1 class="page-title">Просмотры</h1>
     <p class="page-subtitle">Все совместные матчи фан-клуба: где встречаемся, когда приходить и кто уже идёт.</p>
 
     <article class="watch-feature">
-      <div><span class="eyebrow">${first.date} ${first.month} · ${esc(first.competition)}</span><h2>${esc(first.home)}<br>vs ${esc(first.away)}</h2><p>${esc(bar.name)} · Санкт-Петербург<br>${esc(bar.address)}<br>${esc(bar.meeting)} · Начало: ${esc(first.time)}</p></div>
+      <div>
+        <span class="eyebrow">${first.date} ${first.month} · ${esc(first.competition)}</span>
+        <div class="watch-match-row">
+          <div class="watch-team">${crest(first.home,'hero')}<strong>${esc(displayTeam(first.home))}</strong></div>
+          <div class="watch-vs">vs</div>
+          <div class="watch-team">${crest(first.away,'hero')}<strong>${esc(displayTeam(first.away))}</strong></div>
+        </div>
+        <p>${esc(bar.name)} · Санкт-Петербург<br>${esc(bar.address)}<br>${esc(bar.meeting)} · Начало: ${esc(first.time)}</p>
+      </div>
       <div>
         <div class="watch-stats">
           <div class="watch-stat"><strong>${first.attendeeCount || 0}</strong><span>уже идут</span></div>
           <div class="watch-stat"><strong>${first.capacity || '∞'}</strong><span>мест</span></div>
           <div class="watch-stat"><strong>SPB</strong><span>наш город</span></div>
         </div>
-        <button style="margin-top:10px" class="primary-btn ${joined(first.partyId)?'joined':''}" data-action="rsvp" data-party-id="${esc(first.partyId)}">${joined(first.partyId)?'✓ ВЫ В СПИСКЕ':'ПРИСОЕДИНИТЬСЯ'}</button>
+        <button style="margin-top:10px" class="primary-btn premium-btn ${joined(first.partyId)?'joined':''}" data-action="rsvp" data-party-id="${esc(first.partyId)}">${joined(first.partyId)?`${icon('check')}<span>ВЫ В СПИСКЕ</span>`:'<span>ПРИСОЕДИНИТЬСЯ</span>'}</button>
       </div>
     </article>
 
@@ -364,7 +372,10 @@ function renderWatch() {
     <div class="fixture-list">${parties.slice(1).map(f=>`
       <article class="fixture">
         <div class="fixture-date"><strong>${f.date}</strong><span>${f.month}</span></div>
-        <div class="fixture-main"><strong>${esc(f.home)} — ${esc(f.away)}</strong><span>${esc(f.competition)} · ${esc(bar.name)}</span></div>
+        <div class="fixture-main">
+          <div class="fixture-clubs">${crest(f.home,'xs')}<strong>${esc(displayTeam(f.home))}</strong><span class="fixture-vs">—</span>${crest(f.away,'xs')}<strong>${esc(displayTeam(f.away))}</strong></div>
+          <span>${esc(f.competition)} · ${esc(bar.name)}</span>
+        </div>
         <div class="fixture-side"><strong>${esc(f.time)}</strong><span>● FAN CLUB</span></div>
       </article>`).join('') || '<div class="notice">Других просмотров пока не опубликовано.</div>'}</div>
   </section>`;
@@ -430,13 +441,13 @@ function renderBar() {
     <div class="eyebrow">Наш дом на matchday</div>
     <div class="bar-title-row">
       <h1 class="page-title">${esc(bar.name)}</h1>
-      ${isAdmin() ? '<button class="edit-chip premium-chip" data-action="edit-bar">${icon('edit')}<span>Изменить</span></button>' : ''}
+      ${isAdmin() ? `<button class="edit-chip premium-chip" data-action="edit-bar">${icon('edit')}<span>Изменить</span></button>` : ''}
     </div>
     <p class="page-subtitle">${esc(bar.address)}<br>${esc(bar.meeting)}</p>
     <div class="bar-actions">
       ${bar.mapUrl ? `<a class="secondary-wide link-button premium-link-btn" href="${esc(bar.mapUrl)}" target="_blank" rel="noopener"><span>Открыть карту</span>${icon('arrowUpRight')}</a>` : ''}
     </div>
-    <div class="notice">${isAdmin() ? 'Вы вошли как администратор. Изменения сохраняются в общей базе и сразу видны всем участникам.' : 'Название, адрес и меню приходят из общей базы Milan Club. Редактирование доступно администраторам.'}</div>
+    <div class="notice">${isAdmin() ? 'Вы вошли как администратор. Изменения сохраняются в общей базе и сразу видны всем участникам.' : 'Название, адрес и меню приходят из общей базы AC Milan Club San Pietroburgo. Редактирование доступно администраторам.'}</div>
     <div class="section-head"><h2>Меню</h2></div>
     ${Object.entries(menu).length ? Object.entries(menu).map(([section,items])=>`<div class="menu-section"><h3>${esc(section)}</h3><div class="menu-list">${items.map(i=>`<div class="menu-card"><div><strong>${esc(i[0])}</strong>${i[1]?`<span>${esc(i[1])}</span>`:''}</div><b>${esc(i[2])}</b></div>`).join('') || '<div class="notice">В этой категории пока пусто.</div>'}</div></div>`).join('') : '<div class="notice">Меню бара пока не добавлено.</div>'}
   </section>`;
@@ -461,7 +472,7 @@ function renderAdmin() {
   const categoryOptions = menuCategories.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
 
   return `<section class="page">
-    <div class="eyebrow">Управление Milan Club</div>
+    <div class="eyebrow">Управление AC Milan Club San Pietroburgo</div>
     <h1 class="page-title">Админка</h1>
     <p class="page-subtitle">Все изменения сохраняются в общей базе и сразу появляются у всех участников.</p>
 
@@ -518,7 +529,7 @@ function renderAdmin() {
     <article class="admin-card admin-summary">
       <h2>Текущая площадка</h2>
       <p><strong>${esc(bar.name)}</strong><br>${esc(bar.address)}</p>
-      <button class="secondary-wide" data-route="bar">ИЗМЕНИТЬ БАР →</button>
+      <button class="secondary-wide premium-link-btn" data-route="bar"><span>Изменить бар</span>${icon('arrowRight')}</button>
     </article>
   </section>`;
 }
@@ -548,7 +559,7 @@ function renderProfile() {
           <button type="submit" class="primary-btn">АКТИВИРОВАТЬ АДМИНА</button>
         </form>
       ` : ''}
-      ${isAdmin() ? '<button class="secondary-wide" data-route="bar" style="margin-top:12px">НАСТРОИТЬ БАР →</button>' : ''}
+      ${isAdmin() ? `<button class="secondary-wide premium-link-btn" data-route="bar" style="margin-top:12px"><span>Настроить бар</span>${icon('arrowRight')}</button>` : ''}
     </article>
   </section>`;
 }
