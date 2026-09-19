@@ -27,7 +27,7 @@ Premium mobile-first fan club app for Milan Club SPB.
 TELEGRAM_BOT_TOKEN=... MINI_APP_URL=https://... npm run configure-bot
 ```
 
-Скрипт `scripts/setup-bot.mjs` установит Mini App как menu button через `setChatMenuButton` и добавит команды `/start` и `/app`.
+Скрипт `scripts/setup-bot.mjs` установит Mini App как menu button через `setChatMenuButton` и добавит команды `/start` и `/app`. В GitHub Action адрес Mini App уже задан как `https://milan-club-spb.ciao-web.workers.dev`.
 
 ## Настройка бара
 Откройте `Ещё → Наш бар → Изменить`. Пока настройка хранится локально на устройстве. В production перенесём её в общую БД/админку.
@@ -59,12 +59,11 @@ Cloudflare рекомендует Workers Static Assets для новых про
 В репозитории есть два ручных workflow:
 
 - `Deploy Milan Club Mini App` — проверяет JS, собирает `dist/` и деплоит отдельный Worker через `cloudflare/wrangler-action@v4`.
-- `Configure Telegram Bot` — ставит Mini App в menu button бота.
+- `Configure Telegram Bot` — ставит текущий опубликованный Mini App в menu button бота.
 
 Нужные GitHub Secrets:
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 - `TELEGRAM_BOT_TOKEN`
-- `MINI_APP_URL`
 
 Workflow запускаются только вручную через вкладку Actions.
