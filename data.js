@@ -38,6 +38,15 @@
     me: () => api('me'),
     rsvp: (watchPartyId, status, guests = 0) =>
       api('rsvp', { watch_party_id: watchPartyId, status, guests }),
+    updateVenue: (venue) =>
+      api('admin_update_venue', {
+        venue_id: venue.id,
+        name: venue.name,
+        address: venue.address,
+        meeting_note: venue.meeting,
+        map_url: venue.mapUrl
+      }),
+    updateSettings: (settings) => api('admin_update_settings', settings),
     api
   };
 })();
