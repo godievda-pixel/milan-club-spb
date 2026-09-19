@@ -363,6 +363,13 @@ function renderProfile() {
       </div>
       <div style="margin-top:18px"><span style="font-size:11px;color:var(--muted)">Путь участника</span><div class="progress"><span></span></div></div>
       <div class="notice">${memberState?.profile ? (isAdmin() ? 'Telegram подтверждён · режим администратора' : 'Telegram подтверждён · профиль участника') : 'Профиль появится после защищённой Telegram-авторизации.'}</div>
+      ${memberState?.admin_setup_available && !isAdmin() ? `
+        <form class="bar-form admin-claim-form" id="adminClaimForm">
+          <label><span>Одноразовый код администратора</span><input name="code" autocomplete="one-time-code" placeholder="MILAN-XXXXXXXX" required></label>
+          <button type="submit" class="primary-btn">АКТИВИРОВАТЬ АДМИНА</button>
+        </form>
+      ` : ''}
+      ${isAdmin() ? '<button class="secondary-wide" data-route="bar" style="margin-top:12px">НАСТРОИТЬ БАР →</button>' : ''}
     </article>
   </section>`;
 }
@@ -432,6 +439,26 @@ document.addEventListener('click', async e => {
 });
 
 document.addEventListener('submit', async e => {
+  if (e.target.id === 'adminClaimForm') {
+    e.preventDefault();
+    const code = String(new FormData(e.target).get('code') || '').trim();
+    if (!code || !Backend?.claimAdmin) return;
+    const button = e.target.querySelector('button[type="submit"]');
+    if (button) button.disabled = true;
+    try {
+      const result = await Backend.claimAdmin(code);
+      memberState = { ...(memberState || {}), profile: result.profile, admin_setup_available: false };
+      TelegramBridge.haptic('success');
+      render('profile', {push:false});
+      toast('Режим администратора активирован');
+    } catch (error) {
+      TelegramBridge.haptic('error');
+      toast(error?.message || 'Не удалось активировать администратора');
+      if (button) button.disabled = false;
+    }
+    return;
+  }
+
   if(e.target.id !== 'barForm') return;
   e.preventDefault();
   const data = Object.fromEntries(new FormData(e.target).entries());
