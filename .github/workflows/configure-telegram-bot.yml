@@ -1,0 +1,21 @@
+name: Configure Telegram Bot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure menu button
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          MINI_APP_URL: ${{ secrets.MINI_APP_URL }}
+          MENU_BUTTON_TEXT: Milan Club
+        run: npm run configure-bot
