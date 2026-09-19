@@ -38,6 +38,7 @@
     me: () => api('me'),
     rsvp: (watchPartyId, status, guests = 0) =>
       api('rsvp', { watch_party_id: watchPartyId, status, guests }),
+    claimAdmin: (code) => api('claim_admin', { code }),
     updateVenue: (venue) =>
       api('admin_update_venue', {
         venue_id: venue.id,
