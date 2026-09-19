@@ -1,3 +1,9 @@
+const TelegramBridge = window.MilanTelegram || {
+  init(){}, user(){ return null; }, fullName(){ return 'Milanista'; }, isInsideTelegram(){ return false; },
+  showBack(){}, onBack(){}, haptic(){}, open(url){ if (url) window.open(url, '_blank', 'noopener'); }, applyProfileChip(){}
+};
+TelegramBridge.init();
+
 const fixtures = [
   {date:'20', month:'сен', iso:'2026-09-20', home:'AC Milan', away:'Lecce', competition:'Serie A · 5 тур', time:'21:45 МСК', watched:true, status:'ПРОСМОТР'},
   {date:'10/11', month:'окт', iso:'2026-10-10', home:'Sassuolo', away:'AC Milan', competition:'Serie A · 6 тур', time:'время уточняется', watched:false, status:''},
@@ -45,7 +51,7 @@ function saveBar(data) {
 let currentRoute = 'home';
 let filter = 'Все';
 let editingBar = false;
-const app = document.querySelector('#app');
+const app = document.querySelector('#app');\nconst routeStack = ['home'];
 
 function esc(s='') { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
 function joined() { return localStorage.getItem('milanclub:rsvp:lecce') === '1'; }
@@ -217,31 +223,49 @@ function renderContacts() {
 }
 
 function renderProfile() {
+  const tgUser = TelegramBridge.user();
+  const name = esc(TelegramBridge.fullName());
+  const username = tgUser?.username ? `@${esc(tgUser.username)}` : (TelegramBridge.isInsideTelegram() ? 'Telegram подключён' : 'Откройте приложение из Telegram');
+  const photo = tgUser?.photo_url ? `<img class="profile-hero-photo" src="${esc(tgUser.photo_url)}" alt="">` : `<div class="profile-hero-fallback">${name.charAt(0).toUpperCase()}</div>`;
   return `<section class="page">
     <div class="eyebrow">Rossoneri ID</div>
     <h1 class="page-title">Профиль</h1>
-    <p class="page-subtitle">Здесь позже будет Telegram-авторизация, реальная статистика посещений и цифровая карта участника.</p>
+    <p class="page-subtitle">Telegram-профиль подставляется автоматически при запуске Mini App.</p>
     <article class="profile-card">
-      <div class="member-number">Milan Club San Pietroburgo · #0189</div>
-      <div class="member-name">Milanista</div>
+      <div class="profile-identity">${photo}<div><div class="member-number">Milan Club San Pietroburgo · #0189</div><div class="member-name">${name}</div><div class="member-handle">${username}</div></div></div>
       <div class="stats-grid">
         <div class="stat-card"><strong>0</strong><span>просмотров</span></div>
         <div class="stat-card"><strong>—</strong><span>любимый игрок</span></div>
       </div>
       <div style="margin-top:18px"><span style="font-size:11px;color:var(--muted)">Путь участника</span><div class="progress"><span></span></div></div>
-      <div class="notice">В следующей версии профиль будет автоматически брать имя и фото из Telegram Mini App.</div>
+      <div class="notice">Для боевой версии сервер будет проверять подпись Telegram initData перед сохранением профиля, RSVP и админ-действиями.</div>
     </article>
   </section>`;
 }
 
 const routes = { home:renderHome, matches:renderMatches, watch:renderWatch, club:renderClub, more:renderMore, bar:renderBar, contacts:renderContacts, profile:renderProfile };
 
-function render(route=currentRoute) {
-  currentRoute = route;
-  app.innerHTML = (routes[route] || renderHome)();
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.route===route));
+function render(route=currentRoute, {push=true}={}) {
+  const nextRoute = routes[route] ? route : 'home';
+  if (push && nextRoute !== currentRoute) {
+    routeStack.push(nextRoute);
+    if (routeStack.length > 20) routeStack.shift();
+  }
+  currentRoute = nextRoute;
+  app.innerHTML = (routes[nextRoute] || renderHome)();
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.route===nextRoute));
+  TelegramBridge.showBack(nextRoute !== 'home');
+  TelegramBridge.applyProfileChip();
   window.scrollTo({top:0, behavior:'instant'});
 }
+
+function goBack() {
+  if (currentRoute === 'home') return;
+  routeStack.pop();
+  const previous = routeStack[routeStack.length - 1] || 'home';
+  render(previous, {push:false});
+}
+TelegramBridge.onBack(goBack);
 
 function toast(message) {
   let el = document.querySelector('.toast');
@@ -251,16 +275,16 @@ function toast(message) {
 
 document.addEventListener('click', e => {
   const route = e.target.closest('[data-route]');
-  if(route){ render(route.dataset.route); return; }
+  if(route){ TelegramBridge.haptic(); render(route.dataset.route); return; }
   const f = e.target.closest('[data-filter]');
-  if(f){ filter=f.dataset.filter; render('matches'); return; }
+  if(f){ TelegramBridge.haptic(); filter=f.dataset.filter; render('matches', {push:false}); return; }
   const action = e.target.closest('[data-action]')?.dataset.action;
   if(action==='rsvp'){
-    const value = joined() ? '0' : '1'; localStorage.setItem('milanclub:rsvp:lecce', value); render(currentRoute); toast(value==='1'?'Вы добавлены в список просмотра':'Вы отменили участие');
+    const value = joined() ? '0' : '1'; localStorage.setItem('milanclub:rsvp:lecce', value); TelegramBridge.haptic(value==='1'?'success':'selection'); render(currentRoute, {push:false}); toast(value==='1'?'Вы добавлены в список просмотра':'Вы отменили участие');
   }
   if(action==='edit-bar'){ editingBar = true; render('bar'); }
   if(action==='cancel-bar-edit'){ editingBar = false; render('bar'); }
-  if(action==='contact') toast('Добавим реальные Telegram-ссылки');
+  if(action==='contact') { TelegramBridge.haptic(); toast('Добавим реальные Telegram-ссылки организаторов'); }
 });
 
 document.addEventListener('submit', e => {
@@ -278,4 +302,4 @@ document.addEventListener('submit', e => {
   toast('Бар сохранён');
 });
 
-render('home');
+render('home', {push:false});\nTelegramBridge.applyProfileChip();
