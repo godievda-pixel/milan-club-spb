@@ -40,3 +40,16 @@ python3 -m http.server 8080
 ```
 
 Для настоящего запуска внутри Telegram нужен публичный HTTPS адрес.
+
+## Cloudflare Workers Static Assets
+
+Проект подготовлен для отдельного Worker `milan-club-spb`.
+
+```bash
+npm run build
+npx wrangler@latest deploy
+```
+
+`wrangler.jsonc` публикует папку `dist/` через Workers Static Assets. После первого deploy Cloudflare выдаст публичный HTTPS URL, который нужно передать в `MINI_APP_URL` и затем выполнить `npm run configure-bot`.
+
+Cloudflare рекомендует Workers Static Assets для новых проектов и `wrangler.jsonc` как основной формат конфигурации.
