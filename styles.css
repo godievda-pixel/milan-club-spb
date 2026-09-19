@@ -216,7 +216,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .bar-form { display:grid; gap:12px; margin-top:20px; }
 .bar-form label { display:grid; gap:7px; }
 .bar-form label > span { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
-.bar-form input { width:100%; box-sizing:border-box; border:1px solid var(--line); background:#111; color:var(--text); border-radius:16px; padding:14px 15px; font:inherit; font-size:13px; outline:none; }
+.bar-form input,
+.bar-form select,
+.bar-form textarea { width:100%; box-sizing:border-box; border:1px solid var(--line); background:#111; color:var(--text); border-radius:16px; padding:14px 15px; font:inherit; font-size:13px; outline:none; }
+.bar-form textarea { resize:vertical; min-height:100px; line-height:1.45; }
+.bar-form select { appearance:none; }
+.bar-form input:focus,
+.bar-form select:focus,
+.bar-form textarea:focus { border-color:rgba(215,25,32,.7); box-shadow:0 0 0 3px rgba(215,25,32,.08); }
 .bar-form input:focus { border-color:rgba(215,25,32,.7); box-shadow:0 0 0 3px rgba(215,25,32,.08); }
 .form-actions { display:grid; gap:8px; margin-top:6px; }
 .secondary-wide { width:100%; border:1px solid var(--line); background:#151515; color:var(--text); border-radius:16px; padding:14px 16px; font-size:11px; font-weight:700; cursor:pointer; text-align:center; text-decoration:none; box-sizing:border-box; }
@@ -261,4 +268,54 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 body.telegram-miniapp .app-shell {
   min-height: var(--tg-viewport-stable-height, 100vh);
+}
+
+
+.admin-card {
+  margin-top: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+}
+.admin-card h2 {
+  margin: 0 0 14px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.admin-card p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.admin-tile {
+  border-color: rgba(215,25,32,.28);
+  background: linear-gradient(145deg, rgba(215,25,32,.12), rgba(255,255,255,.02));
+}
+.check-row {
+  display: flex !important;
+  grid-template-columns: none !important;
+  align-items: center;
+  gap: 10px !important;
+  border: 1px solid var(--line);
+  background: #111;
+  border-radius: 16px;
+  padding: 12px 14px;
+}
+.check-row input {
+  width: 18px !important;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--red);
+  box-shadow: none !important;
+}
+.check-row span {
+  color: var(--text) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 12px !important;
+}
+.admin-claim-form {
+  margin-top: 16px;
 }
