@@ -2,6 +2,12 @@ name: Configure Telegram Bot
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - scripts/setup-bot.mjs
+      - .github/workflows/configure-telegram-bot.yml
 
 permissions:
   contents: read
