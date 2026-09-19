@@ -1,21 +1,42 @@
-# Milan Club San Pietroburgo — prototype v0.2
+# Milan Club San Pietroburgo — Mini App v0.3
 
-Mobile-first premium fan club prototype.
+Premium mobile-first fan club app for Milan Club SPB.
 
-## Что уже работает
-- Главная с ближайшим матчем
+## Сейчас работает
+- Главная и ближайшие матчи
 - Календарь и фильтры
 - Совместные просмотры + локальный RSVP
 - Fan Club / история
 - Бар и меню
-- Ручная настройка бара: название, адрес, текст сбора, ссылка на карту
+- Ручная настройка бара
 - Контакты
-- Профиль участника
+- Telegram Mini App SDK
+- Telegram-профиль в интерфейсе
+- Telegram BackButton и safe-area friendly UI
+
+## Telegram
+В `index.html` подключён официальный Telegram WebApp SDK.
+`telegram.js` вызывает `ready()` / `expand()`, настраивает цвета Mini App, BackButton и читает `initDataUnsafe.user` только для отображения профиля.
+
+Важно: перед использованием Telegram-профиля на сервере нужно валидировать `initData`. Клиентским данным доверять нельзя.
+
+## Привязка к боту
+После публикации приложения на публичном HTTPS URL:
+
+```bash
+TELEGRAM_BOT_TOKEN=... MINI_APP_URL=https://... npm run configure-bot
+```
+
+Скрипт `scripts/setup-bot.mjs` установит Mini App как menu button через `setChatMenuButton` и добавит команды `/start` и `/app`.
 
 ## Настройка бара
-Откройте `Ещё → Наш бар → Изменить`. Настройки сохраняются в `localStorage` браузера и автоматически отображаются на главной и в просмотрах.
+Откройте `Ещё → Наш бар → Изменить`. Пока настройка хранится локально на устройстве. В production перенесём её в общую БД/админку.
 
-Для production эти настройки нужно перенести в общую админ-панель/БД, чтобы они были одинаковыми у всех пользователей.
+## Локальная проверка
 
-## Запуск
-Откройте `index.html` или запустите статический сервер из папки проекта.
+```bash
+npm run check
+python3 -m http.server 8080
+```
+
+Для настоящего запуска внутри Telegram нужен публичный HTTPS адрес.
