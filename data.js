@@ -1,0 +1,43 @@
+(() => {
+  const SUPABASE_URL = 'https://lcnwccnkkxaosxnfvjvr.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_ZqBVy-GIs0swsIZoFQoMJQ_3JVivZGh';
+  const API_URL = `${SUPABASE_URL}/functions/v1/milan-api`;
+
+  async function publicBootstrap() {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/mc_public_bootstrap`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY,
+        'content-type': 'application/json'
+      },
+      body: '{}'
+    });
+    if (!response.ok) throw new Error(`Supabase bootstrap: ${response.status}`);
+    return response.json();
+  }
+
+  async function api(action, payload = {}) {
+    const initData = window.Telegram?.WebApp?.initData || '';
+    if (!initData) throw new Error('Откройте приложение из Telegram');
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-telegram-init-data': initData
+      },
+      body: JSON.stringify({ action, ...payload })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data?.ok) throw new Error(data?.error || `API error: ${response.status}`);
+    return data;
+  }
+
+  window.MilanBackend = {
+    publicBootstrap,
+    me: () => api('me'),
+    rsvp: (watchPartyId, status, guests = 0) =>
+      api('rsvp', { watch_party_id: watchPartyId, status, guests }),
+    api
+  };
+})();
