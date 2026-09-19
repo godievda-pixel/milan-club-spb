@@ -1,0 +1,23 @@
+name: Validate Milan Club App
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Check JavaScript
+        run: npm run check
+
+      - name: Build static assets
+        run: npm run build
