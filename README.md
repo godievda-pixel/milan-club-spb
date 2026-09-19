@@ -53,3 +53,18 @@ npx wrangler@latest deploy
 `wrangler.jsonc` публикует папку `dist/` через Workers Static Assets. После первого deploy Cloudflare выдаст публичный HTTPS URL, который нужно передать в `MINI_APP_URL` и затем выполнить `npm run configure-bot`.
 
 Cloudflare рекомендует Workers Static Assets для новых проектов и `wrangler.jsonc` как основной формат конфигурации.
+
+## GitHub Actions
+
+В репозитории есть два ручных workflow:
+
+- `Deploy Milan Club Mini App` — проверяет JS, собирает `dist/` и деплоит отдельный Worker через `cloudflare/wrangler-action@v4`.
+- `Configure Telegram Bot` — ставит Mini App в menu button бота.
+
+Нужные GitHub Secrets:
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+- `TELEGRAM_BOT_TOKEN`
+- `MINI_APP_URL`
+
+Workflow запускаются только вручную через вкладку Actions.
