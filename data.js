@@ -48,6 +48,11 @@
         map_url: venue.mapUrl
       }),
     updateSettings: (settings) => api('admin_update_settings', settings),
+    saveWatchParty: (payload) => api('admin_save_watch_party', payload),
+    saveMenuCategory: (payload) => api('admin_save_menu_category', payload),
+    saveMenuItem: (payload) => api('admin_save_menu_item', payload),
+    saveContact: (payload) => api('admin_save_contact', payload),
+    saveHistory: (payload) => api('admin_save_history', payload),
     api
   };
 })();
