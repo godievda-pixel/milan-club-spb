@@ -47,6 +47,13 @@
         telegram_user_id: telegramUserId,
         attendance_status: attendanceStatus
       }),
+    searchUsers: (watchPartyId, query = '') =>
+      api('admin_search_users', { watch_party_id: watchPartyId, query }),
+    addParticipant: (watchPartyId, telegramUserId) =>
+      api('admin_add_participant', {
+        watch_party_id: watchPartyId,
+        telegram_user_id: telegramUserId
+      }),
     claimAdmin: (code) => api('claim_admin', { code }),
     updateProfile: (payload) => api('update_profile', payload),
     updateVenue: (venue) =>
