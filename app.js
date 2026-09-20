@@ -160,6 +160,7 @@ const participantState = new Map();
 let adminUserSearchState = {partyId:null, query:'', loading:false, loaded:false, items:[], error:''};
 let adminUserSearchTimer = null;
 let rankingState = {loading:false, loaded:false, items:[], error:''};
+let selectedRankingProfile = null;
 let remoteLoaded = false;
 const Backend = window.MilanBackend || null;
 
@@ -716,9 +717,9 @@ function renderRanking() {
         const initialSource = item.display_name || username || 'M';
         const initial = String(initialSource).replace(/^@/,'').trim().charAt(0).toUpperCase() || 'M';
         return `
-          <article class="ranking-row ${isMe ? 'is-me' : ''} ${index < 3 ? `ranking-top ranking-top-${index + 1}` : ''}">
+          <article class="ranking-row ${isMe ? 'is-me' : ''} ${index < 3 ? `ranking-top ranking-top-${index + 1}` : ''}" data-action="open-fan-profile" data-ranking-index="${index}">
             <div class="ranking-position">${item.position || index + 1}</div>
-            <div class="ranking-avatar">${esc(initial)}</div>
+            <div class="ranking-avatar"><span>${esc(initial)}</span>${item.photo_url ? `<img src="${esc(item.photo_url)}" alt="" loading="lazy">` : ''}</div>
             <div class="ranking-person">
               <strong>${esc(item.display_name || username || 'Milanista')}</strong>
               ${username && item.display_name !== username ? `<span>${esc(username)}</span>` : ''}
@@ -736,6 +737,51 @@ function renderRanking() {
   </section>`;
 }
 
+function renderFanProfile() {
+  const item = selectedRankingProfile;
+  if (!item) return `<section class="page"><div class="notice">Профиль участника не найден.</div></section>`;
+
+  const visits = Number(item.total_visits || 0);
+  const rank = memberRank(visits);
+  const username = item.username ? `@${String(item.username).replace(/^@/,'')}` : '';
+  const name = item.display_name || username || 'Milanista';
+  const initial = String(name).replace(/^@/,'').trim().charAt(0).toUpperCase() || 'M';
+  const memberNumber = item.member_number ? String(item.member_number).padStart(4,'0') : '—';
+  const fanSince = item.fan_since_year || '—';
+  const photo = item.photo_url
+    ? `<div class="fan-profile-photo-shell"><div class="fan-profile-photo-fallback">${esc(initial)}</div><img class="fan-profile-photo" src="${esc(item.photo_url)}" alt="${esc(name)}"></div>`
+    : `<div class="fan-profile-photo-shell"><div class="fan-profile-photo-fallback">${esc(initial)}</div></div>`;
+
+  return `<section class="page fan-profile-page">
+    <div class="eyebrow">Rossoneri ID</div>
+    <h1 class="page-title">Профиль участника</h1>
+    <article class="fan-profile-card">
+      <div class="fan-profile-hero">
+        ${photo}
+        <div class="fan-profile-identity">
+          <div class="member-number">AC Milan Club San Pietroburgo · #${memberNumber}</div>
+          <div class="fan-profile-name">${esc(name)}</div>
+          ${username && username !== name ? `<div class="member-handle">${esc(username)}</div>` : ''}
+        </div>
+      </div>
+
+      <div class="fan-profile-stats">
+        <div><strong>${visits}</strong><span>просмотров</span></div>
+        <div><strong>${Number(item.position || 0) || '—'}</strong><span>место в рейтинге</span></div>
+        <div><strong>${esc(fanSince)}</strong><span>болею с</span></div>
+      </div>
+
+      <div class="member-rank-card fan-profile-rank">
+        <div><span>Ранг</span><strong>${esc(rank.name)}</strong></div>
+        <small>${esc(rank.note)}</small>
+      </div>
+
+      ${item.telegram_user_id ?
+        '<div class="fan-profile-status is-linked">Telegram-профиль подключён</div>' :
+        '<div class="fan-profile-status">Фото и дополнительные данные появятся после первого входа участника в Mini App.</div>'}
+    </article>
+  </section>`;
+}
 function renderMore() {
   return `<section class="page">
     <div class="eyebrow">${esc(clubName())}</div>
@@ -928,7 +974,7 @@ function renderProfile() {
   </section>`;
 }
 
-const routes = { home:renderHome, matches:renderMatches, watch:renderWatch, ranking:renderRanking, club:renderClub, more:renderMore, bar:renderBar, contacts:renderContacts, admin:renderAdmin, profile:renderProfile };
+const routes = { home:renderHome, matches:renderMatches, watch:renderWatch, ranking:renderRanking, fanprofile:renderFanProfile, club:renderClub, more:renderMore, bar:renderBar, contacts:renderContacts, admin:renderAdmin, profile:renderProfile };
 
 function render(route=currentRoute, {push=true}={}) {
   const nextRoute = routes[route] ? route : 'home';
@@ -978,6 +1024,16 @@ document.addEventListener('click', async e => {
   if(f){ TelegramBridge.haptic(); filter=f.dataset.filter; render('matches', {push:false}); return; }
   const actionEl = e.target.closest('[data-action]');
   const action = actionEl?.dataset.action;
+
+  if(action==='open-fan-profile'){
+    const index = Number(actionEl?.dataset.rankingIndex);
+    const item = Number.isInteger(index) ? rankingState.items?.[index] : null;
+    if (!item) return;
+    selectedRankingProfile = item;
+    TelegramBridge.haptic();
+    render('fanprofile');
+    return;
+  }
 
   if(action==='open-watch-party'){
     const partyId = actionEl?.dataset.partyId;
