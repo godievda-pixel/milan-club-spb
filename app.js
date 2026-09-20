@@ -514,7 +514,7 @@ function renderHome() {
             ? '<button class="primary-btn premium-btn registration-closed" type="button" disabled><span>ЗАПИСЬ ЗАКРЫТА</span></button>'
             : `<button class="primary-btn premium-btn ${nextJoined ? 'joined' : ''}" data-action="rsvp" data-party-id="${esc(next.partyId)}">${nextJoined ? `${icon('check')}<span>Я ИДУ</span>` : '<span>ИДУ НА ПРОСМОТР</span>'}</button>`)
           : '<button class="primary-btn premium-btn joined" type="button" disabled><span>ЖДЁМ АНОНС ПРОСМОТРА</span></button>'}
-        <button class="secondary-btn icon-only-btn" data-route="watch" aria-label="Подробнее">${icon('arrowUpRight')}</button>
+        <button class="secondary-btn hero-details-btn" data-route="watch"><span>Подробнее</span></button>
       </div>
     </article>
 
@@ -599,7 +599,21 @@ function renderWatch() {
           <div class="watch-vs">vs</div>
           <div class="watch-team">${crest(first.away,'hero')}<strong>${esc(displayTeam(first.away))}</strong></div>
         </div>
-        <p>${esc(bar.name)} · Санкт-Петербург<br>${esc(bar.address)}<br>${esc(bar.meeting)} · Начало: ${esc(first.time)}</p>
+        ${bar.mapUrl ? `
+          <button class="watch-venue-link" data-action="open-map" data-url="${esc(bar.mapUrl)}" type="button">
+            <span class="watch-venue-copy">
+              <strong>${esc(bar.name)} · Санкт-Петербург</strong>
+              <small>${esc(bar.address)}</small>
+            </span>
+            ${icon('arrowUpRight')}
+          </button>
+        ` : `
+          <div class="watch-venue-static">
+            <strong>${esc(bar.name)} · Санкт-Петербург</strong>
+            <small>${esc(bar.address)}</small>
+          </div>
+        `}
+        <p class="watch-meeting-copy">${esc(bar.meeting)} · Начало: ${esc(first.time)}</p>
       </div>
       <div>
         <div class="watch-stats">
@@ -703,7 +717,6 @@ function renderRanking() {
     ${rankingHelpOpen ? `
       <div class="ranking-help-card">
         <p><strong>1 просмотр = 1 подтверждённое посещение</strong> совместного просмотра фан-клуба.</p>
-        <p>Исторические данные внесены отдельно и могут быть приблизительными. Сезон 2022/23 рассчитан по среднему количеству посещений.</p>
         <div class="ranking-rank-scale">
           <span><strong>Nuovo</strong><small>0–10</small></span>
           <span><strong>Milanista</strong><small>11–30</small></span>
@@ -755,7 +768,7 @@ function renderRanking() {
       }).join('')}
     </div>
 
-    <div class="ranking-footnote">В рейтинге учитывается общее количество посещений с сентября 2021 года. Новые посещения добавляются после подтверждения администратором.</div>
+    <div class="ranking-footnote">Новые посещения добавляются после подтверждения администратором.</div>
   </section>`;
 }
 
@@ -980,9 +993,13 @@ function fanSinceYearButtons(selectedYear = '') {
 
 function focusFanYearPicker() {
   window.setTimeout(() => {
-    const target = document.querySelector('.fan-year-option.is-selected, .fan-year-option[data-year-anchor="true"]');
-    target?.scrollIntoView?.({block:'center', behavior:'instant'});
-  }, 40);
+    const wheel = document.querySelector('.fan-year-wheel');
+    const target = wheel?.querySelector('.fan-year-option.is-selected, .fan-year-option[data-year-anchor="true"]');
+    if (!wheel || !target) return;
+
+    const centeredTop = target.offsetTop - ((wheel.clientHeight - target.offsetHeight) / 2);
+    wheel.scrollTop = Math.max(0, centeredTop);
+  }, 70);
 }
 
 function renderProfile() {
@@ -1121,6 +1138,14 @@ document.addEventListener('click', async e => {
   if(f){ TelegramBridge.haptic(); filter=f.dataset.filter; render('matches', {push:false}); return; }
   const actionEl = e.target.closest('[data-action]');
   const action = actionEl?.dataset.action;
+
+  if(action==='open-map'){
+    const url = actionEl?.dataset.url;
+    if (!url) return;
+    TelegramBridge.haptic('selection');
+    TelegramBridge.open(url);
+    return;
+  }
 
   if(action==='open-fan-year-picker'){
     fanYearPickerOpen = true;
