@@ -1,9 +1,14 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "milan-club-spb",
+  "main": "./worker.js",
   "compatibility_date": "2026-09-19",
+  "vars": {
+    "MINI_APP_URL": "https://milan-club-spb.ciao-web.workers.dev"
+  },
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   }
 }
