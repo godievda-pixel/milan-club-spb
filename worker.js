@@ -1,4 +1,5 @@
 const APP_URL = 'https://milan-club-spb.ciao-web.workers.dev';
+const NOTIFICATION_API_URL = 'https://lcnwccnkkxaosxnfvjvr.supabase.co/functions/v1/milan-api';
 
 const encoder = new TextEncoder();
 
@@ -59,6 +60,32 @@ async function sendWelcome(token, message) {
   });
 }
 
+async function runNotificationTick(env) {
+  const token = env.TELEGRAM_BOT_TOKEN;
+  if (!token) {
+    console.error('Notification tick skipped: bot token is not configured');
+    return;
+  }
+
+  const response = await fetch(NOTIFICATION_API_URL, {
+    method: 'POST',
+    headers: {'content-type':'application/json'},
+    body: JSON.stringify({
+      action: 'notification_tick',
+      bot_token: token
+    })
+  });
+
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result?.ok) {
+    throw new Error(`Notification tick failed: ${result?.error || response.status}`);
+  }
+
+  if (result.announcements || result.reminders || result.messages_failed) {
+    console.log('Milan notification tick', result);
+  }
+}
+
 async function handleTelegramWebhook(request, env) {
   const token = env.TELEGRAM_BOT_TOKEN;
   if (!token) return json({ok:false,error:'Bot token is not configured'}, 500);
@@ -82,6 +109,14 @@ async function handleTelegramWebhook(request, env) {
 }
 
 export default {
+  async scheduled(_controller, env, ctx) {
+    ctx.waitUntil(
+      runNotificationTick(env).catch(error => {
+        console.error('Scheduled notification error', error);
+      })
+    );
+  },
+
   async fetch(request, env) {
     const url = new URL(request.url);
 
