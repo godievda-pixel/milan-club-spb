@@ -204,6 +204,8 @@ let remoteBar = null;
 let venues = [];
 let historyEntries = [];
 let watchParties = [];
+let watchPhotos = [];
+let watchPhotoUploading = false;
 let menuCategories = [];
 let menuItems = [];
 let memberState = null;
@@ -285,8 +287,16 @@ function watchCancelled(match) {
 function watchHome(match) {
   return match?.collectionStatus === 'home';
 }
+function watchCompleted(match) {
+  if (!match?.watched) return false;
+  if (match?.collectionStatus === 'completed') return true;
+  if (match?.collectionStatus !== 'active') return false;
+  const kickoff = Date.parse(match?.iso || '');
+  return Number.isFinite(kickoff) && Date.now() >= kickoff;
+}
 function watchStateText(match) {
   if (!match?.watched) return 'Сбор пока не подтверждён';
+  if (watchCompleted(match)) return 'Сбор завершён';
   if (watchHome(match)) return 'Сбора не будет, смотрим дома';
   if (watchCancelled(match)) return 'Сбор отменён';
   return 'Сбор подтверждён';
@@ -408,6 +418,52 @@ async function openMemberProfile(memberNumber) {
   }
 }
 
+async function prepareWatchPhoto(file) {
+  if (!file || !String(file.type || '').startsWith('image/')) {
+    throw new Error('Выберите изображение');
+  }
+  if (file.size > 18 * 1024 * 1024) {
+    throw new Error('Исходное фото слишком большое');
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = objectUrl;
+    if (image.decode) await image.decode();
+    else await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = reject;
+    });
+
+    const maxSide = 1600;
+    const scale = Math.min(1, maxSide / Math.max(image.naturalWidth || 1, image.naturalHeight || 1));
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d', {alpha:false});
+    ctx.drawImage(image, 0, 0, width, height);
+
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(value => value ? resolve(value) : reject(new Error('Не удалось обработать фото')), 'image/jpeg', .84);
+    });
+
+    if (blob.size > 5 * 1024 * 1024) throw new Error('Фото после обработки больше 5 МБ');
+
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('Не удалось прочитать фото'));
+      reader.readAsDataURL(blob);
+    });
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 function participantAvatarLabel(participant) {
   const source = participant?.username || participant?.name || participant?.display_name || 'M';
   return String(source).replace(/^@/,'').trim().charAt(0).toUpperCase() || 'M';
@@ -519,10 +575,13 @@ function applyRemoteData(data) {
         doorsAt:party?.doors_at || null,
         collectionStatus:party?.collection_status || (party ? 'active' : null),
         cancelReason:party?.cancel_reason || '',
-        cancelledAt:party?.cancelled_at || null
+        cancelledAt:party?.cancelled_at || null,
+        completedAt:party?.completed_at || null
       };
     });
   }
+
+  watchPhotos = Array.isArray(data.watch_photos) ? data.watch_photos : [];
 
   venues = Array.isArray(data.venues) ? data.venues.map(v => ({
     id:v.id,
@@ -598,6 +657,7 @@ function renderHome() {
   const nextTheme = tournamentTheme(next.competition);
   const nextCancelled = watchCancelled(next);
   const nextHome = watchHome(next);
+  const nextCompleted = watchCompleted(next);
 
   return `
   <section class="page home-page">
@@ -615,21 +675,23 @@ function renderHome() {
         <div class="team">${crest(next.away,'hero')}<strong>${esc(displayTeam(next.away))}</strong></div>
       </div>
 
-      <div class="home-watch-state ${nextHome ? 'is-home' : (nextCancelled ? 'is-cancelled' : (next.watched ? 'is-active' : 'is-pending'))}">
+      <div class="home-watch-state ${nextCompleted ? 'is-completed' : (nextHome ? 'is-home' : (nextCancelled ? 'is-cancelled' : (next.watched ? 'is-active' : 'is-pending')))}">
         <strong>${esc(watchStateText(next))}</strong>
         ${nextCancelled && next.cancelReason ? `<span>${esc(next.cancelReason)}</span>` : ''}
       </div>
 
-      <div class="hero-meta">${nextHome ? 'Этот матч смотрим дома' : (next.watched ? `${esc(getVenue(next.venueId).name)} · ${esc(getVenue(next.venueId).meeting)}` : 'Совместный просмотр ещё не опубликован')}</div>
+      <div class="hero-meta">${nextCompleted ? 'Сбор завершён · фотоотчёт доступен в разделе «Просмотры»' : (nextHome ? 'Этот матч смотрим дома' : (next.watched ? `${esc(getVenue(next.venueId).name)} · ${esc(getVenue(next.venueId).meeting)}` : 'Совместный просмотр ещё не опубликован'))}</div>
       <div class="hero-actions">
         ${next.watched
-          ? (nextHome
-            ? '<button class="primary-btn premium-btn gathering-home-btn" type="button" disabled><span>СМОТРИМ ДОМА</span></button>'
-            : (nextCancelled
+          ? (nextCompleted
+            ? '<button class="primary-btn premium-btn gathering-completed-btn" type="button" disabled><span>СБОР ЗАВЕРШЁН</span></button>'
+            : (nextHome
+              ? '<button class="primary-btn premium-btn gathering-home-btn" type="button" disabled><span>СМОТРИМ ДОМА</span></button>'
+              : (nextCancelled
               ? '<button class="primary-btn premium-btn gathering-cancelled-btn" type="button" disabled><span>СБОР ОТМЕНЁН</span></button>'
               : (nextRegistrationClosed && !nextJoined
                 ? '<button class="primary-btn premium-btn registration-closed" type="button" disabled><span>ЗАПИСЬ ЗАКРЫТА</span></button>'
-                : `<button class="primary-btn premium-btn ${nextJoined ? 'joined' : ''}" data-action="rsvp" data-party-id="${esc(next.partyId)}">${nextJoined ? `${icon('check')}<span>Я ИДУ</span>` : '<span>ИДУ НА ПРОСМОТР</span>'}</button>`)))
+                : `<button class="primary-btn premium-btn ${nextJoined ? 'joined' : ''}" data-action="rsvp" data-party-id="${esc(next.partyId)}">${nextJoined ? `${icon('check')}<span>Я ИДУ</span>` : '<span>ИДУ НА ПРОСМОТР</span>'}</button>`))))
           : '<button class="primary-btn premium-btn joined" type="button" disabled><span>СБОР НЕ ПОДТВЕРЖДЁН</span></button>'}
         <button class="secondary-btn hero-details-btn" data-route="watch"><span>Подробнее</span></button>
       </div>
@@ -671,6 +733,7 @@ function renderMatches() {
       const theme = tournamentTheme(f.competition);
       const cancelled = watchCancelled(f);
       const home = watchHome(f);
+      const completed = watchCompleted(f);
       return `
       <article class="fixture match-tournament-card" style="${tournamentThemeStyle(theme)}">
         <div class="fixture-date"><strong>${f.date}</strong><span>${f.month}</span></div>
@@ -680,7 +743,7 @@ function renderMatches() {
           </div>
           <span>${esc(f.competition)}</span>
         </div>
-        <div class="fixture-side"><strong>${esc(f.time)}</strong>${home ? '<span class="fixture-home">● СМОТРИМ ДОМА</span>' : (cancelled ? '<span class="fixture-cancelled">● СБОР ОТМЕНЁН</span>' : (f.watched?'<span>● ПРОСМОТР</span>':''))}</div>
+        <div class="fixture-side"><strong>${esc(f.time)}</strong>${completed ? '<span class="fixture-completed">● ЗАВЕРШЁН</span>' : (home ? '<span class="fixture-home">● СМОТРИМ ДОМА</span>' : (cancelled ? '<span class="fixture-cancelled">● СБОР ОТМЕНЁН</span>' : (f.watched?'<span>● ПРОСМОТР</span>:'')))}</div>
       </article>`;
     }).join('')}</div>
   </section>`;
@@ -707,6 +770,8 @@ function renderWatch() {
   const firstTheme = tournamentTheme(first.competition);
   const firstCancelled = watchCancelled(first);
   const firstHome = watchHome(first);
+  const firstCompleted = watchCompleted(first);
+  const firstPhotos = watchPhotos.filter(photo => photo.watch_party_id === first.partyId);
   const searchState = adminUserSearchState.partyId === first.partyId
     ? adminUserSearchState
     : {partyId:first.partyId, query:'', loading:false, loaded:false, items:[], error:''};
@@ -721,7 +786,12 @@ function renderWatch() {
       <img class="watch-club-watermark" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
       <div class="watch-feature-content">
         <span class="eyebrow">${first.date} ${first.month} · ${esc(first.competition)}</span>
-        ${firstHome ? `
+        ${firstCompleted ? `
+          <div class="gathering-completed-banner">
+            <strong>Сбор завершён</strong>
+            <span>Матч уже начался</span>
+          </div>
+        ` : (firstHome ? `
           <div class="gathering-home-banner">
             <strong>Сбора не будет</strong>
             <span>Смотрим дома</span>
@@ -731,7 +801,7 @@ function renderWatch() {
             <strong>Сбор отменён</strong>
             <span>${esc(first.cancelReason || 'Просмотр не состоится')}</span>
           </div>
-        ` : '')}
+        ` : ''))}
         <div class="watch-match-row">
           <div class="watch-team">${crest(first.home,'hero')}<strong>${esc(displayTeam(first.home))}</strong></div>
           <div class="watch-vs">vs</div>
@@ -772,14 +842,18 @@ function renderWatch() {
             <div class="watch-stat"><strong>${first.capacity || '∞'}</strong><span>мест</span></div>
             <div class="watch-stat"><strong>SPB</strong><span>наш город</span></div>
           </div>
-          ${firstCancelled
-            ? '<button style="margin-top:10px" class="primary-btn premium-btn gathering-cancelled-btn" type="button" disabled><span>СБОР ОТМЕНЁН</span></button>'
-            : (firstRegistrationClosed && !firstJoined
+          ${firstCompleted
+            ? '<button style="margin-top:10px" class="primary-btn premium-btn gathering-completed-btn" type="button" disabled><span>СБОР ЗАВЕРШЁН</span></button>'
+            : (firstCancelled
+              ? '<button style="margin-top:10px" class="primary-btn premium-btn gathering-cancelled-btn" type="button" disabled><span>СБОР ОТМЕНЁН</span></button>'
+              : (firstRegistrationClosed && !firstJoined
               ? '<button style="margin-top:10px" class="primary-btn premium-btn registration-closed" type="button" disabled><span>ЗАПИСЬ ЗАКРЫТА</span></button>'
-              : `<button style="margin-top:10px" class="primary-btn premium-btn ${firstJoined?'joined':''}" data-action="rsvp" data-party-id="${esc(first.partyId)}">${firstJoined?`${icon('check')}<span>ВЫ В СПИСКЕ</span>`:'<span>ПРИСОЕДИНИТЬСЯ</span>'}</button>`)}
-          ${firstCancelled
+              : `<button style="margin-top:10px" class="primary-btn premium-btn ${firstJoined?'joined':''}" data-action="rsvp" data-party-id="${esc(first.partyId)}">${firstJoined?`${icon('check')}<span>ВЫ В СПИСКЕ</span>`:'<span>ПРИСОЕДИНИТЬСЯ</span>'}</button>`))}
+          ${firstCompleted
+            ? '<div class="registration-deadline is-closed">Сбор завершён с началом матча</div>'
+            : (firstCancelled
             ? `<div class="registration-deadline is-closed">${esc(first.cancelReason || 'Просмотр не состоится')}</div>`
-            : `<div class="registration-deadline ${firstRegistrationClosed ? 'is-closed' : ''}">${esc(registrationDeadlineText(first))}</div>`}
+            : `<div class="registration-deadline ${firstRegistrationClosed ? 'is-closed' : ''}">${esc(registrationDeadlineText(first))}</div>`)}
         `}
       </div>
     </article>
@@ -802,7 +876,20 @@ function renderWatch() {
         ` : ''}
 
         <div class="admin-watch-status">
-          ${firstHome ? `
+          ${firstCompleted ? `
+            <div class="admin-watch-completed-copy">
+              <strong>Сбор завершён</strong>
+              <span>Теперь можно отметить посещаемость и добавить фотоотчёт.</span>
+            </div>
+            <label class="watch-photo-upload ${watchPhotoUploading ? 'is-loading' : ''}">
+              <input id="watchPhotoInput" data-party-id="${esc(first.partyId)}" type="file" accept="image/*" multiple ${watchPhotoUploading ? 'disabled' : ''}>
+              <span class="watch-photo-upload-icon">＋</span>
+              <span>
+                <strong>${watchPhotoUploading ? 'Загружаем фото…' : 'Добавить фото со сбора'}</strong>
+                <small>До 6 фото за раз · JPEG после оптимизации</small>
+              </span>
+            </label>
+          ` : (firstHome ? `
             <div class="admin-watch-home-copy">
               <strong>Сбора не будет</strong>
               <span>Смотрим дома</span>
@@ -835,10 +922,25 @@ function renderWatch() {
                 </div>
               </form>
             ` : ''}
-          `)}
+          `))}
         </div>
       </section>
     ` : ''}
+
+    ${firstPhotos.length ? `
+      <div class="section-head watch-photo-head">
+        <h2>Фото со сбора</h2>
+        <span class="participants-count">${firstPhotos.length}</span>
+      </div>
+      <div class="watch-photo-gallery">
+        ${firstPhotos.map(photo => `
+          <figure class="watch-photo-card">
+            <img src="${esc(photo.public_url)}" alt="Фото со сбора" loading="lazy">
+            ${photo.caption ? `<figcaption>${esc(photo.caption)}</figcaption>` : ''}
+          </figure>
+        `).join('')}
+      </div>
+    ` : (firstCompleted ? '<div class="watch-photo-empty">Фото со сбора пока не добавлены.</div>' : '')}
 
     ${firstHome ? '<div class="watch-home-note">Для этого матча совместного сбора нет — список участников не ведётся.</div>' : `    <div class="section-head participants-head">
       <h2>Участники</h2>
@@ -893,7 +995,7 @@ function renderWatch() {
           <div class="fixture-clubs">${crest(f.home,'xs')}<strong>${esc(displayTeam(f.home))}</strong><span class="fixture-vs">—</span>${crest(f.away,'xs')}<strong>${esc(displayTeam(f.away))}</strong></div>
           <span>${esc(f.competition)} · ${watchHome(f) ? 'Смотрим дома' : esc(getVenue(f.venueId).name)}</span>
         </div>
-        <div class="fixture-side"><strong>${esc(f.time)}</strong><span class="${watchHome(f) ? 'fixture-home' : (watchCancelled(f) ? 'fixture-cancelled' : '')}">${watchHome(f) ? '● СМОТРИМ ДОМА' : (watchCancelled(f) ? '● СБОР ОТМЕНЁН' : '● FAN CLUB')}</span></div>
+        <div class="fixture-side"><strong>${esc(f.time)}</strong><span class="${watchCompleted(f) ? 'fixture-completed' : (watchHome(f) ? 'fixture-home' : (watchCancelled(f) ? 'fixture-cancelled' : ''))}">${watchCompleted(f) ? '● ЗАВЕРШЁН' : (watchHome(f) ? '● СМОТРИМ ДОМА' : (watchCancelled(f) ? '● СБОР ОТМЕНЁН' : '● FAN CLUB'))}</span></div>
       </article>`).join('') || '<div class="notice">Других просмотров пока не опубликовано.</div>'}</div>
   </section>`;
 }
@@ -1676,6 +1778,37 @@ document.addEventListener('click', async e => {
     const url = e.target.closest('[data-action="contact"]')?.dataset.url;
     if (url) TelegramBridge.open(url);
     else toast('Telegram-контакт пока не добавлен');
+  }
+});
+
+document.addEventListener('change', async e => {
+  if (e.target.id !== 'watchPhotoInput') return;
+
+  const input = e.target;
+  const partyId = input.dataset.partyId;
+  const files = Array.from(input.files || []).slice(0, 6);
+  if (!partyId || !files.length || !Backend?.uploadWatchPhoto || !isAdmin()) return;
+
+  watchPhotoUploading = true;
+  render('watch', {push:false});
+
+  let uploaded = 0;
+  try {
+    for (const file of files) {
+      const imageDataUrl = await prepareWatchPhoto(file);
+      await Backend.uploadWatchPhoto(partyId, imageDataUrl, '');
+      uploaded += 1;
+    }
+
+    TelegramBridge.haptic('success');
+    await refreshPublicData({renderAfter:false});
+    toast(uploaded === 1 ? 'Фото добавлено' : `Добавлено фото: ${uploaded}`);
+  } catch (error) {
+    TelegramBridge.haptic('error');
+    toast(error?.message || 'Не удалось загрузить фото');
+  } finally {
+    watchPhotoUploading = false;
+    render('watch', {push:false});
   }
 });
 
