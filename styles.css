@@ -3631,3 +3631,99 @@ body.ios-miniapp .page {
   letter-spacing: .06em;
   text-transform: uppercase;
 }
+
+
+/* Stable attendance segmented control */
+.participant-row {
+  grid-template-columns: 42px minmax(0,1fr);
+}
+
+.attendance-control {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin-top: 7px;
+  padding: 4px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 6px;
+  border: 1px solid rgba(255,255,255,.065);
+  border-radius: 14px;
+  background: rgba(0,0,0,.16);
+  justify-items: stretch;
+}
+
+.attendance-btn {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #8f8b86;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 780;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.attendance-btn .attendance-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #4f4b47;
+  box-shadow: 0 0 0 3px rgba(255,255,255,.02);
+}
+
+.attendance-btn.active.attendance-yes {
+  border-color: rgba(127,196,137,.28);
+  background:
+    linear-gradient(180deg, rgba(127,196,137,.12), rgba(127,196,137,.065));
+  color: #c2e5c8;
+}
+
+.attendance-btn.active.attendance-yes .attendance-dot {
+  background: #7fc489;
+  box-shadow: 0 0 0 3px rgba(127,196,137,.10);
+}
+
+.attendance-btn.active.attendance-no {
+  border-color: rgba(215,25,32,.28);
+  background:
+    linear-gradient(180deg, rgba(215,25,32,.12), rgba(215,25,32,.06));
+  color: #f0a0a4;
+}
+
+.attendance-btn.active.attendance-no .attendance-dot {
+  background: #d71920;
+  box-shadow: 0 0 0 3px rgba(215,25,32,.10);
+}
+
+.attendance-btn:disabled {
+  opacity: .72;
+  cursor: default;
+}
+
+.attendance-state {
+  display: none !important;
+}
+
+@media (max-width: 410px) {
+  .participant-row {
+    grid-template-columns: 38px minmax(0,1fr);
+  }
+
+  .attendance-control {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-top: 7px;
+  }
+
+  .attendance-btn {
+    min-height: 40px;
+  }
+}
