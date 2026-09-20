@@ -45,19 +45,37 @@ const TEAM_LOGOS = {
 };
 
 const TEAM_DISPLAY = {
-  'AC Milan': 'Milan',
-  'AFC Bournemouth': 'Bournemouth',
-  'Atalanta BC': 'Atalanta',
-  'Bologna FC 1909': 'Bologna',
-  'Genoa CFC': 'Genoa',
-  'Inter Milan': 'Inter',
-  'Olympiacos Piraeus': 'Olympiacos',
-  'Red Bull Salzburg': 'Salzburg',
-  'Sunderland AFC': 'Sunderland',
-  'Udinese Calcio': 'Udinese',
-  'US Lecce': 'Lecce',
-  'US Sassuolo': 'Sassuolo',
-  'Ferencvárosi TC': 'Ferencváros'
+  'AC Milan': 'Милан',
+  'Milan': 'Милан',
+  'Lecce': 'Лечче',
+  'US Lecce': 'Лечче',
+  'Sassuolo': 'Сассуоло',
+  'US Sassuolo': 'Сассуоло',
+  'Salzburg': 'Ред Булл',
+  'Red Bull Salzburg': 'Ред Булл',
+  'Atalanta': 'Аталанта',
+  'Atalanta BC': 'Аталанта',
+  'Bournemouth': 'Борнмут',
+  'AFC Bournemouth': 'Борнмут',
+  'Udinese': 'Удинезе',
+  'Udinese Calcio': 'Удинезе',
+  'Bologna': 'Болонья',
+  'Bologna FC 1909': 'Болонья',
+  'Inter': 'Интер',
+  'Inter Milan': 'Интер',
+  'Genoa': 'Дженоа',
+  'Genoa CFC': 'Дженоа',
+  'Frosinone': 'Фрозиноне',
+  'Frosinone Calcio': 'Фрозиноне',
+  'Olympiacos': 'Олимпиакос',
+  'Olympiacos Piraeus': 'Олимпиакос',
+  'Sunderland': 'Сандерленд',
+  'Sunderland AFC': 'Сандерленд',
+  'Levski Sofia': 'Левски',
+  'Ferencváros': 'Ференцварош',
+  'Ferencvaros': 'Ференцварош',
+  'Ferencvárosi TC': 'Ференцварош',
+  'Ararat-Armenia': 'Арарат-Армения'
 };
 
 const ICONS = {
@@ -77,6 +95,21 @@ function icon(name, className='') {
 }
 function clubName() { return clubSettings?.club_name || CLUB_NAME; }
 function displayTeam(name='') { return TEAM_DISPLAY[name] || name; }
+function competitionName(name='') {
+  const raw = String(name || '');
+  if (raw.startsWith('Serie A') || raw.startsWith('Италия. Серия А')) return 'Италия. Серия А';
+  if (raw.startsWith('Europa League') || raw.startsWith('Лига Европы')) return 'Лига Европы';
+  return raw;
+}
+function competitionShort(name='') {
+  const translated = competitionName(name);
+  if (translated === 'Италия. Серия А') return 'СЕРИЯ А';
+  if (translated === 'Лига Европы') return 'ЛИГА ЕВРОПЫ';
+  return translated.toUpperCase();
+}
+function tournamentWithRound(name='', round='') {
+  return [competitionName(name), round].filter(Boolean).join(' · ');
+}
 function teamInitials(name='') {
   return displayTeam(name).split(/\s+/).filter(Boolean).map(x => x[0]).join('').slice(0,3).toUpperCase();
 }
@@ -88,14 +121,14 @@ function crest(name, size='lg') {
 }
 
 let fixtures = [
-  {date:'20', month:'сен', iso:'2026-09-20', home:'AC Milan', away:'Lecce', competition:'Serie A · 5 тур', time:'21:45 МСК', watched:true, status:'ПРОСМОТР'},
-  {date:'10/11', month:'окт', iso:'2026-10-10', home:'Sassuolo', away:'AC Milan', competition:'Serie A · 6 тур', time:'время уточняется', watched:false, status:''},
-  {date:'15', month:'окт', iso:'2026-10-15', home:'Salzburg', away:'AC Milan', competition:'Europa League · 2 тур', time:'19:45 МСК', watched:true, status:'ПРОСМОТР'},
-  {date:'17/18', month:'окт', iso:'2026-10-17', home:'AC Milan', away:'Atalanta', competition:'Serie A · 7 тур', time:'время уточняется', watched:true, status:'ПРОСМОТР'},
-  {date:'22', month:'окт', iso:'2026-10-22', home:'Bournemouth', away:'AC Milan', competition:'Europa League · 3 тур', time:'22:00 МСК', watched:true, status:'ПРОСМОТР'},
-  {date:'24/25', month:'окт', iso:'2026-10-24', home:'Udinese', away:'AC Milan', competition:'Serie A · 8 тур', time:'время уточняется', watched:false, status:''},
-  {date:'28', month:'окт', iso:'2026-10-28', home:'AC Milan', away:'Bologna', competition:'Serie A · 9 тур', time:'время уточняется', watched:true, status:'ПРОСМОТР'},
-  {date:'31/01', month:'окт/ноя', iso:'2026-10-31', home:'AC Milan', away:'Inter', competition:'Serie A · Derby', time:'время уточняется', watched:true, status:'ПРОСМОТР'}
+  {date:'20', month:'сен', iso:'2026-09-20', home:'AC Milan', away:'Lecce', competition:'Италия. Серия А · 5 тур', time:'21:45 МСК', watched:true, status:'ПРОСМОТР'},
+  {date:'10/11', month:'окт', iso:'2026-10-10', home:'Sassuolo', away:'AC Milan', competition:'Италия. Серия А · 6 тур', time:'время уточняется', watched:false, status:''},
+  {date:'15', month:'окт', iso:'2026-10-15', home:'Salzburg', away:'AC Milan', competition:'Лига Европы · 2 тур', time:'19:45 МСК', watched:true, status:'ПРОСМОТР'},
+  {date:'17/18', month:'окт', iso:'2026-10-17', home:'AC Milan', away:'Atalanta', competition:'Италия. Серия А · 7 тур', time:'время уточняется', watched:true, status:'ПРОСМОТР'},
+  {date:'22', month:'окт', iso:'2026-10-22', home:'Bournemouth', away:'AC Milan', competition:'Лига Европы · 3 тур', time:'22:00 МСК', watched:true, status:'ПРОСМОТР'},
+  {date:'24/25', month:'окт', iso:'2026-10-24', home:'Udinese', away:'AC Milan', competition:'Италия. Серия А · 8 тур', time:'время уточняется', watched:false, status:''},
+  {date:'28', month:'окт', iso:'2026-10-28', home:'AC Milan', away:'Bologna', competition:'Италия. Серия А · 9 тур', time:'время уточняется', watched:true, status:'ПРОСМОТР'},
+  {date:'31/01', month:'окт/ноя', iso:'2026-10-31', home:'AC Milan', away:'Inter', competition:'Италия. Серия А · Дерби', time:'время уточняется', watched:true, status:'ПРОСМОТР'}
 ];
 
 let menu = {
@@ -154,7 +187,6 @@ function joined(partyId = activePartyId()) {
   if (partyId && memberState?.rsvps) return memberState.rsvps.some(r => r.watch_party_id === partyId && r.status === 'going');
   return false;
 }
-function competitionShort(c='') { return c.startsWith('Serie') ? 'SERIE A' : c.toUpperCase(); }
 
 function moscowParts(iso) {
   if (!iso) return {date:'—', month:'', time:'время уточняется', iso:''};
@@ -184,7 +216,7 @@ function applyRemoteData(data) {
         iso:m.kickoff_at || '',
         home:m.home_team,
         away:m.away_team,
-        competition:[m.competition,m.round_label].filter(Boolean).join(' · '),
+        competition:tournamentWithRound(m.competition,m.round_label),
         time:dt.time,
         watched:Boolean(party),
         status:party ? 'ПРОСМОТР' : '',
@@ -264,7 +296,7 @@ function renderHome() {
   return `
   <section class="page home-page">
     <div class="eyebrow">${esc(clubName())}</div>
-    <h1 class="page-title home-manifesto">Sempre con te sarò<br><span>Sempre rossonero</span></h1>
+    <h1 class="page-title home-manifesto"><span>Sempre con te sarò</span><span>Sempre rossonero</span></h1>
     <p class="page-subtitle">Матчи, совместные просмотры и жизнь ${esc(clubName())} в одном месте.</p>
 
     <article class="hero">
@@ -310,12 +342,12 @@ function matchCard(f) {
 }
 
 function renderMatches() {
-  const filtered = fixtures.filter(f => filter==='Все' || (filter==='Serie A' ? f.competition.startsWith('Serie') : f.competition.startsWith('Europa')));
+  const filtered = fixtures.filter(f => filter==='Все' || (filter==='Серия А' ? f.competition.startsWith('Италия. Серия А') : f.competition.startsWith('Лига Европы')));
   return `<section class="page">
     <div class="eyebrow">${esc(clubName())}</div>
     <h1 class="page-title">Матчи</h1>
     <p class="page-subtitle">Время указано по Москве. Точный слот обновляется в календаре после публикации лигой.</p>
-    <div class="filter-row">${['Все','Serie A','Europa League'].map(x=>`<button class="filter premium-filter ${filter===x?'active':''}" data-filter="${x}">${x}</button>`).join('')}</div>
+    <div class="filter-row">${['Все','Серия А','Лига Европы'].map(x=>`<button class="filter premium-filter ${filter===x?'active':''}" data-filter="${x}">${x}</button>`).join('')}</div>
     <div class="fixture-list">${filtered.map(f=>`
       <article class="fixture">
         <div class="fixture-date"><strong>${f.date}</strong><span>${f.month}</span></div>
@@ -468,7 +500,7 @@ function renderAdmin() {
   }
 
   const bar = getBar();
-  const matchOptions = fixtures.map(f => `<option value="${esc(f.id)}">${esc(f.home)} — ${esc(f.away)} · ${f.date} ${f.month} · ${esc(f.time)}</option>`).join('');
+  const matchOptions = fixtures.map(f => `<option value="${esc(f.id)}">${esc(displayTeam(f.home))} — ${esc(displayTeam(f.away))} · ${f.date} ${f.month} · ${esc(f.time)}</option>`).join('');
   const categoryOptions = menuCategories.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
 
   return `<section class="page">
