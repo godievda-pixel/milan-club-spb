@@ -1938,3 +1938,161 @@ button:disabled {
     padding-right: 6px;
   }
 }
+
+
+/* Ranking explainer and fan since picker */
+.ranking-help-toggle {
+  width: 100%;
+  min-height: 44px;
+  margin: -4px 0 12px;
+  padding: 0 13px;
+  display: grid;
+  grid-template-columns: 24px minmax(0,1fr) 20px;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 15px;
+  background: rgba(255,255,255,.018);
+  color: #cfcac4;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.ranking-help-toggle:active {
+  transform: scale(.994);
+}
+.ranking-help-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.11);
+  background: rgba(255,255,255,.025);
+  color: #aaa49d;
+  font-size: 10px;
+  font-family: Georgia, serif;
+  font-style: italic;
+}
+.ranking-help-chevron {
+  color: #77716b;
+  font-size: 15px;
+  text-align: center;
+}
+.ranking-help-card {
+  margin: -3px 0 18px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 17px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(215,25,32,.07), transparent 48%),
+    rgba(255,255,255,.018);
+}
+.ranking-help-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+.ranking-help-card p + p {
+  margin-top: 8px;
+}
+.ranking-help-card p strong {
+  color: #ded9d2;
+  font-weight: 780;
+}
+.ranking-rank-scale {
+  display: grid;
+  grid-template-columns: repeat(5,minmax(0,1fr));
+  gap: 5px;
+  margin-top: 12px;
+}
+.ranking-rank-scale span {
+  min-width: 0;
+  padding: 8px 4px;
+  border-radius: 11px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(0,0,0,.15);
+  display: grid;
+  gap: 3px;
+  text-align: center;
+}
+.ranking-rank-scale strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #c9c4be;
+  font-size: 7px;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+}
+.ranking-rank-scale small {
+  color: #77716b;
+  font-size: 7px;
+}
+
+.fan-since-picker {
+  position: relative;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.fan-since-picker .fan-since-label {
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.2;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+.fan-since-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.fan-since-picker select {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 26px 0 0 !important;
+  border: 0;
+  outline: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 25px !important;
+  line-height: 1;
+  font-weight: 850;
+  letter-spacing: -.04em;
+  cursor: pointer;
+}
+.fan-since-picker select:disabled {
+  opacity: .55;
+}
+.fan-since-chevron {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  z-index: 0;
+  transform: translateY(-55%);
+  color: #716b66;
+  font-size: 16px;
+  pointer-events: none;
+}
+.fan-since-picker small {
+  color: #716b66;
+  font-size: 7px;
+  line-height: 1.2;
+}
+
+@media (max-width: 370px) {
+  .ranking-rank-scale {
+    grid-template-columns: repeat(3,minmax(0,1fr));
+  }
+  .fan-since-picker select {
+    font-size: 22px !important;
+  }
+}
