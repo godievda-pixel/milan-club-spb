@@ -211,6 +211,7 @@ let menuItems = [];
 let memberState = null;
 let selectedWatchPartyId = null;
 const participantState = new Map();
+const watchPhotoState = new Map();
 let adminUserSearchState = {partyId:null, query:'', loading:false, loaded:false, items:[], error:''};
 let adminUserSearchTimer = null;
 let rankingState = {loading:false, loaded:false, items:[], error:''};
@@ -473,6 +474,34 @@ function attendanceLabel(status) {
   if (status === 'absent') return 'Не был';
   return 'Не отмечен';
 }
+async function loadWatchPhotos(partyId, {force=false}={}) {
+  if (!partyId || !Backend?.watchPhotos || !TelegramBridge.isInsideTelegram()) return;
+
+  const state = watchPhotoState.get(partyId) || {loading:false, loaded:false, error:''};
+  if (!force && (state.loading || state.loaded)) return;
+
+  watchPhotoState.set(partyId, {...state, loading:true, error:''});
+  try {
+    const result = await Backend.watchPhotos(partyId);
+    const photos = Array.isArray(result?.photos) ? result.photos : [];
+    watchPhotoState.set(partyId, {loading:false, loaded:true, error:'', items:photos});
+
+    const otherPhotos = watchPhotos.filter(photo => photo.watch_party_id !== partyId);
+    watchPhotos = [...otherPhotos, ...photos];
+
+    if (currentRoute === 'watch' && selectedWatchPartyId === partyId) {
+      render('watch', {push:false});
+    }
+  } catch (error) {
+    watchPhotoState.set(partyId, {
+      loading:false,
+      loaded:true,
+      error:error?.message || 'Не удалось загрузить фото',
+      items:[]
+    });
+  }
+}
+
 async function loadWatchParticipants(partyId, {force=false}={}) {
   if (!partyId || !Backend?.watchParticipants || !TelegramBridge.isInsideTelegram()) return;
   const current = participantState.get(partyId);
@@ -1796,12 +1825,32 @@ document.addEventListener('change', async e => {
   try {
     for (const file of files) {
       const imageDataUrl = await prepareWatchPhoto(file);
-      await Backend.uploadWatchPhoto(partyId, imageDataUrl, '');
+      const result = await Backend.uploadWatchPhoto(partyId, imageDataUrl, '');
+      if (result?.photo) {
+        watchPhotos = [
+          ...watchPhotos.filter(photo => photo.id !== result.photo.id),
+          result.photo
+        ];
+        const existingState = watchPhotoState.get(partyId) || {items:[]};
+        watchPhotoState.set(partyId, {
+          loading:false,
+          loaded:true,
+          error:'',
+          items:[
+            ...(existingState.items || []).filter(photo => photo.id !== result.photo.id),
+            result.photo
+          ]
+        });
+      }
       uploaded += 1;
+      render('watch', {push:false});
     }
 
     TelegramBridge.haptic('success');
-    await refreshPublicData({renderAfter:false});
+    await Promise.all([
+      refreshPublicData({renderAfter:false}),
+      loadWatchPhotos(partyId, {force:true})
+    ]);
     toast(uploaded === 1 ? 'Фото добавлено' : `Добавлено фото: ${uploaded}`);
   } catch (error) {
     TelegramBridge.haptic('error');
