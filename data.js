@@ -40,6 +40,8 @@
       api('rsvp', { watch_party_id: watchPartyId, status, guests }),
     watchParticipants: (watchPartyId) =>
       api('watch_participants', { watch_party_id: watchPartyId }),
+    watchPhotos: (watchPartyId) =>
+      api('watch_photos', { watch_party_id: watchPartyId }),
     attendanceRanking: () => api('attendance_ranking'),
     fanProfile: (memberNumber) => api('fan_profile', { member_number: memberNumber }),
     setAttendance: (watchPartyId, telegramUserId, attendanceStatus) =>
