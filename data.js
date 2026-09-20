@@ -67,6 +67,12 @@
       }),
     updateSettings: (settings) => api('admin_update_settings', settings),
     saveWatchParty: (payload) => api('admin_save_watch_party', payload),
+    setWatchStatus: (watchPartyId, collectionStatus, cancelReason = '') =>
+      api('admin_set_watch_status', {
+        watch_party_id: watchPartyId,
+        collection_status: collectionStatus,
+        cancel_reason: cancelReason
+      }),
     saveMenuCategory: (payload) => api('admin_save_menu_category', payload),
     saveMenuItem: (payload) => api('admin_save_menu_item', payload),
     saveContact: (payload) => api('admin_save_contact', payload),
