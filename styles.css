@@ -2783,3 +2783,252 @@ button:disabled {
     width: 155px;
   }
 }
+
+
+/* Gathering status + tournament match cards */
+.home-hero-brand {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.055), transparent 32%),
+    radial-gradient(circle at 25% 15%, rgba(255,255,255,.08), transparent 30%),
+    linear-gradient(140deg, #2b0508 0%, #b71219 48%, #5c080d 100%) !important;
+}
+
+.home-tournament-watermark {
+  position: absolute;
+  left: -28px;
+  top: 88px;
+  z-index: 1;
+  width: 124px;
+  max-width: 30%;
+  max-height: 42%;
+  object-fit: contain;
+  opacity: .075;
+  filter: grayscale(1) brightness(2.25) contrast(.8);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  user-select: none;
+}
+.home-hero-brand .hero-club-watermark {
+  right: -42px;
+  bottom: 36px;
+  width: 190px;
+  opacity: .09;
+  z-index: 1;
+}
+.home-hero-brand .hero-top,
+.home-hero-brand .versus,
+.home-hero-brand .hero-meta,
+.home-hero-brand .hero-actions,
+.home-hero-brand .home-watch-state {
+  position: relative;
+  z-index: 2;
+}
+
+.home-watch-state {
+  margin: -3px auto 10px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 7px 11px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(255,255,255,.13);
+  background: rgba(0,0,0,.16);
+  color: rgba(255,255,255,.82);
+  font-size: 8px;
+  line-height: 1.2;
+}
+.home-watch-state strong {
+  color: #fff;
+  font-size: 8px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.home-watch-state span {
+  color: rgba(255,255,255,.68);
+}
+.home-watch-state.is-cancelled {
+  border-color: rgba(255,94,105,.35);
+  background: rgba(80,0,8,.33);
+}
+.home-watch-state.is-cancelled strong {
+  color: #ffb0b5;
+}
+.home-watch-state.is-pending {
+  border-color: rgba(255,255,255,.10);
+  background: rgba(0,0,0,.13);
+}
+
+.gathering-cancelled-btn {
+  background: rgba(38,8,10,.92) !important;
+  color: #ffb6ba !important;
+  border: 1px solid rgba(255,94,105,.28) !important;
+  box-shadow: none !important;
+}
+
+.match-tournament-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-color: rgba(255,255,255,.11);
+  background:
+    linear-gradient(90deg, rgba(5,5,5,.76), rgba(5,5,5,.46)),
+    linear-gradient(135deg, var(--tour-from), var(--tour-mid) 58%, var(--tour-to)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.035),
+    0 10px 24px rgba(0,0,0,.16);
+}
+.match-tournament-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255,255,255,.07), transparent 28%),
+    repeating-linear-gradient(104deg, transparent 0 38px, rgba(255,255,255,.015) 38px 39px);
+}
+.match-tournament-card > * {
+  position: relative;
+  z-index: 1;
+}
+.match-tournament-card .fixture-date {
+  border-right-color: rgba(255,255,255,.10);
+}
+.match-tournament-card .fixture-date strong,
+.match-tournament-card .fixture-main strong,
+.match-tournament-card .fixture-side strong {
+  color: #fff;
+}
+.match-tournament-card .fixture-date span,
+.match-tournament-card .fixture-main > span {
+  color: rgba(255,255,255,.57);
+}
+.match-tournament-card .fixture-vs {
+  color: rgba(255,255,255,.40);
+}
+.match-tournament-card .fixture-side > span {
+  color: color-mix(in srgb, var(--tour-accent) 88%, white);
+}
+.fixture-side .fixture-cancelled,
+.match-tournament-card .fixture-side .fixture-cancelled {
+  color: #ff8f96 !important;
+}
+
+.gathering-cancelled-banner {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,104,113,.26);
+  border-radius: 14px;
+  background: rgba(49,6,9,.42);
+  display: grid;
+  gap: 3px;
+  backdrop-filter: blur(8px);
+}
+.gathering-cancelled-banner strong {
+  color: #ffc0c4;
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.gathering-cancelled-banner span {
+  color: rgba(255,225,227,.72);
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.admin-watch-status {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.admin-cancel-watch {
+  border-color: rgba(255,82,91,.24);
+  background: rgba(88,8,13,.17);
+  color: #dba0a4;
+}
+.admin-restore-watch {
+  border-color: rgba(117,200,155,.20);
+  background: rgba(16,71,43,.17);
+  color: #a9d9bf;
+}
+.admin-watch-cancelled-copy {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 13px;
+  border: 1px solid rgba(255,82,91,.16);
+  background: rgba(66,6,10,.14);
+  display: grid;
+  gap: 3px;
+}
+.admin-watch-cancelled-copy strong {
+  color: #e2a5a9;
+  font-size: 9px;
+}
+.admin-watch-cancelled-copy span {
+  color: #867b79;
+  font-size: 9px;
+  line-height: 1.35;
+}
+.cancel-watch-form {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+.cancel-watch-form label {
+  display: grid;
+  gap: 6px;
+}
+.cancel-watch-form label > span {
+  color: #8b8580;
+  font-size: 8px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.cancel-watch-form textarea {
+  width: 100%;
+  min-height: 82px;
+  box-sizing: border-box;
+  resize: vertical;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  padding: 12px 13px;
+  outline: 0;
+  background: rgba(0,0,0,.20);
+  color: #eee9e3;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.cancel-watch-form textarea:focus {
+  border-color: rgba(255,82,91,.34);
+  box-shadow: 0 0 0 3px rgba(255,82,91,.05);
+}
+.cancel-watch-actions {
+  display: grid;
+  gap: 8px;
+}
+.danger-btn {
+  background: linear-gradient(180deg, #74141a, #4c0a0f) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,116,124,.24) !important;
+}
+
+@supports not (color: color-mix(in srgb, red 20%, white)) {
+  .match-tournament-card .fixture-side > span {
+    color: #ddd7d0;
+  }
+}
+
+@media (max-width: 370px) {
+  .home-tournament-watermark {
+    width: 106px;
+    left: -24px;
+  }
+  .home-watch-state {
+    border-radius: 14px;
+    flex-direction: column;
+    text-align: center;
+  }
+}
