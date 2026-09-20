@@ -266,7 +266,7 @@ function memberRank(visits = 0) {
 function registrationClosesAt(match) {
   const kickoff = Date.parse(match?.iso || '');
   if (!Number.isFinite(kickoff)) return null;
-  return new Date(kickoff - 2 * 60 * 60 * 1000);
+  return new Date(kickoff - 1 * 60 * 60 * 1000);
 }
 function registrationClosed(match) {
   const closesAt = registrationClosesAt(match);
@@ -274,10 +274,10 @@ function registrationClosed(match) {
 }
 function registrationDeadlineText(match) {
   const closesAt = registrationClosesAt(match);
-  if (!closesAt) return 'Запись закрывается за 2 часа до начала матча';
+  if (!closesAt) return 'Запись закрывается за 1 час до начала матча';
   if (Date.now() >= closesAt.getTime()) return 'Запись для участников закрыта';
   const dt = moscowParts(closesAt.toISOString());
-  return `Запись до ${dt.time} · за 2 часа до матча`;
+  return `Запись до ${dt.time} · за 1 час до матча`;
 }
 function watchCancelled(match) {
   return match?.collectionStatus === 'cancelled';
@@ -310,8 +310,11 @@ function renderAdminUserSearchResults(partyId) {
     const label = userSearchDisplayName(user);
     const inList = user.rsvp_status === 'going';
     const member = user.member_number ? `#${String(user.member_number).padStart(4,'0')}` : '';
-    return `<div class="admin-user-result">
-      <div class="admin-user-avatar">${esc((label.name || 'M').replace(/^@/,'').charAt(0).toUpperCase())}</div>
+    return `<div class="admin-user-result ${user.member_number ? 'is-profile-link' : ''}" ${user.member_number ? `data-action="open-member-profile" data-member-number="${esc(user.member_number)}"` : ''}>
+      <div class="admin-user-avatar">
+        <span>${esc((label.name || 'M').replace(/^@/,'').charAt(0).toUpperCase())}</span>
+        ${user.photo_url ? `<img src="${esc(user.photo_url)}" alt="" loading="lazy">` : ''}
+      </div>
       <div class="admin-user-copy">
         <strong>${esc(label.name)}</strong>
         ${label.username && label.username !== label.name ? `<span>${esc(label.username)}${member ? ` · ${esc(member)}` : ''}</span>` : (member ? `<span>${esc(member)}</span>` : '')}
@@ -373,6 +376,38 @@ async function loadAdminUserSearch(partyId, query='', {force=false}={}) {
 function selectedWatchParty(parties = fixtures.filter(f => f.watched && f.partyId)) {
   return parties.find(f => f.partyId === selectedWatchPartyId) || parties[0] || null;
 }
+async function openMemberProfile(memberNumber) {
+  const normalized = Number(memberNumber);
+  if (!Number.isInteger(normalized) || normalized <= 0) return;
+
+  const cached = (rankingState.items || []).find(
+    item => Number(item.member_number) === normalized
+  );
+
+  if (cached) {
+    selectedRankingProfile = cached;
+    TelegramBridge.haptic('selection');
+    render('fanprofile');
+    return;
+  }
+
+  if (!Backend?.fanProfile || !TelegramBridge.isInsideTelegram()) {
+    toast('Профиль пока недоступен');
+    return;
+  }
+
+  try {
+    const result = await Backend.fanProfile(normalized);
+    if (!result?.profile) throw new Error('Профиль участника не найден');
+    selectedRankingProfile = result.profile;
+    TelegramBridge.haptic('selection');
+    render('fanprofile');
+  } catch (error) {
+    TelegramBridge.haptic('error');
+    toast(error?.message || 'Не удалось открыть профиль');
+  }
+}
+
 function participantAvatarLabel(participant) {
   const source = participant?.username || participant?.name || participant?.display_name || 'M';
   return String(source).replace(/^@/,'').trim().charAt(0).toUpperCase() || 'M';
@@ -815,11 +850,14 @@ function renderWatch() {
       ${participants.error ? `<div class="notice">${esc(participants.error)}</div>` : ''}
       ${!participants.loading && !participants.error && !participants.items.length ? '<div class="notice">Пока никто не записался на этот просмотр.</div>' : ''}
       ${participants.items.map(p => `
-        <article class="participant-row">
-          <div class="participant-avatar">${esc(participantAvatarLabel(p))}</div>
+        <article class="participant-row ${p.member_number ? 'is-profile-link' : ''}" ${p.member_number ? `data-action="open-member-profile" data-member-number="${esc(p.member_number)}"` : ''}>
+          <div class="participant-avatar">
+            <span>${esc(participantAvatarLabel(p))}</span>
+            ${p.photo_url ? `<img src="${esc(p.photo_url)}" alt="" loading="lazy">` : ''}
+          </div>
           <div class="participant-copy">
             <strong>${esc(p.display_name || p.name || 'Milanista')}</strong>
-            ${p.name && p.display_name !== p.name ? `<span>${esc(p.name)}</span>` : ''}
+            ${p.username ? `<span>@${esc(String(p.username).replace(/^@/,''))}${p.member_number ? ` · #${String(p.member_number).padStart(4,'0')}` : ''}</span>` : (p.member_number ? `<span>#${String(p.member_number).padStart(4,'0')}</span>` : '')}
             ${p.guests ? `<small>+${Number(p.guests)} ${Number(p.guests) === 1 ? 'гость' : 'гостя'}</small>` : ''}
           </div>
           ${participants.canManage ? `
@@ -1435,6 +1473,12 @@ document.addEventListener('click', async e => {
     rankingHelpOpen = !rankingHelpOpen;
     TelegramBridge.haptic('selection');
     render('ranking', {push:false});
+    return;
+  }
+
+  if(action==='open-member-profile'){
+    const memberNumber = Number(actionEl?.dataset.memberNumber);
+    if (memberNumber) await openMemberProfile(memberNumber);
     return;
   }
 
