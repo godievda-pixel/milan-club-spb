@@ -32,6 +32,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Install build dependencies
+        run: npm install --no-audit --no-fund
+
       - name: Validate JavaScript
         run: npm run check
 
