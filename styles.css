@@ -3366,3 +3366,84 @@ button:disabled {
     flex-direction: column;
   }
 }
+
+
+/* iOS scroll performance
+   Telegram on iOS uses WebKit. Fixed blend layers, large blurs and
+   backdrop filters can force expensive recomposition on every scroll frame. */
+body.ios-miniapp::before {
+  display: none !important;
+}
+
+body.ios-miniapp .ambient {
+  display: none !important;
+}
+
+body.ios-miniapp .topbar {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: linear-gradient(
+    180deg,
+    rgba(8,8,8,.995),
+    rgba(8,8,8,.96) 74%,
+    rgba(8,8,8,0)
+  ) !important;
+}
+
+body.ios-miniapp .bottom-nav {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: rgba(18,18,18,.975) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.34) !important;
+}
+
+body.ios-miniapp .profile-chip,
+body.ios-miniapp .watch-venue-link,
+body.ios-miniapp .watch-venue-static,
+body.ios-miniapp .watch-stat,
+body.ios-miniapp .watch-home-location,
+body.ios-miniapp .watch-home-state-card,
+body.ios-miniapp .gathering-home-banner,
+body.ios-miniapp .gathering-cancelled-banner {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+body.ios-miniapp .tournament-watermark,
+body.ios-miniapp .home-tournament-watermark,
+body.ios-miniapp .watch-tournament-watermark-left {
+  mix-blend-mode: normal !important;
+  filter: none !important;
+  opacity: .055 !important;
+}
+
+body.ios-miniapp .hero-club-watermark,
+body.ios-miniapp .watch-club-watermark {
+  filter: none !important;
+  opacity: .075 !important;
+}
+
+body.ios-miniapp .hero,
+body.ios-miniapp .watch-feature,
+body.ios-miniapp .match-tournament-card,
+body.ios-miniapp .profile-card,
+body.ios-miniapp .fan-profile-card {
+  box-shadow: 0 10px 28px rgba(0,0,0,.24) !important;
+}
+
+body.ios-miniapp .content {
+  -webkit-overflow-scrolling: touch;
+}
+
+body.ios-miniapp .page {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ios-miniapp .page,
+  body.ios-miniapp .fan-year-backdrop,
+  body.ios-miniapp .fan-year-sheet {
+    animation: none !important;
+  }
+}
