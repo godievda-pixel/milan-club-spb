@@ -195,6 +195,13 @@ function joined(partyId = activePartyId()) {
   if (partyId && memberState?.rsvps) return memberState.rsvps.some(r => r.watch_party_id === partyId && r.status === 'going');
   return false;
 }
+function memberRank(visits = 0) {
+  if (visits >= 50) return {name:'Leggenda', note:'50+ просмотров'};
+  if (visits >= 25) return {name:'Senatore', note:'25+ просмотров'};
+  if (visits >= 10) return {name:'Rossonero', note:'10+ просмотров'};
+  if (visits >= 3) return {name:'Milanista', note:'3+ просмотра'};
+  return {name:'Nuovo', note:'первые просмотры впереди'};
+}
 
 function moscowParts(iso) {
   if (!iso) return {date:'—', month:'', time:'время уточняется', iso:''};
@@ -595,6 +602,7 @@ function renderProfile() {
   const username = tgUser?.username ? `@${esc(tgUser.username)}` : (TelegramBridge.isInsideTelegram() ? 'Telegram подключён' : 'Откройте приложение из Telegram');
   const memberNumber = memberState?.profile?.member_number ? String(memberState.profile.member_number).padStart(4,'0') : '—';
   const visits = memberState?.rsvps?.filter(r => r.status === 'going').length || 0;
+  const rank = memberRank(visits);
   const fanSinceYear = memberState?.profile?.fan_since_year || '';
   const currentYear = new Date().getFullYear();
   const photo = tgUser?.photo_url ? `<img class="profile-hero-photo" src="${esc(tgUser.photo_url)}" alt="">` : `<div class="profile-hero-fallback">${name.charAt(0).toUpperCase()}</div>`;
@@ -613,7 +621,10 @@ function renderProfile() {
           <span>болею с</span>
         </form>
       </div>
-      <div style="margin-top:18px"><span style="font-size:11px;color:var(--muted)">Путь участника</span><div class="progress"><span></span></div></div>
+      <div class="member-rank-card">
+        <div><span>Ранг</span><strong>${esc(rank.name)}</strong></div>
+        <small>${esc(rank.note)}</small>
+      </div>
       <div class="notice">${memberState?.profile ? (isAdmin() ? 'Telegram подтверждён · режим администратора' : 'Telegram подтверждён · профиль участника') : 'Профиль появится после защищённой Telegram-авторизации.'}</div>
       ${memberState?.admin_setup_available && !isAdmin() ? `
         <form class="bar-form admin-claim-form" id="adminClaimForm">
