@@ -944,7 +944,13 @@ function render(route=currentRoute, {push=true}={}) {
   window.scrollTo({top:0, behavior:'instant'});
   if (nextRoute === 'watch') {
     const party = selectedWatchParty(partiesForWatch());
-    if (party?.partyId) window.setTimeout(() => loadWatchParticipants(party.partyId), 0);
+    if (party?.partyId) {
+      window.setTimeout(() => loadWatchParticipants(party.partyId), 0);
+      if (isAdmin()) {
+        const query = adminUserSearchState.partyId === party.partyId ? adminUserSearchState.query : '';
+        window.setTimeout(() => loadAdminUserSearch(party.partyId, query), 0);
+      }
+    }
   }
   if (nextRoute === 'ranking') {
     window.setTimeout(() => loadAttendanceRanking(), 0);
@@ -977,8 +983,44 @@ document.addEventListener('click', async e => {
     const partyId = actionEl?.dataset.partyId;
     if (partyId) {
       selectedWatchPartyId = partyId;
+      if (adminUserSearchState.partyId !== partyId) {
+        adminUserSearchState = {partyId, query:'', loading:false, loaded:false, items:[], error:''};
+      }
       TelegramBridge.haptic();
       render('watch', {push:false});
+    }
+    return;
+  }
+
+  if(action==='admin-add-participant'){
+    if (!isAdmin() || !Backend?.addParticipant) { toast('Нужны права администратора'); return; }
+    const partyId = actionEl?.dataset.partyId;
+    const userId = Number(actionEl?.dataset.userId);
+    if (!partyId || !Number.isSafeInteger(userId)) return;
+
+    actionEl.disabled = true;
+    try {
+      await Backend.addParticipant(partyId, userId);
+      TelegramBridge.haptic('success');
+      participantState.delete(partyId);
+      await Promise.all([
+        loadWatchParticipants(partyId, {force:true}),
+        refreshPublicData({renderAfter:false})
+      ]);
+      if (adminUserSearchState.partyId === partyId) {
+        adminUserSearchState = {
+          ...adminUserSearchState,
+          items:adminUserSearchState.items.map(user =>
+            Number(user.telegram_user_id) === userId ? {...user, rsvp_status:'going'} : user
+          )
+        };
+      }
+      render('watch', {push:false});
+      toast('Участник добавлен');
+    } catch (error) {
+      TelegramBridge.haptic('error');
+      toast(error?.message || 'Не удалось добавить участника');
+      actionEl.disabled = false;
     }
     return;
   }
@@ -1042,6 +1084,28 @@ document.addEventListener('click', async e => {
     if (url) TelegramBridge.open(url);
     else toast('Telegram-контакт пока не добавлен');
   }
+});
+
+document.addEventListener('input', e => {
+  if (e.target.id !== 'adminParticipantSearch') return;
+
+  const input = e.target;
+  const partyId = input.dataset.partyId;
+  const query = input.value || '';
+
+  adminUserSearchState = {
+    ...adminUserSearchState,
+    partyId,
+    query,
+    loading:false,
+    loaded:false,
+    error:''
+  };
+
+  window.clearTimeout(adminUserSearchTimer);
+  adminUserSearchTimer = window.setTimeout(() => {
+    loadAdminUserSearch(partyId, query, {force:true});
+  }, 220);
 });
 
 document.addEventListener('submit', async e => {
