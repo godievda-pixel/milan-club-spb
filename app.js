@@ -840,7 +840,7 @@ function renderWatch() {
         <div class="fixture-date"><strong>${f.date}</strong><span>${f.month}</span></div>
         <div class="fixture-main">
           <div class="fixture-clubs">${crest(f.home,'xs')}<strong>${esc(displayTeam(f.home))}</strong><span class="fixture-vs">—</span>${crest(f.away,'xs')}<strong>${esc(displayTeam(f.away))}</strong></div>
-          <span>${esc(f.competition)} · ${esc(getVenue(f.venueId).name)}</span>
+          <span>${esc(f.competition)} · ${watchHome(f) ? 'Смотрим дома' : esc(getVenue(f.venueId).name)}</span>
         </div>
         <div class="fixture-side"><strong>${esc(f.time)}</strong><span class="${watchHome(f) ? 'fixture-home' : (watchCancelled(f) ? 'fixture-cancelled' : '')}">${watchHome(f) ? '● СМОТРИМ ДОМА' : (watchCancelled(f) ? '● СБОР ОТМЕНЁН' : '● FAN CLUB')}</span></div>
       </article>`).join('') || '<div class="notice">Других просмотров пока не опубликовано.</div>'}</div>
