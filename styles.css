@@ -1061,3 +1061,74 @@ button:disabled {
     font-size: 8.1vw;
   }
 }
+
+
+/* Multi-venue bar cards */
+.venue-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+.venue-card {
+  position: relative;
+  overflow: hidden;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(215,25,32,.08), transparent 42%),
+    linear-gradient(155deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.025),
+    0 14px 34px rgba(0,0,0,.14);
+}
+.venue-card-primary {
+  border-color: rgba(215,25,32,.2);
+}
+.venue-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+.venue-card h2 {
+  margin: 5px 0 0;
+  font-size: 23px;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+.venue-number {
+  font-size: 10px;
+  letter-spacing: .14em;
+  color: #5e5954;
+}
+.venue-address {
+  margin: 18px 0 5px;
+  color: #ece8e2;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.venue-meeting {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.venue-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+.venue-actions .secondary-wide {
+  min-height: 48px;
+  margin: 0;
+}
+.venue-menu-btn {
+  border-color: rgba(215,25,32,.18);
+}
+@media (max-width: 360px) {
+  .venue-actions {
+    grid-template-columns: 1fr;
+  }
+}
