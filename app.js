@@ -862,9 +862,22 @@ function renderWatch() {
           </div>
           ${participants.canManage ? `
             <div class="attendance-control" data-user-id="${esc(p.telegram_user_id)}">
-              <button class="attendance-btn attendance-yes ${p.attendance_status === 'attended' ? 'active' : ''}" data-action="set-attendance" data-party-id="${esc(first.partyId)}" data-user-id="${esc(p.telegram_user_id)}" data-attendance="attended">Был</button>
-              <button class="attendance-btn attendance-no ${p.attendance_status === 'absent' ? 'active' : ''}" data-action="set-attendance" data-party-id="${esc(first.partyId)}" data-user-id="${esc(p.telegram_user_id)}" data-attendance="absent">Не был</button>
-              <span class="attendance-state">${esc(attendanceLabel(p.attendance_status))}</span>
+              <button
+                class="attendance-btn attendance-yes ${p.attendance_status === 'attended' ? 'active' : ''}"
+                data-action="set-attendance"
+                data-party-id="${esc(first.partyId)}"
+                data-user-id="${esc(p.telegram_user_id)}"
+                data-attendance="attended"
+                aria-pressed="${p.attendance_status === 'attended' ? 'true' : 'false'}"
+              ><span class="attendance-dot"></span><span>Был</span></button>
+              <button
+                class="attendance-btn attendance-no ${p.attendance_status === 'absent' ? 'active' : ''}"
+                data-action="set-attendance"
+                data-party-id="${esc(first.partyId)}"
+                data-user-id="${esc(p.telegram_user_id)}"
+                data-attendance="absent"
+                aria-pressed="${p.attendance_status === 'absent' ? 'true' : 'false'}"
+              ><span class="attendance-dot"></span><span>Не был</span></button>
             </div>
           ` : ''}
         </article>`).join('')}
@@ -1601,21 +1614,33 @@ document.addEventListener('click', async e => {
     if (!partyId || !Number.isSafeInteger(userId) || !['attended','absent'].includes(attendance)) return;
 
     const row = actionEl.closest('.participant-row');
-    row?.querySelectorAll('button').forEach(button => button.disabled = true);
+    row?.querySelectorAll('.attendance-btn').forEach(button => button.disabled = true);
     try {
       await Backend.setAttendance(partyId, userId, attendance);
+
+      const currentParticipants = participantState.get(partyId);
+      if (currentParticipants?.items) {
+        participantState.set(partyId, {
+          ...currentParticipants,
+          loading:false,
+          loaded:true,
+          items:currentParticipants.items.map(item =>
+            Number(item.telegram_user_id) === userId
+              ? {...item, attendance_status:attendance}
+              : item
+          )
+        });
+      }
+
+      rankingState = {...rankingState, loaded:false};
       TelegramBridge.haptic('success');
-      participantState.delete(partyId);
-      await Promise.all([
-        loadWatchParticipants(partyId, {force:true}),
-        refreshMemberState({renderAfter:false})
-      ]);
       render('watch', {push:false});
+      refreshMemberState({renderAfter:false}).catch(() => null);
       toast(attendance === 'attended' ? 'Отмечено: был' : 'Отмечено: не был');
     } catch (error) {
       TelegramBridge.haptic('error');
       toast(error?.message || 'Не удалось отметить посещение');
-      row?.querySelectorAll('button').forEach(button => button.disabled = false);
+      row?.querySelectorAll('.attendance-btn').forEach(button => button.disabled = false);
     }
     return;
   }
