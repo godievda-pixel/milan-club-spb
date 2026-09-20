@@ -149,6 +149,7 @@ let contacts = [
 ];
 
 let remoteBar = null;
+let venues = [];
 let historyEntries = [];
 let watchParties = [];
 let menuCategories = [];
@@ -168,6 +169,13 @@ function getBar() {
   if (remoteBar) return {...defaultBar, ...remoteBar};
   try { return {...defaultBar, ...JSON.parse(localStorage.getItem('milanclub:bar') || '{}')}; }
   catch { return {...defaultBar}; }
+}
+function getVenue(id) {
+  if (id) {
+    const venue = venues.find(v => v.id === id);
+    if (venue) return {...defaultBar, ...venue};
+  }
+  return getBar();
 }
 
 function saveBar(data) {
@@ -229,16 +237,17 @@ function applyRemoteData(data) {
     });
   }
 
-  if (Array.isArray(data.venues) && data.venues.length) {
-    const v = data.venues[0];
-    remoteBar = {
-      id:v.id,
-      name:v.name,
-      address:v.address,
-      meeting:v.meeting_note,
-      mapUrl:v.map_url || ''
-    };
-  }
+  venues = Array.isArray(data.venues) ? data.venues.map(v => ({
+    id:v.id,
+    name:v.name,
+    address:v.address,
+    meeting:v.meeting_note,
+    mapUrl:v.map_url || '',
+    menuUrl:v.menu_url || '',
+    menuNote:v.menu_note || '',
+    sortOrder:v.sort_order ?? 100
+  })) : [];
+  if (venues.length) remoteBar = venues[0];
 
   if (Array.isArray(data.contacts) && data.contacts.length) {
     contacts = data.contacts.map(c => ({
@@ -307,7 +316,7 @@ function renderHome() {
         <div class="match-time"><strong>${esc(timeMain)}</strong><span>${next.date} ${next.month}${next.time.includes('МСК') ? ' · МСК' : ''}</span></div>
         <div class="team">${crest(next.away,'hero')}<strong>${esc(displayTeam(next.away))}</strong></div>
       </div>
-      <div class="hero-meta">${next.watched ? `${esc(getBar().name)} · ${esc(getBar().meeting)}` : 'Совместный просмотр пока не опубликован'}</div>
+      <div class="hero-meta">${next.watched ? `${esc(getVenue(next.venueId).name)} · ${esc(getVenue(next.venueId).meeting)}` : 'Совместный просмотр пока не опубликован'}</div>
       <div class="hero-actions">
         ${next.watched
           ? `<button class="primary-btn premium-btn ${joined(next.partyId) ? 'joined' : ''}" data-action="rsvp" data-party-id="${esc(next.partyId)}">${joined(next.partyId) ? `${icon('check')}<span>Я ИДУ</span>` : '<span>ИДУ НА ПРОСМОТР</span>'}</button>`
@@ -374,7 +383,7 @@ function renderWatch() {
   }
 
   const first = parties[0];
-  const bar = getBar();
+  const bar = getVenue(first.venueId);
   return `<section class="page">
     <div class="eyebrow">${esc(clubName())}</div>
     <h1 class="page-title">Просмотры</h1>
@@ -406,7 +415,7 @@ function renderWatch() {
         <div class="fixture-date"><strong>${f.date}</strong><span>${f.month}</span></div>
         <div class="fixture-main">
           <div class="fixture-clubs">${crest(f.home,'xs')}<strong>${esc(displayTeam(f.home))}</strong><span class="fixture-vs">—</span>${crest(f.away,'xs')}<strong>${esc(displayTeam(f.away))}</strong></div>
-          <span>${esc(f.competition)} · ${esc(bar.name)}</span>
+          <span>${esc(f.competition)} · ${esc(getVenue(f.venueId).name)}</span>
         </div>
         <div class="fixture-side"><strong>${esc(f.time)}</strong><span>● FAN CLUB</span></div>
       </article>`).join('') || '<div class="notice">Других просмотров пока не опубликовано.</div>'}</div>
@@ -457,31 +466,48 @@ function renderBar() {
       <h1 class="page-title">Бар</h1>
       <p class="page-subtitle">Эти данные подставляются на главную и во все карточки совместных просмотров.</p>
       <form class="bar-form" id="barForm">
-        <label><span>Название бара</span><input name="name" value="${esc(bar.name === defaultBar.name ? '' : bar.name)}" placeholder="Например, Match Point" required></label>
+        <label><span>Название бара</span><input name="name" value="${esc(bar.name === defaultBar.name ? '' : bar.name)}" placeholder="Например, Tara Brooch" required></label>
         <label><span>Адрес</span><input name="address" value="${esc(bar.address === defaultBar.address ? '' : bar.address)}" placeholder="Санкт-Петербург, улица, дом"></label>
         <label><span>Текст про сбор</span><input name="meeting" value="${esc(bar.meeting)}" placeholder="Сбор гостей за 60 минут до матча"></label>
         <label><span>Ссылка на карту</span><input name="mapUrl" value="${esc(bar.mapUrl)}" placeholder="https://..."></label>
+        <label><span>Ссылка на меню</span><input name="menuUrl" value="${esc(bar.menuUrl || '')}" placeholder="https://.../menu.pdf"></label>
         <div class="form-actions">
-          <button type="submit" class="primary-btn">СОХРАНИТЬ БАР</button>
+          <button type="submit" class="primary-btn premium-btn"><span>СОХРАНИТЬ БАР</span></button>
           <button type="button" class="secondary-wide" data-action="cancel-bar-edit">Отмена</button>
         </div>
       </form>
     </section>`;
   }
 
+  const list = venues.length ? venues : [bar];
   return `<section class="page">
-    <div class="eyebrow">Наш дом на matchday</div>
+    <div class="eyebrow">Matchday places</div>
     <div class="bar-title-row">
-      <h1 class="page-title">${esc(bar.name)}</h1>
+      <h1 class="page-title">Наши бары</h1>
       ${isAdmin() ? `<button class="edit-chip premium-chip" data-action="edit-bar">${icon('edit')}<span>Изменить</span></button>` : ''}
     </div>
-    <p class="page-subtitle">${esc(bar.address)}<br>${esc(bar.meeting)}</p>
-    <div class="bar-actions">
-      ${bar.mapUrl ? `<a class="secondary-wide link-button premium-link-btn" href="${esc(bar.mapUrl)}" target="_blank" rel="noopener"><span>Открыть карту</span>${icon('arrowUpRight')}</a>` : ''}
+    <p class="page-subtitle">Площадки AC Milan Club San Pietroburgo для совместных просмотров.</p>
+
+    <div class="venue-list">
+      ${list.map((venue, index) => `
+        <article class="venue-card ${index === 0 ? 'venue-card-primary' : ''}">
+          <div class="venue-card-head">
+            <div>
+              <span class="eyebrow">${index === 0 ? 'Основная площадка' : 'Площадка'}</span>
+              <h2>${esc(venue.name)}</h2>
+            </div>
+            <span class="venue-number">0${index + 1}</span>
+          </div>
+          <p class="venue-address">${esc(venue.address)}</p>
+          <p class="venue-meeting">${esc(venue.meeting)}</p>
+          <div class="venue-actions">
+            ${venue.mapUrl ? `<a class="secondary-wide link-button premium-link-btn" href="${esc(venue.mapUrl)}" target="_blank" rel="noopener"><span>На карте</span>${icon('arrowUpRight')}</a>` : ''}
+            ${venue.menuUrl ? `<a class="secondary-wide link-button premium-link-btn venue-menu-btn" href="${esc(venue.menuUrl)}" target="_blank" rel="noopener"><span>Меню PDF</span>${icon('arrowUpRight')}</a>` : ''}
+          </div>
+        </article>`).join('')}
     </div>
-    <div class="notice">${isAdmin() ? 'Вы вошли как администратор. Изменения сохраняются в общей базе и сразу видны всем участникам.' : 'Название, адрес и меню приходят из общей базы AC Milan Club San Pietroburgo. Редактирование доступно администраторам.'}</div>
-    <div class="section-head"><h2>Меню</h2></div>
-    ${Object.entries(menu).length ? Object.entries(menu).map(([section,items])=>`<div class="menu-section"><h3>${esc(section)}</h3><div class="menu-list">${items.map(i=>`<div class="menu-card"><div><strong>${esc(i[0])}</strong>${i[1]?`<span>${esc(i[1])}</span>`:''}</div><b>${esc(i[2])}</b></div>`).join('') || '<div class="notice">В этой категории пока пусто.</div>'}</div></div>`).join('') : '<div class="notice">Меню бара пока не добавлено.</div>'}
+
+    <div class="notice">${isAdmin() ? 'Площадки хранятся в общей базе. При создании просмотра можно выбрать конкретный бар.' : 'Площадка конкретного просмотра указывается в карточке матча после публикации события.'}</div>
   </section>`;
 }
 
@@ -500,6 +526,7 @@ function renderAdmin() {
   }
 
   const bar = getBar();
+  const venueOptions = (venues.length ? venues : [bar]).map(v => `<option value="${esc(v.id || '')}">${esc(v.name)} · ${esc(v.address)}</option>`).join('');
   const matchOptions = fixtures.map(f => `<option value="${esc(f.id)}">${esc(displayTeam(f.home))} — ${esc(displayTeam(f.away))} · ${f.date} ${f.month} · ${esc(f.time)}</option>`).join('');
   const categoryOptions = menuCategories.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
 
@@ -512,6 +539,7 @@ function renderAdmin() {
       <h2>Совместный просмотр</h2>
       <form class="bar-form" id="adminWatchForm">
         <label><span>Матч</span><select name="match_id" required>${matchOptions}</select></label>
+        <label><span>Площадка</span><select name="venue_id" required>${venueOptions}</select></label>
         <label><span>Лимит мест</span><input name="capacity" type="number" min="1" placeholder="Например, 60"></label>
         <label><span>Комментарий</span><input name="note" placeholder="Бронь столов, депозит, важная информация"></label>
         <label class="check-row"><input name="published" type="checkbox" checked><span>Опубликовать просмотр сразу</span></label>
@@ -559,8 +587,8 @@ function renderAdmin() {
     </article>
 
     <article class="admin-card admin-summary">
-      <h2>Текущая площадка</h2>
-      <p><strong>${esc(bar.name)}</strong><br>${esc(bar.address)}</p>
+      <h2>Площадки</h2>
+      <p>${(venues.length ? venues : [bar]).map(v => `<strong>${esc(v.name)}</strong><br>${esc(v.address)}`).join('<br><br>')}</p>
       <button class="secondary-wide premium-link-btn" data-route="bar"><span>Изменить бар</span>${icon('arrowRight')}</button>
     </article>
   </section>`;
@@ -687,7 +715,7 @@ document.addEventListener('submit', async e => {
     try {
       await Backend.saveWatchParty({
         match_id: data.match_id,
-        venue_id: getBar().id,
+        venue_id: data.venue_id || getBar().id,
         capacity: data.capacity || null,
         note: data.note || '',
         published: new FormData(e.target).has('published')
@@ -768,7 +796,8 @@ document.addEventListener('submit', async e => {
     name: (data.name || '').trim() || defaultBar.name,
     address: (data.address || '').trim() || defaultBar.address,
     meeting: (data.meeting || '').trim() || defaultBar.meeting,
-    mapUrl: (data.mapUrl || '').trim()
+    mapUrl: (data.mapUrl || '').trim(),
+    menuUrl: (data.menuUrl || '').trim()
   };
   if (!isAdmin() || !Backend?.updateVenue || !venue.id) {
     toast('Нужны права администратора');
