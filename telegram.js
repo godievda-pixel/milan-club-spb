@@ -94,7 +94,18 @@
     }
   }
 
+  function markPlatformClass() {
+    try {
+      const ua = navigator.userAgent || '';
+      const isIOS = /iPad|iPhone|iPod/.test(ua) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isIOS) document.body.classList.add('ios-miniapp');
+    } catch (_) {}
+  }
+
   function init() {
+    markPlatformClass();
+
     // Remove Telegram's native loading placeholder even if the external SDK
     // is delayed or unavailable on a particular Android WebView.
     readyNative();
