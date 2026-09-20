@@ -155,6 +155,8 @@ let watchParties = [];
 let menuCategories = [];
 let menuItems = [];
 let memberState = null;
+let selectedWatchPartyId = null;
+const participantState = new Map();
 let remoteLoaded = false;
 const Backend = window.MilanBackend || null;
 
@@ -201,6 +203,52 @@ function memberRank(visits = 0) {
   if (visits >= 31) return {name:'Rossonero', note:'31–60 просмотров'};
   if (visits >= 11) return {name:'Milanista', note:'11–30 просмотров'};
   return {name:'Nuovo', note:'0–10 просмотров'};
+}
+function selectedWatchParty(parties = fixtures.filter(f => f.watched && f.partyId)) {
+  return parties.find(f => f.partyId === selectedWatchPartyId) || parties[0] || null;
+}
+function participantAvatarLabel(participant) {
+  const source = participant?.username || participant?.name || participant?.display_name || 'M';
+  return String(source).replace(/^@/,'').trim().charAt(0).toUpperCase() || 'M';
+}
+function attendanceLabel(status) {
+  if (status === 'attended') return 'Был';
+  if (status === 'absent') return 'Не был';
+  return 'Не отмечен';
+}
+async function loadWatchParticipants(partyId, {force=false}={}) {
+  if (!partyId || !Backend?.watchParticipants || !TelegramBridge.isInsideTelegram()) return;
+  const current = participantState.get(partyId);
+  if (!force && (current?.loading || current?.loaded)) return;
+
+  participantState.set(partyId, {loading:true, loaded:false, items:current?.items || [], error:''});
+  if (currentRoute === 'watch') render('watch', {push:false});
+
+  try {
+    const result = await Backend.watchParticipants(partyId);
+    participantState.set(partyId, {
+      loading:false,
+      loaded:true,
+      items:Array.isArray(result.participants) ? result.participants : [],
+      canManage:Boolean(result.can_manage_attendance),
+      error:''
+    });
+  } catch (error) {
+    participantState.set(partyId, {
+      loading:false,
+      loaded:true,
+      items:[],
+      canManage:false,
+      error:error?.message || 'Не удалось загрузить участников'
+    });
+  }
+
+  if (currentRoute === 'watch' && selectedWatchParty(partiesForWatch())?.partyId === partyId) {
+    render('watch', {push:false});
+  }
+}
+function partiesForWatch() {
+  return fixtures.filter(f => f.watched && f.partyId);
 }
 
 function moscowParts(iso) {
@@ -383,7 +431,7 @@ function renderMatches() {
 }
 
 function renderWatch() {
-  const parties = fixtures.filter(f => f.watched && f.partyId);
+  const parties = partiesForWatch();
   if (!parties.length) {
     return `<section class="page">
       <div class="eyebrow">${esc(clubName())}</div>
@@ -393,8 +441,12 @@ function renderWatch() {
     </section>`;
   }
 
-  const first = parties[0];
+  const first = selectedWatchParty(parties);
+  if (!selectedWatchPartyId) selectedWatchPartyId = first.partyId;
   const bar = getVenue(first.venueId);
+  const participants = participantState.get(first.partyId) || {loading:true, loaded:false, items:[], canManage:false, error:''};
+  const otherParties = parties.filter(p => p.partyId !== first.partyId);
+
   return `<section class="page">
     <div class="eyebrow">${esc(clubName())}</div>
     <h1 class="page-title">Просмотры</h1>
@@ -420,9 +472,36 @@ function renderWatch() {
       </div>
     </article>
 
-    <div class="section-head"><h2>Следующие просмотры</h2></div>
-    <div class="fixture-list">${parties.slice(1).map(f=>`
-      <article class="fixture">
+    <div class="section-head participants-head">
+      <h2>Участники</h2>
+      <span class="participants-count">${participants.loaded ? participants.items.length : first.attendeeCount || 0}</span>
+    </div>
+
+    <div class="participants-list">
+      ${participants.loading ? '<div class="participants-loading"><span></span><span></span><span></span></div>' : ''}
+      ${participants.error ? `<div class="notice">${esc(participants.error)}</div>` : ''}
+      ${!participants.loading && !participants.error && !participants.items.length ? '<div class="notice">Пока никто не записался на этот просмотр.</div>' : ''}
+      ${participants.items.map(p => `
+        <article class="participant-row">
+          <div class="participant-avatar">${esc(participantAvatarLabel(p))}</div>
+          <div class="participant-copy">
+            <strong>${esc(p.display_name || p.name || 'Milanista')}</strong>
+            ${p.name && p.display_name !== p.name ? `<span>${esc(p.name)}</span>` : ''}
+            ${p.guests ? `<small>+${Number(p.guests)} ${Number(p.guests) === 1 ? 'гость' : 'гостя'}</small>` : ''}
+          </div>
+          ${participants.canManage ? `
+            <div class="attendance-control" data-user-id="${esc(p.telegram_user_id)}">
+              <button class="attendance-btn attendance-yes ${p.attendance_status === 'attended' ? 'active' : ''}" data-action="set-attendance" data-party-id="${esc(first.partyId)}" data-user-id="${esc(p.telegram_user_id)}" data-attendance="attended">Был</button>
+              <button class="attendance-btn attendance-no ${p.attendance_status === 'absent' ? 'active' : ''}" data-action="set-attendance" data-party-id="${esc(first.partyId)}" data-user-id="${esc(p.telegram_user_id)}" data-attendance="absent">Не был</button>
+              <span class="attendance-state">${esc(attendanceLabel(p.attendance_status))}</span>
+            </div>
+          ` : ''}
+        </article>`).join('')}
+    </div>
+
+    <div class="section-head"><h2>Другие просмотры</h2></div>
+    <div class="fixture-list">${otherParties.map(f=>`
+      <article class="fixture fixture-clickable" data-action="open-watch-party" data-party-id="${esc(f.partyId)}">
         <div class="fixture-date"><strong>${f.date}</strong><span>${f.month}</span></div>
         <div class="fixture-main">
           <div class="fixture-clubs">${crest(f.home,'xs')}<strong>${esc(displayTeam(f.home))}</strong><span class="fixture-vs">—</span>${crest(f.away,'xs')}<strong>${esc(displayTeam(f.away))}</strong></div>
@@ -601,7 +680,7 @@ function renderProfile() {
   const name = esc(TelegramBridge.fullName());
   const username = tgUser?.username ? `@${esc(tgUser.username)}` : (TelegramBridge.isInsideTelegram() ? 'Telegram подключён' : 'Откройте приложение из Telegram');
   const memberNumber = memberState?.profile?.member_number ? String(memberState.profile.member_number).padStart(4,'0') : '—';
-  const visits = memberState?.rsvps?.filter(r => r.status === 'going').length || 0;
+  const visits = memberState?.rsvps?.filter(r => r.attendance_status === 'attended').length || 0;
   const rank = memberRank(visits);
   const fanSinceYear = memberState?.profile?.fan_since_year || '';
   const currentYear = new Date().getFullYear();
@@ -651,6 +730,10 @@ function render(route=currentRoute, {push=true}={}) {
   TelegramBridge.showBack(nextRoute !== 'home');
   TelegramBridge.applyProfileChip();
   window.scrollTo({top:0, behavior:'instant'});
+  if (nextRoute === 'watch') {
+    const party = selectedWatchParty(partiesForWatch());
+    if (party?.partyId) window.setTimeout(() => loadWatchParticipants(party.partyId), 0);
+  }
 }
 
 function goBack() {
@@ -672,7 +755,46 @@ document.addEventListener('click', async e => {
   if(route){ TelegramBridge.haptic(); render(route.dataset.route); return; }
   const f = e.target.closest('[data-filter]');
   if(f){ TelegramBridge.haptic(); filter=f.dataset.filter; render('matches', {push:false}); return; }
-  const action = e.target.closest('[data-action]')?.dataset.action;
+  const actionEl = e.target.closest('[data-action]');
+  const action = actionEl?.dataset.action;
+
+  if(action==='open-watch-party'){
+    const partyId = actionEl?.dataset.partyId;
+    if (partyId) {
+      selectedWatchPartyId = partyId;
+      TelegramBridge.haptic();
+      render('watch', {push:false});
+    }
+    return;
+  }
+
+  if(action==='set-attendance'){
+    if (!isAdmin() || !Backend?.setAttendance) { toast('Нужны права администратора'); return; }
+    const partyId = actionEl?.dataset.partyId;
+    const userId = Number(actionEl?.dataset.userId);
+    const attendance = actionEl?.dataset.attendance;
+    if (!partyId || !Number.isSafeInteger(userId) || !['attended','absent'].includes(attendance)) return;
+
+    const row = actionEl.closest('.participant-row');
+    row?.querySelectorAll('button').forEach(button => button.disabled = true);
+    try {
+      await Backend.setAttendance(partyId, userId, attendance);
+      TelegramBridge.haptic('success');
+      participantState.delete(partyId);
+      await Promise.all([
+        loadWatchParticipants(partyId, {force:true}),
+        refreshMemberState({renderAfter:false})
+      ]);
+      render('watch', {push:false});
+      toast(attendance === 'attended' ? 'Отмечено: был' : 'Отмечено: не был');
+    } catch (error) {
+      TelegramBridge.haptic('error');
+      toast(error?.message || 'Не удалось отметить посещение');
+      row?.querySelectorAll('button').forEach(button => button.disabled = false);
+    }
+    return;
+  }
+
   if(action==='rsvp'){
     const button = e.target.closest('[data-action="rsvp"]');
     const partyId = button?.dataset.partyId || activePartyId();
@@ -683,7 +805,13 @@ document.addEventListener('click', async e => {
       const nextStatus = joined(partyId) ? 'cancelled' : 'going';
       await Backend.rsvp(partyId, nextStatus, 0);
       TelegramBridge.haptic(nextStatus==='going'?'success':'selection');
-      await Promise.all([refreshMemberState(), refreshPublicData()]);
+      participantState.delete(partyId);
+      await Promise.all([
+        refreshMemberState({renderAfter:false}),
+        refreshPublicData({renderAfter:false}),
+        loadWatchParticipants(partyId, {force:true})
+      ]);
+      render(currentRoute, {push:false});
       toast(nextStatus==='going'?'Вы добавлены в список просмотра':'Вы отменили участие');
     } catch (error) {
       TelegramBridge.haptic('error');
