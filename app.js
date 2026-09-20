@@ -487,40 +487,45 @@ function renderHome() {
   const next = fixtures[0];
   if (!next) return '<section class="page"><div class="notice">Календарь пока не загружен.</div></section>';
   const timeMain = next.time.includes('МСК') ? next.time.replace(' МСК','') : next.time;
-  return `
+  const nextJoined = joined(next.partyId);
+  const nextRegistrationClosed = next.watched && registrationClosed(next);
+
+  return \`
   <section class="page home-page">
-    <div class="eyebrow">${esc(clubName())}</div>
+    <div class="eyebrow">\${esc(clubName())}</div>
     <h1 class="page-title home-manifesto"><span>Sempre con te sarò</span><span>Sempre rossonero</span></h1>
     <p class="page-subtitle">Совместные просмотры и жизнь AC Milan Club San Pietroburgo в одном месте!</p>
 
     <article class="hero">
       <img class="hero-club-watermark" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
-      <div class="hero-top"><span class="competition">${competitionShort(next.competition)}</span><span class="live-badge">Ближайший матч</span></div>
+      <div class="hero-top"><span class="competition">\${competitionShort(next.competition)}</span><span class="live-badge">Ближайший матч</span></div>
       <div class="versus">
-        <div class="team">${crest(next.home,'hero')}<strong>${esc(displayTeam(next.home))}</strong></div>
-        <div class="match-time"><strong>${esc(timeMain)}</strong><span>${next.date} ${next.month}${next.time.includes('МСК') ? ' · МСК' : ''}</span></div>
-        <div class="team">${crest(next.away,'hero')}<strong>${esc(displayTeam(next.away))}</strong></div>
+        <div class="team">\${crest(next.home,'hero')}<strong>\${esc(displayTeam(next.home))}</strong></div>
+        <div class="match-time"><strong>\${esc(timeMain)}</strong><span>\${next.date} \${next.month}\${next.time.includes('МСК') ? ' · МСК' : ''}</span></div>
+        <div class="team">\${crest(next.away,'hero')}<strong>\${esc(displayTeam(next.away))}</strong></div>
       </div>
-      <div class="hero-meta">${next.watched ? `${esc(getVenue(next.venueId).name)} · ${esc(getVenue(next.venueId).meeting)}` : 'Совместный просмотр пока не опубликован'}</div>
+      <div class="hero-meta">\${next.watched ? \`\${esc(getVenue(next.venueId).name)} · \${esc(getVenue(next.venueId).meeting)}\` : 'Совместный просмотр пока не опубликован'}</div>
       <div class="hero-actions">
-        ${next.watched
-          ? `<button class="primary-btn premium-btn ${joined(next.partyId) ? 'joined' : ''}" data-action="rsvp" data-party-id="${esc(next.partyId)}">${joined(next.partyId) ? `${icon('check')}<span>Я ИДУ</span>` : '<span>ИДУ НА ПРОСМОТР</span>'}</button>`
+        \${next.watched
+          ? (nextRegistrationClosed && !nextJoined
+            ? '<button class="primary-btn premium-btn registration-closed" type="button" disabled><span>ЗАПИСЬ ЗАКРЫТА</span></button>'
+            : \`<button class="primary-btn premium-btn \${nextJoined ? 'joined' : ''}" data-action="rsvp" data-party-id="\${esc(next.partyId)}">\${nextJoined ? \`\${icon('check')}<span>Я ИДУ</span>\` : '<span>ИДУ НА ПРОСМОТР</span>'}</button>\`)
           : '<button class="primary-btn premium-btn joined" type="button" disabled><span>ЖДЁМ АНОНС ПРОСМОТРА</span></button>'}
-        <button class="secondary-btn icon-only-btn" data-route="watch" aria-label="Подробнее">${icon('arrowUpRight')}</button>
+        <button class="secondary-btn icon-only-btn" data-route="watch" aria-label="Подробнее">\${icon('arrowUpRight')}</button>
       </div>
     </article>
 
-    <div class="section-head"><h2>Ближайшие матчи</h2><button class="text-btn premium-text-btn" data-route="matches"><span>Все</span>${icon('arrowRight')}</button></div>
-    <div class="horizontal-cards">${fixtures.slice(1,5).map(matchCard).join('')}</div>
+    <div class="section-head"><h2>Ближайшие матчи</h2><button class="text-btn premium-text-btn" data-route="matches"><span>Все</span>\${icon('arrowRight')}</button></div>
+    <div class="horizontal-cards">\${fixtures.slice(1,5).map(matchCard).join('')}</div>
 
-    <div class="section-head"><h2>${esc(clubName())}</h2><button class="text-btn premium-text-btn" data-route="club"><span>История</span>${icon('arrowRight')}</button></div>
+    <div class="section-head"><h2>\${esc(clubName())}</h2><button class="text-btn premium-text-btn" data-route="club"><span>История</span>\${icon('arrowRight')}</button></div>
     <article class="club-teaser" data-route="club">
       <img class="club-teaser-logo" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
       <span class="eyebrow">AC Milan Club San Pietroburgo</span>
       <div class="big-copy">Больше, чем просто фан-клуб</div>
       <p>Мы большая красно-чёрная семья из города на Неве.</p>
     </article>
-  </section>`;
+  </section>\`;
 }
 
 function matchCard(f) {
@@ -559,12 +564,12 @@ function renderMatches() {
 function renderWatch() {
   const parties = partiesForWatch();
   if (!parties.length) {
-    return `<section class="page">
-      <div class="eyebrow">${esc(clubName())}</div>
+    return \`<section class="page">
+      <div class="eyebrow">\${esc(clubName())}</div>
       <h1 class="page-title">Просмотры</h1>
       <p class="page-subtitle">Как только организаторы опубликуют совместный просмотр, он появится здесь у всех участников.</p>
       <div class="notice">Сейчас активных просмотров нет. Матчи продолжают отображаться в календаре.</div>
-    </section>`;
+    </section>\`;
   }
 
   const first = selectedWatchParty(parties);
@@ -572,70 +577,95 @@ function renderWatch() {
   const bar = getVenue(first.venueId);
   const participants = participantState.get(first.partyId) || {loading:true, loaded:false, items:[], canManage:false, error:''};
   const otherParties = parties.filter(p => p.partyId !== first.partyId);
+  const firstJoined = joined(first.partyId);
+  const firstRegistrationClosed = registrationClosed(first);
+  const searchState = adminUserSearchState.partyId === first.partyId
+    ? adminUserSearchState
+    : {partyId:first.partyId, query:'', loading:false, loaded:false, items:[], error:''};
 
-  return `<section class="page">
-    <div class="eyebrow">${esc(clubName())}</div>
+  return \`<section class="page">
+    <div class="eyebrow">\${esc(clubName())}</div>
     <h1 class="page-title">Просмотры</h1>
     <p class="page-subtitle">Все совместные матчи фан-клуба: где встречаемся, когда приходить и кто уже идёт.</p>
 
     <article class="watch-feature">
       <div>
-        <span class="eyebrow">${first.date} ${first.month} · ${esc(first.competition)}</span>
+        <span class="eyebrow">\${first.date} \${first.month} · \${esc(first.competition)}</span>
         <div class="watch-match-row">
-          <div class="watch-team">${crest(first.home,'hero')}<strong>${esc(displayTeam(first.home))}</strong></div>
+          <div class="watch-team">\${crest(first.home,'hero')}<strong>\${esc(displayTeam(first.home))}</strong></div>
           <div class="watch-vs">vs</div>
-          <div class="watch-team">${crest(first.away,'hero')}<strong>${esc(displayTeam(first.away))}</strong></div>
+          <div class="watch-team">\${crest(first.away,'hero')}<strong>\${esc(displayTeam(first.away))}</strong></div>
         </div>
-        <p>${esc(bar.name)} · Санкт-Петербург<br>${esc(bar.address)}<br>${esc(bar.meeting)} · Начало: ${esc(first.time)}</p>
+        <p>\${esc(bar.name)} · Санкт-Петербург<br>\${esc(bar.address)}<br>\${esc(bar.meeting)} · Начало: \${esc(first.time)}</p>
       </div>
       <div>
         <div class="watch-stats">
-          <div class="watch-stat"><strong>${first.attendeeCount || 0}</strong><span>уже идут</span></div>
-          <div class="watch-stat"><strong>${first.capacity || '∞'}</strong><span>мест</span></div>
+          <div class="watch-stat"><strong>\${first.attendeeCount || 0}</strong><span>уже идут</span></div>
+          <div class="watch-stat"><strong>\${first.capacity || '∞'}</strong><span>мест</span></div>
           <div class="watch-stat"><strong>SPB</strong><span>наш город</span></div>
         </div>
-        <button style="margin-top:10px" class="primary-btn premium-btn ${joined(first.partyId)?'joined':''}" data-action="rsvp" data-party-id="${esc(first.partyId)}">${joined(first.partyId)?`${icon('check')}<span>ВЫ В СПИСКЕ</span>`:'<span>ПРИСОЕДИНИТЬСЯ</span>'}</button>
+        \${firstRegistrationClosed && !firstJoined
+          ? '<button style="margin-top:10px" class="primary-btn premium-btn registration-closed" type="button" disabled><span>ЗАПИСЬ ЗАКРЫТА</span></button>'
+          : \`<button style="margin-top:10px" class="primary-btn premium-btn \${firstJoined?'joined':''}" data-action="rsvp" data-party-id="\${esc(first.partyId)}">\${firstJoined?\`\${icon('check')}<span>ВЫ В СПИСКЕ</span>\`:'<span>ПРИСОЕДИНИТЬСЯ</span>'}</button>\`}
+        <div class="registration-deadline \${firstRegistrationClosed ? 'is-closed' : ''}">\${esc(registrationDeadlineText(first))}</div>
       </div>
     </article>
 
+    \${isAdmin() ? \`
+      <section class="admin-participant-panel">
+        <div class="admin-participant-head">
+          <div>
+            <span class="eyebrow">Администратор</span>
+            <h3>Добавить участника</h3>
+          </div>
+          <span>доступно всегда</span>
+        </div>
+        <label class="admin-user-search">
+          <span class="admin-user-search-icon">⌕</span>
+          <input id="adminParticipantSearch" data-party-id="\${esc(first.partyId)}" type="search" value="\${esc(searchState.query || '')}" placeholder="Имя или @username" autocomplete="off">
+        </label>
+        <div class="admin-user-search-results" id="adminParticipantSearchResults" data-party-id="\${esc(first.partyId)}">\${renderAdminUserSearchResults(first.partyId)}</div>
+      </section>
+    \` : ''}
+
     <div class="section-head participants-head">
       <h2>Участники</h2>
-      <span class="participants-count">${participants.loaded ? participants.items.length : first.attendeeCount || 0}</span>
+      <span class="participants-count">\${participants.loaded ? participants.items.length : first.attendeeCount || 0}</span>
     </div>
 
     <div class="participants-list">
-      ${participants.loading ? '<div class="participants-loading"><span></span><span></span><span></span></div>' : ''}
-      ${participants.error ? `<div class="notice">${esc(participants.error)}</div>` : ''}
-      ${!participants.loading && !participants.error && !participants.items.length ? '<div class="notice">Пока никто не записался на этот просмотр.</div>' : ''}
-      ${participants.items.map(p => `
+      \${participants.loading ? '<div class="participants-loading"><span></span><span></span><span></span></div>' : ''}
+      \${participants.error ? \`<div class="notice">\${esc(participants.error)}</div>\` : ''}
+      \${!participants.loading && !participants.error && !participants.items.length ? '<div class="notice">Пока никто не записался на этот просмотр.</div>' : ''}
+      \${participants.items.map(p => \`
         <article class="participant-row">
-          <div class="participant-avatar">${esc(participantAvatarLabel(p))}</div>
+          <div class="participant-avatar">\${esc(participantAvatarLabel(p))}</div>
           <div class="participant-copy">
-            <strong>${esc(p.display_name || p.name || 'Milanista')}</strong>
-            ${p.name && p.display_name !== p.name ? `<span>${esc(p.name)}</span>` : ''}
-            ${p.guests ? `<small>+${Number(p.guests)} ${Number(p.guests) === 1 ? 'гость' : 'гостя'}</small>` : ''}
+            <strong>\${esc(p.display_name || p.name || 'Milanista')}</strong>
+            \${p.name && p.display_name !== p.name ? \`<span>\${esc(p.name)}</span>\` : ''}
+            \${p.guests ? \`<small>+\${Number(p.guests)} \${Number(p.guests) === 1 ? 'гость' : 'гостя'}</small>\` : ''}
           </div>
-          ${participants.canManage ? `
-            <div class="attendance-control" data-user-id="${esc(p.telegram_user_id)}">
-              <button class="attendance-btn attendance-yes ${p.attendance_status === 'attended' ? 'active' : ''}" data-action="set-attendance" data-party-id="${esc(first.partyId)}" data-user-id="${esc(p.telegram_user_id)}" data-attendance="attended">Был</button>
-              <button class="attendance-btn attendance-no ${p.attendance_status === 'absent' ? 'active' : ''}" data-action="set-attendance" data-party-id="${esc(first.partyId)}" data-user-id="${esc(p.telegram_user_id)}" data-attendance="absent">Не был</button>
-              <span class="attendance-state">${esc(attendanceLabel(p.attendance_status))}</span>
+          \${participants.canManage ? \`
+            <div class="attendance-control" data-user-id="\${esc(p.telegram_user_id)}">
+              <button class="attendance-btn attendance-yes \${p.attendance_status === 'attended' ? 'active' : ''}" data-action="set-attendance" data-party-id="\${esc(first.partyId)}" data-user-id="\${esc(p.telegram_user_id)}" data-attendance="attended">Был</button>
+              <button class="attendance-btn attendance-no \${p.attendance_status === 'absent' ? 'active' : ''}" data-action="set-attendance" data-party-id="\${esc(first.partyId)}" data-user-id="\${esc(p.telegram_user_id)}" data-attendance="absent">Не был</button>
+              <span class="attendance-state">\${esc(attendanceLabel(p.attendance_status))}</span>
             </div>
-          ` : ''}
-        </article>`).join('')}
+          \` : ''}
+        </article>\`).join('')}
     </div>
 
     <div class="section-head"><h2>Другие просмотры</h2></div>
-    <div class="fixture-list">${otherParties.map(f=>`
-      <article class="fixture fixture-clickable" data-action="open-watch-party" data-party-id="${esc(f.partyId)}">
-        <div class="fixture-date"><strong>${f.date}</strong><span>${f.month}</span></div>
+    <div class="fixture-list">\${otherParties.map(f=>\`
+      <article class="fixture fixture-clickable" data-action="open-watch-party" data-party-id="\${esc(f.partyId)}">
+        <div class="fixture-date"><strong>\${f.date}</strong><span>\${f.month}</span></div>
         <div class="fixture-main">
-          <div class="fixture-clubs">${crest(f.home,'xs')}<strong>${esc(displayTeam(f.home))}</strong><span class="fixture-vs">—</span>${crest(f.away,'xs')}<strong>${esc(displayTeam(f.away))}</strong></div>
-          <span>${esc(f.competition)} · ${esc(getVenue(f.venueId).name)}</span>
+          <div class="fixture-clubs">\${crest(f.home,'xs')}<strong>\${esc(displayTeam(f.home))}</strong><span class="fixture-vs">—</span>\${crest(f.away,'xs')}<strong>\${esc(displayTeam(f.away))}</strong></div>
+          <span>\${esc(f.competition)} · \${esc(getVenue(f.venueId).name)}</span>
         </div>
-        <div class="fixture-side"><strong>${esc(f.time)}</strong><span>● FAN CLUB</span></div>
-      </article>`).join('') || '<div class="notice">Других просмотров пока не опубликовано.</div>'}</div>
-  </section>`;
+        <div class="fixture-side"><strong>\${esc(f.time)}</strong><span>● FAN CLUB</span></div>
+      </article>\`).join('') || '<div class="notice">Других просмотров пока не опубликовано.</div>'}</div>
+  </section>\`;
 }
 
 function renderClub() {
