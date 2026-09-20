@@ -306,7 +306,10 @@ function watchStateText(match) {
 }
 
 function matchHasScore(match) {
-  return Number.isFinite(Number(match?.homeScore)) && Number.isFinite(Number(match?.awayScore));
+  return match?.homeScore != null &&
+    match?.awayScore != null &&
+    Number.isFinite(Number(match.homeScore)) &&
+    Number.isFinite(Number(match.awayScore));
 }
 function matchFinished(match) {
   const status = String(match?.matchStatus || '').toLowerCase();
@@ -800,9 +803,7 @@ function renderHome() {
                 ? '<button class="primary-btn premium-btn registration-closed" type="button" disabled><span>ЗАПИСЬ ЗАКРЫТА</span></button>'
                 : `<button class="primary-btn premium-btn ${nextJoined ? 'joined' : ''}" data-action="rsvp" data-party-id="${esc(next.partyId)}">${nextJoined ? `${icon('check')}<span>Я ИДУ</span>` : '<span>ИДУ НА ПРОСМОТР</span>'}</button>`))))
           : '<button class="primary-btn premium-btn joined" type="button" disabled><span>СБОР НЕ ПОДТВЕРЖДЁН</span></button>'}
-        ${next.watched
-          ? `<button class="secondary-btn hero-details-btn" data-action="open-watch-party" data-party-id="${esc(next.partyId)}"><span>Подробнее</span></button>`
-          : '<button class="secondary-btn hero-details-btn" data-route="matches"><span>Подробнее</span></button>'}
+        <button class="secondary-btn hero-details-btn" data-action="open-watch-match" data-match-id="${esc(next.id)}"><span>Подробнее</span></button>
       </div>
     </article>
 
@@ -927,7 +928,7 @@ function renderWatch() {
         ` : '')))}
         <div class="watch-match-row">
           <div class="watch-team">${crest(first.home,'hero')}<strong>${esc(displayTeam(first.home))}</strong></div>
-          <div class="watch-vs">vs</div>
+          <div class="watch-vs">${matchFinished(first) && matchScoreText(first) ? esc(matchScoreText(first)) : 'vs'}</div>
           <div class="watch-team">${crest(first.away,'hero')}<strong>${esc(displayTeam(first.away))}</strong></div>
         </div>
         ${!first.watched || !first.partyId ? `
