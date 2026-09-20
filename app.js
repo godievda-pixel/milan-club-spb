@@ -219,6 +219,7 @@ let selectedRankingProfile = null;
 let rankingHelpOpen = false;
 let fanYearPickerOpen = false;
 let cancellingWatchPartyId = null;
+let homeRolloverTimer = null;
 let remoteLoaded = false;
 const Backend = window.MilanBackend || null;
 
@@ -301,6 +302,39 @@ function watchStateText(match) {
   if (watchHome(match)) return 'Сбора не будет, смотрим дома';
   if (watchCancelled(match)) return 'Сбор отменён';
   return 'Сбор подтверждён';
+}
+
+function homeUpcomingFixtures() {
+  const now = Date.now();
+  return fixtures
+    .filter(match => {
+      const kickoff = Date.parse(match?.iso || '');
+      return !Number.isFinite(kickoff) || kickoff > now;
+    })
+    .sort((a, b) => {
+      const aKickoff = Date.parse(a?.iso || '');
+      const bKickoff = Date.parse(b?.iso || '');
+      if (!Number.isFinite(aKickoff) && !Number.isFinite(bKickoff)) return 0;
+      if (!Number.isFinite(aKickoff)) return 1;
+      if (!Number.isFinite(bKickoff)) return -1;
+      return aKickoff - bKickoff;
+    });
+}
+
+function scheduleHomeRollover(match) {
+  window.clearTimeout(homeRolloverTimer);
+  homeRolloverTimer = null;
+
+  const kickoff = Date.parse(match?.iso || '');
+  if (!Number.isFinite(kickoff)) return;
+
+  const delay = kickoff - Date.now();
+  if (delay <= 0) return;
+
+  homeRolloverTimer = window.setTimeout(() => {
+    homeRolloverTimer = null;
+    if (currentRoute === 'home') render('home', {push:false});
+  }, Math.min(delay + 250, 2147483000));
 }
 function userSearchDisplayName(user) {
   const name = [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim();
@@ -678,8 +712,16 @@ async function refreshMemberState({renderAfter=true}={}) {
 }
 
 function renderHome() {
-  const next = fixtures[0];
-  if (!next) return '<section class="page"><div class="notice">Календарь пока не загружен.</div></section>';
+  const upcomingFixtures = homeUpcomingFixtures();
+  const next = upcomingFixtures[0];
+  window.clearTimeout(homeRolloverTimer);
+  homeRolloverTimer = null;
+
+  if (!next) {
+    return '<section class="page"><div class="notice">Ближайшие матчи пока не опубликованы.</div></section>';
+  }
+
+  scheduleHomeRollover(next);
   const timeMain = next.time.includes('МСК') ? next.time.replace(' МСК','') : next.time;
   const nextJoined = joined(next.partyId);
   const nextRegistrationClosed = next.watched && registrationClosed(next);
@@ -722,12 +764,14 @@ function renderHome() {
                 ? '<button class="primary-btn premium-btn registration-closed" type="button" disabled><span>ЗАПИСЬ ЗАКРЫТА</span></button>'
                 : `<button class="primary-btn premium-btn ${nextJoined ? 'joined' : ''}" data-action="rsvp" data-party-id="${esc(next.partyId)}">${nextJoined ? `${icon('check')}<span>Я ИДУ</span>` : '<span>ИДУ НА ПРОСМОТР</span>'}</button>`))))
           : '<button class="primary-btn premium-btn joined" type="button" disabled><span>СБОР НЕ ПОДТВЕРЖДЁН</span></button>'}
-        <button class="secondary-btn hero-details-btn" data-route="watch"><span>Подробнее</span></button>
+        ${next.watched
+          ? `<button class="secondary-btn hero-details-btn" data-action="open-watch-party" data-party-id="${esc(next.partyId)}"><span>Подробнее</span></button>`
+          : '<button class="secondary-btn hero-details-btn" data-route="matches"><span>Подробнее</span></button>'}
       </div>
     </article>
 
     <div class="section-head"><h2>Ближайшие матчи</h2><button class="text-btn premium-text-btn" data-route="matches"><span>Все</span>${icon('arrowRight')}</button></div>
-    <div class="horizontal-cards">${fixtures.slice(1,5).map(matchCard).join('')}</div>
+    <div class="horizontal-cards">${upcomingFixtures.slice(1,5).map(matchCard).join('') || '<div class="notice">Следующие матчи пока не опубликованы.</div>'}</div>
 
     <div class="section-head"><h2>${esc(clubName())}</h2><button class="text-btn premium-text-btn" data-route="club"><span>История</span>${icon('arrowRight')}</button></div>
     <article class="club-teaser" data-route="club">
