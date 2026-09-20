@@ -41,6 +41,7 @@
     watchParticipants: (watchPartyId) =>
       api('watch_participants', { watch_party_id: watchPartyId }),
     attendanceRanking: () => api('attendance_ranking'),
+    fanProfile: (memberNumber) => api('fan_profile', { member_number: memberNumber }),
     setAttendance: (watchPartyId, telegramUserId, attendanceStatus) =>
       api('admin_set_attendance', {
         watch_party_id: watchPartyId,
