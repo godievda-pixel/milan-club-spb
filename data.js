@@ -74,6 +74,12 @@
         collection_status: collectionStatus,
         cancel_reason: cancelReason
       }),
+    uploadWatchPhoto: (watchPartyId, imageDataUrl, caption = '') =>
+      api('admin_upload_watch_photo', {
+        watch_party_id: watchPartyId,
+        image_data_url: imageDataUrl,
+        caption
+      }),
     saveMenuCategory: (payload) => api('admin_save_menu_category', payload),
     saveMenuItem: (payload) => api('admin_save_menu_item', payload),
     saveContact: (payload) => api('admin_save_contact', payload),
