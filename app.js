@@ -1189,11 +1189,12 @@ function renderAdmin() {
 }
 
 function fanSinceYearButtons(selectedYear = '') {
-  const currentYear = new Date().getFullYear();
-  const activeYear = Number(selectedYear) || currentYear;
+  const minYear = 1980;
+  const maxYear = 2026;
+  const activeYear = Number(selectedYear) || maxYear;
   const buttons = [];
 
-  for (let year = currentYear; year >= 1899; year -= 1) {
+  for (let year = maxYear; year >= minYear; year -= 1) {
     buttons.push(`
       <button
         class="fan-year-option ${Number(selectedYear) === year ? 'is-selected' : ''}"
@@ -1407,9 +1408,10 @@ document.addEventListener('click', async e => {
 
   if(action==='set-fan-year'){
     const year = Number(actionEl?.dataset.year);
-    const currentYear = new Date().getFullYear();
+    const minYear = 1980;
+    const maxYear = 2026;
 
-    if (!Number.isInteger(year) || year < 1899 || year > currentYear) return;
+    if (!Number.isInteger(year) || year < minYear || year > maxYear) return;
     if (!Backend?.updateProfile || !TelegramBridge.isInsideTelegram()) {
       toast('Откройте приложение из Telegram');
       return;
