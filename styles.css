@@ -1132,3 +1132,35 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Clean Fan Club timeline + stable first paint */
+.app-booting .content,
+.app-booting .bottom-nav {
+  opacity: 0;
+  pointer-events: none;
+}
+.app-ready .content,
+.app-ready .bottom-nav {
+  opacity: 1;
+}
+.content,
+.bottom-nav {
+  transition: opacity .16s ease;
+}
+
+.club-history-page .page-subtitle {
+  margin-bottom: 28px;
+}
+.club-timeline {
+  margin-top: 6px;
+}
+.club-timeline .timeline-item {
+  padding-bottom: 28px;
+}
+.club-timeline .timeline-copy strong {
+  font-size: 14px;
+}
+.club-timeline .timeline-copy p {
+  max-width: 390px;
+}
