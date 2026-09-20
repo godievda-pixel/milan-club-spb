@@ -2643,3 +2643,143 @@ button:disabled {
     font-size: 12px;
   }
 }
+
+
+/* Tournament-colored watch cards */
+.tournament-surface {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,255,255,.10), transparent 30%),
+    radial-gradient(circle at 100% 92%, rgba(0,0,0,.16), transparent 34%),
+    linear-gradient(145deg, var(--tour-from) 0%, var(--tour-mid) 54%, var(--tour-to) 100%) !important;
+  border-color: rgba(255,255,255,.14) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 22px 52px rgba(0,0,0,.30);
+}
+
+.hero.tournament-surface::before,
+.watch-feature.tournament-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      104deg,
+      transparent 0 34px,
+      rgba(255,255,255,.025) 34px 35px
+    );
+}
+
+.tournament-watermark {
+  position: absolute;
+  z-index: 1;
+  right: -12px;
+  top: 50%;
+  width: 168px;
+  max-width: 42%;
+  max-height: 78%;
+  object-fit: contain;
+  transform: translateY(-50%);
+  opacity: .095;
+  filter: grayscale(1) brightness(2.2) contrast(.8);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hero-tournament-watermark {
+  right: -10px;
+  top: 56%;
+  width: 178px;
+  max-width: 44%;
+}
+
+.watch-tournament-watermark {
+  right: -18px;
+  top: 42%;
+  width: 190px;
+  max-width: 46%;
+  opacity: .075;
+}
+
+.tournament-surface .hero-top,
+.tournament-surface .versus,
+.tournament-surface .hero-meta,
+.tournament-surface .hero-actions,
+.watch-feature-content {
+  position: relative;
+  z-index: 2;
+}
+
+.tournament-surface .competition,
+.tournament-surface .eyebrow {
+  color: #fff;
+}
+
+.tournament-surface .live-badge {
+  border-color: rgba(255,255,255,.26);
+  background: rgba(0,0,0,.16);
+  color: #fff;
+}
+
+.tournament-surface .hero-meta {
+  color: rgba(255,255,255,.82);
+}
+
+.tournament-surface .watch-venue-link,
+.tournament-surface .watch-venue-static,
+.tournament-surface .watch-stat {
+  background: rgba(8,8,8,.22);
+  border-color: rgba(255,255,255,.14);
+  backdrop-filter: blur(10px);
+}
+
+.tournament-surface .watch-venue-copy strong,
+.tournament-surface .watch-venue-static strong,
+.tournament-surface .watch-team strong,
+.tournament-surface .watch-stat strong {
+  color: #fff;
+}
+
+.tournament-surface .watch-venue-copy small,
+.tournament-surface .watch-venue-static small,
+.tournament-surface .watch-meeting-copy,
+.tournament-surface .watch-stat span,
+.tournament-surface .registration-deadline {
+  color: rgba(255,255,255,.68) !important;
+}
+
+.tournament-surface .hero-details-btn {
+  border-color: rgba(255,255,255,.22);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.035)),
+    rgba(8,8,8,.30);
+}
+
+.tournament-surface .primary-btn.joined {
+  background:
+    radial-gradient(circle at 26% 0%, color-mix(in srgb, var(--tour-accent) 13%, transparent), transparent 54%),
+    linear-gradient(180deg, rgba(20,20,20,.96), rgba(10,10,10,.95));
+  border-color: rgba(255,255,255,.16);
+}
+
+@supports not (background: color-mix(in srgb, red 20%, transparent)) {
+  .tournament-surface .primary-btn.joined {
+    background: linear-gradient(180deg, rgba(20,20,20,.96), rgba(10,10,10,.95));
+  }
+}
+
+@media (max-width: 370px) {
+  .tournament-watermark {
+    width: 145px;
+    max-width: 40%;
+  }
+  .watch-tournament-watermark {
+    width: 155px;
+  }
+}
