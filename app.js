@@ -110,6 +110,57 @@ function competitionShort(name='') {
 function tournamentWithRound(name='', round='') {
   return [competitionName(name), round].filter(Boolean).join(' · ');
 }
+const TOURNAMENT_THEMES = {
+  serieA: {
+    from: '#061A4D',
+    mid: '#0A3D91',
+    to: '#0F52BA',
+    accent: '#9CC3FF',
+    watermark: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Serie%20A.svg'
+  },
+  europa: {
+    from: '#17100C',
+    mid: '#7C2A08',
+    to: '#E05A12',
+    accent: '#FFC08D',
+    watermark: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/UEFA_Europa_League_logo_(2024_version).svg'
+  },
+  champions: {
+    from: '#071337',
+    mid: '#162B76',
+    to: '#2448B8',
+    accent: '#A8BCFF',
+    watermark: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/UEFA_Champions_League_logo_no_text.svg'
+  },
+  coppa: {
+    from: '#061D18',
+    mid: '#086B54',
+    to: '#12A37D',
+    accent: '#A6F0D7',
+    watermark: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_of_Coppa_Italia_Frecciarossa_(2024-2025).svg'
+  },
+  default: {
+    from: '#2B0508',
+    mid: '#9E1017',
+    to: '#D71920',
+    accent: '#FFB2B7',
+    watermark: ''
+  }
+};
+
+function tournamentTheme(name='') {
+  const raw = String(name || '').toLowerCase();
+  if (raw.includes('serie a') || raw.includes('серия а')) return TOURNAMENT_THEMES.serieA;
+  if (raw.includes('europa league') || raw.includes('лига европы')) return TOURNAMENT_THEMES.europa;
+  if (raw.includes('champions league') || raw.includes('лига чемпионов')) return TOURNAMENT_THEMES.champions;
+  if (raw.includes('coppa italia') || raw.includes('кубок италии')) return TOURNAMENT_THEMES.coppa;
+  return TOURNAMENT_THEMES.default;
+}
+
+function tournamentThemeStyle(theme) {
+  return `--tour-from:${theme.from};--tour-mid:${theme.mid};--tour-to:${theme.to};--tour-accent:${theme.accent};`;
+}
+
 function teamInitials(name='') {
   return displayTeam(name).split(/\s+/).filter(Boolean).map(x => x[0]).join('').slice(0,3).toUpperCase();
 }
@@ -492,6 +543,7 @@ function renderHome() {
   const timeMain = next.time.includes('МСК') ? next.time.replace(' МСК','') : next.time;
   const nextJoined = joined(next.partyId);
   const nextRegistrationClosed = next.watched && registrationClosed(next);
+  const nextTheme = tournamentTheme(next.competition);
 
   return `
   <section class="page home-page">
@@ -499,8 +551,8 @@ function renderHome() {
     <h1 class="page-title home-manifesto"><span>Sempre con te sarò</span><span>Sempre rossonero</span></h1>
     <p class="page-subtitle">Совместные просмотры и жизнь AC Milan Club San Pietroburgo в одном месте!</p>
 
-    <article class="hero">
-      <img class="hero-club-watermark" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
+    <article class="hero tournament-surface" style="${tournamentThemeStyle(nextTheme)}">
+      ${nextTheme.watermark ? `<img class="tournament-watermark hero-tournament-watermark" src="${esc(nextTheme.watermark)}" alt="" aria-hidden="true">` : ''}
       <div class="hero-top"><span class="competition">${competitionShort(next.competition)}</span><span class="live-badge">Ближайший матч</span></div>
       <div class="versus">
         <div class="team">${crest(next.home,'hero')}<strong>${esc(displayTeam(next.home))}</strong></div>
@@ -582,6 +634,7 @@ function renderWatch() {
   const otherParties = parties.filter(p => p.partyId !== first.partyId);
   const firstJoined = joined(first.partyId);
   const firstRegistrationClosed = registrationClosed(first);
+  const firstTheme = tournamentTheme(first.competition);
   const searchState = adminUserSearchState.partyId === first.partyId
     ? adminUserSearchState
     : {partyId:first.partyId, query:'', loading:false, loaded:false, items:[], error:''};
@@ -591,8 +644,9 @@ function renderWatch() {
     <h1 class="page-title">Просмотры</h1>
     <p class="page-subtitle">Все совместные матчи фан-клуба: где встречаемся, когда приходить и кто уже идёт.</p>
 
-    <article class="watch-feature">
-      <div>
+    <article class="watch-feature tournament-surface" style="${tournamentThemeStyle(firstTheme)}">
+      ${firstTheme.watermark ? `<img class="tournament-watermark watch-tournament-watermark" src="${esc(firstTheme.watermark)}" alt="" aria-hidden="true">` : ''}
+      <div class="watch-feature-content">
         <span class="eyebrow">${first.date} ${first.month} · ${esc(first.competition)}</span>
         <div class="watch-match-row">
           <div class="watch-team">${crest(first.home,'hero')}<strong>${esc(displayTeam(first.home))}</strong></div>
@@ -615,7 +669,7 @@ function renderWatch() {
         `}
         <p class="watch-meeting-copy">${esc(bar.meeting)} · Начало: ${esc(first.time)}</p>
       </div>
-      <div>
+      <div class="watch-feature-content">
         <div class="watch-stats">
           <div class="watch-stat"><strong>${first.attendeeCount || 0}</strong><span>уже идут</span></div>
           <div class="watch-stat"><strong>${first.capacity || '∞'}</strong><span>мест</span></div>
