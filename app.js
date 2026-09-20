@@ -963,8 +963,20 @@ function renderWatch() {
       </div>
       <div class="watch-photo-gallery">
         ${firstPhotos.map(photo => `
-          <figure class="watch-photo-card">
+          <figure class="watch-photo-card" data-action="open-watch-photo" data-photo-id="${esc(photo.id)}">
             <img src="${esc(photo.public_url)}" alt="Фото со сбора" loading="lazy">
+            ${isAdmin() ? `
+              <button
+                class="watch-photo-delete"
+                data-action="delete-watch-photo"
+                data-photo-id="${esc(photo.id)}"
+                data-party-id="${esc(first.partyId)}"
+                type="button"
+                aria-label="Удалить фото"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M9 7V5h6v2M8 10v7M12 10v7M16 10v7M7 7l1 13h8l1-13"/></svg>
+              </button>
+            ` : ''}
             ${photo.caption ? `<figcaption>${esc(photo.caption)}</figcaption>` : ''}
           </figure>
         `).join('')}
@@ -1512,6 +1524,8 @@ function render(route=currentRoute, {push=true}={}) {
 }
 
 function goBack() {
+  if (closeWatchPhotoViewer()) return;
+
   if (fanYearPickerOpen && currentRoute === 'profile') {
     fanYearPickerOpen = false;
     render('profile', {push:false});
@@ -1544,6 +1558,38 @@ function toast(message) {
   el.textContent=message; el.classList.add('show'); clearTimeout(window.__toast); window.__toast=setTimeout(()=>el.classList.remove('show'),1800);
 }
 
+function closeWatchPhotoViewer() {
+  const viewer = document.querySelector('.watch-photo-viewer');
+  if (!viewer) return false;
+  viewer.remove();
+  document.body.classList.remove('watch-photo-viewer-open');
+  TelegramBridge.showBack(currentRoute !== 'home');
+  return true;
+}
+
+function openWatchPhotoViewer(photoId) {
+  const photo = watchPhotos.find(item => String(item.id) === String(photoId));
+  if (!photo?.public_url) return;
+
+  closeWatchPhotoViewer();
+
+  const viewer = document.createElement('div');
+  viewer.className = 'watch-photo-viewer';
+  viewer.dataset.action = 'close-watch-photo-viewer';
+  viewer.innerHTML = `
+    <button class="watch-photo-viewer-close" data-action="close-watch-photo-viewer" type="button" aria-label="Закрыть">×</button>
+    <div class="watch-photo-viewer-stage" data-action="watch-photo-viewer-stage">
+      <img src="${esc(photo.public_url)}" alt="Фото со сбора">
+      ${photo.caption ? `<div class="watch-photo-viewer-caption">${esc(photo.caption)}</div>` : ''}
+    </div>
+  `;
+
+  document.body.appendChild(viewer);
+  document.body.classList.add('watch-photo-viewer-open');
+  TelegramBridge.showBack(true);
+  TelegramBridge.haptic('selection');
+}
+
 document.addEventListener('click', async e => {
   const route = e.target.closest('[data-route]');
   if(route){ TelegramBridge.haptic(); render(route.dataset.route); return; }
@@ -1551,6 +1597,65 @@ document.addEventListener('click', async e => {
   if(f){ TelegramBridge.haptic(); filter=f.dataset.filter; render('matches', {push:false}); return; }
   const actionEl = e.target.closest('[data-action]');
   const action = actionEl?.dataset.action;
+
+  if(action==='open-watch-photo'){
+    const photoId = actionEl?.dataset.photoId;
+    if (photoId) openWatchPhotoViewer(photoId);
+    return;
+  }
+
+  if(action==='watch-photo-viewer-stage'){
+    return;
+  }
+
+  if(action==='close-watch-photo-viewer'){
+    TelegramBridge.haptic('selection');
+    closeWatchPhotoViewer();
+    return;
+  }
+
+  if(action==='delete-watch-photo'){
+    if (!isAdmin() || !Backend?.deleteWatchPhoto) {
+      toast('Нужны права администратора');
+      return;
+    }
+
+    const photoId = actionEl?.dataset.photoId;
+    const partyId = actionEl?.dataset.partyId;
+    if (!photoId || !partyId) return;
+    if (!window.confirm('Удалить это фото со сбора?')) return;
+
+    actionEl.disabled = true;
+    try {
+      await Backend.deleteWatchPhoto(photoId);
+
+      watchPhotos = watchPhotos.filter(photo => String(photo.id) !== String(photoId));
+      const currentPhotos = watchPhotoState.get(partyId);
+      if (currentPhotos) {
+        watchPhotoState.set(partyId, {
+          ...currentPhotos,
+          loading:false,
+          loaded:true,
+          items:(currentPhotos.items || []).filter(photo => String(photo.id) !== String(photoId))
+        });
+      }
+
+      const viewerPhoto = document.querySelector('.watch-photo-viewer img');
+      const removedPhoto = currentPhotos?.items?.find(photo => String(photo.id) === String(photoId));
+      if (viewerPhoto && removedPhoto?.public_url && viewerPhoto.src === removedPhoto.public_url) {
+        closeWatchPhotoViewer();
+      }
+
+      TelegramBridge.haptic('success');
+      render('watch', {push:false});
+      toast('Фото удалено');
+    } catch (error) {
+      TelegramBridge.haptic('error');
+      toast(error?.message || 'Не удалось удалить фото');
+      actionEl.disabled = false;
+    }
+    return;
+  }
 
   if(action==='social-link'){
     const url = actionEl?.dataset.url;
@@ -1809,6 +1914,10 @@ document.addEventListener('click', async e => {
     if (url) TelegramBridge.open(url);
     else toast('Telegram-контакт пока не добавлен');
   }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeWatchPhotoViewer();
 });
 
 document.addEventListener('change', async e => {
