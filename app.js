@@ -1771,6 +1771,21 @@ document.addEventListener('submit', async e => {
   }
 });
 
+function showBootFailure(error) {
+  try { console.error('Milan Club boot failed', error); } catch (_) {}
+  try { window.__milanNativeReady?.(); } catch (_) {}
+  document.body.classList.remove('app-booting');
+  document.body.classList.add('app-ready');
+  const app = document.getElementById('app');
+  if (!app || app.innerHTML.trim()) return;
+  app.innerHTML = `<section class="page">
+    <div class="eyebrow">AC Milan Club San Pietroburgo</div>
+    <h1 class="page-title">Не удалось запустить приложение</h1>
+    <p class="page-subtitle">Перезапусти Mini App. Если проблема повторится, обнови Telegram и Android System WebView.</p>
+    <button class="primary-btn premium-btn" onclick="location.reload()"><span>ПОВТОРИТЬ</span></button>
+  </section>`;
+}
+
 async function bootApp() {
   const safety = window.setTimeout(() => {
     if (!document.body.classList.contains('app-ready')) {
@@ -1796,7 +1811,7 @@ async function bootApp() {
   });
 }
 
-bootApp();
+bootApp().catch(showBootFailure);
 
 
 const formControlSelector = 'input, textarea, select, [contenteditable="true"]';
