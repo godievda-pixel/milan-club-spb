@@ -2464,3 +2464,182 @@ button:disabled {
     font-size: 9px;
   }
 }
+
+
+/* 2026-09-20 menu alignment + year grid */
+.more-grid {
+  gap: 12px;
+}
+.premium-tile {
+  min-height: 154px;
+  padding: 16px;
+  display: grid;
+  grid-template-rows: 42px minmax(0,1fr);
+  align-items: start;
+  position: relative;
+}
+.premium-tile .tile-icon {
+  width: 40px;
+  height: 40px;
+  margin: 0 !important;
+  border-radius: 13px;
+  display: grid !important;
+  place-items: center;
+  color: #d8d3cc !important;
+  border: 1px solid rgba(255,255,255,.095);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.premium-tile .tile-icon .ui-icon {
+  width: 18px;
+  height: 18px;
+  margin: 0 !important;
+  color: inherit;
+}
+.premium-tile .tile-icon .ui-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.65;
+}
+.premium-tile > div {
+  align-self: end;
+  min-width: 0;
+}
+.premium-tile > div > strong {
+  margin: 0 0 5px;
+  font-size: 13px;
+  line-height: 1.15;
+}
+.premium-tile > div > span {
+  margin: 0;
+  color: #77726c;
+  font-size: 9px;
+  line-height: 1.45;
+}
+.premium-tile .tile-arrow {
+  top: 17px;
+  right: 17px;
+  width: 13px;
+  height: 13px;
+  margin: 0 !important;
+  color: #6f6a65;
+}
+.nav-item {
+  grid-template-rows: 31px 11px;
+  align-content: center;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+}
+.nav-icon-shell {
+  width: 32px;
+  height: 31px;
+  margin: 0;
+}
+.nav-icon-svg {
+  width: 18px;
+  height: 18px;
+}
+.nav-item > span:last-child {
+  min-height: 11px;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+.nav-main {
+  grid-template-rows: 50px 11px;
+  gap: 4px;
+}
+
+/* Replace the wheel with a clean premium year grid. */
+.fan-year-sheet {
+  max-height: min(82dvh, 720px);
+}
+.fan-year-grid-wrap {
+  position: relative;
+  height: min(49dvh, 390px);
+  margin: 2px -2px 0;
+  padding: 8px 2px;
+  border-top: 1px solid rgba(255,255,255,.045);
+  border-bottom: 1px solid rgba(255,255,255,.045);
+  overflow: hidden;
+}
+.fan-year-grid {
+  height: 100%;
+  overflow-y: auto;
+  padding: 4px 2px 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  grid-auto-rows: 48px;
+  gap: 8px;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.fan-year-grid::-webkit-scrollbar {
+  display: none;
+}
+.fan-year-grid .fan-year-option {
+  min-height: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.055);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.008));
+  color: #77716c;
+  display: grid;
+  place-items: center;
+  gap: 0;
+  font-size: 13px;
+  font-weight: 760;
+  letter-spacing: -.015em;
+  scroll-snap-align: none;
+}
+.fan-year-grid .fan-year-option span {
+  line-height: 1;
+}
+.fan-year-grid .fan-year-option small {
+  display: none;
+}
+.fan-year-grid .fan-year-option.is-selected {
+  border-color: rgba(215,25,32,.46);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(215,25,32,.22), transparent 70%),
+    linear-gradient(180deg, rgba(215,25,32,.13), rgba(215,25,32,.05));
+  color: #fff7f1;
+  font-size: 15px;
+  font-weight: 860;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 7px 20px rgba(120,0,6,.12);
+}
+.fan-year-wheel-wrap,
+.fan-year-wheel-marker,
+.fan-year-wheel {
+  display: none !important;
+}
+.fan-year-sheet-footer {
+  padding-top: 12px;
+}
+.fan-year-sheet-footer span:nth-child(2) {
+  color: #8f8780;
+}
+
+@media (max-width: 370px) {
+  .premium-tile {
+    min-height: 148px;
+    padding: 14px;
+  }
+  .fan-year-grid {
+    gap: 7px;
+    grid-auto-rows: 45px;
+  }
+  .fan-year-grid .fan-year-option {
+    height: 45px;
+    min-height: 45px;
+    border-radius: 13px;
+    font-size: 12px;
+  }
+}
