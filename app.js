@@ -162,6 +162,7 @@ let adminUserSearchTimer = null;
 let rankingState = {loading:false, loaded:false, items:[], error:''};
 let selectedRankingProfile = null;
 let rankingHelpOpen = false;
+let fanYearPickerOpen = false;
 let remoteLoaded = false;
 const Backend = window.MilanBackend || null;
 
@@ -954,13 +955,34 @@ function renderAdmin() {
   </section>`;
 }
 
-function fanSinceYearOptions(selectedYear = '') {
+function fanSinceYearButtons(selectedYear = '') {
   const currentYear = new Date().getFullYear();
-  const options = ['<option value="">Выберите год</option>'];
+  const activeYear = Number(selectedYear) || currentYear;
+  const buttons = [];
+
   for (let year = currentYear; year >= 1899; year -= 1) {
-    options.push(`<option value="${year}" ${Number(selectedYear) === year ? 'selected' : ''}>${year}</option>`);
+    buttons.push(`
+      <button
+        class="fan-year-option ${Number(selectedYear) === year ? 'is-selected' : ''}"
+        data-action="set-fan-year"
+        data-year="${year}"
+        ${year === activeYear ? 'data-year-anchor="true"' : ''}
+        type="button"
+      >
+        <span>${year}</span>
+        ${Number(selectedYear) === year ? '<small>выбрано</small>' : ''}
+      </button>
+    `);
   }
-  return options.join('');
+
+  return buttons.join('');
+}
+
+function focusFanYearPicker() {
+  window.setTimeout(() => {
+    const target = document.querySelector('.fan-year-option.is-selected, .fan-year-option[data-year-anchor="true"]');
+    target?.scrollIntoView?.({block:'center', behavior:'instant'});
+  }, 40);
 }
 
 function renderProfile() {
@@ -972,37 +994,74 @@ function renderProfile() {
   const rank = memberRank(visits);
   const fanSinceYear = memberState?.profile?.fan_since_year || '';
   const photo = tgUser?.photo_url ? `<img class="profile-hero-photo" src="${esc(tgUser.photo_url)}" alt="">` : `<div class="profile-hero-fallback">${name.charAt(0).toUpperCase()}</div>`;
+
   return `<section class="page">
     <div class="eyebrow">Rossoneri ID</div>
     <h1 class="page-title">Профиль</h1>
+
     <article class="profile-card">
       <div class="profile-identity">${photo}<div><div class="member-number">AC Milan Club San Pietroburgo · #${memberNumber}</div><div class="member-name">${name}</div><div class="member-handle">${username}</div></div></div>
+
       <div class="stats-grid profile-stats-grid">
         <div class="stat-card"><strong>${visits}</strong><span>просмотров</span></div>
-        <label class="stat-card fan-since-stat fan-since-picker">
+
+        <button class="stat-card fan-since-stat fan-since-premium" data-action="open-fan-year-picker" type="button">
           <span class="fan-since-label">болею за Milan с</span>
-          <div class="fan-since-select-wrap">
-            <select id="fanSinceYearSelect" aria-label="Год, с которого болеете за Milan">
-              ${fanSinceYearOptions(fanSinceYear)}
-            </select>
-            <span class="fan-since-chevron">⌄</span>
-          </div>
-          <small>${fanSinceYear ? 'Нажмите, чтобы изменить' : 'Выберите год'}</small>
-        </label>
+          <span class="fan-since-premium-row">
+            <strong>${fanSinceYear || '—'}</strong>
+            <span class="fan-since-edit">${fanSinceYear ? 'Изменить' : 'Указать'}</span>
+          </span>
+          <small>${fanSinceYear ? 'Rossonero since' : 'Добавь свой год'}</small>
+        </button>
       </div>
+
       <div class="member-rank-card">
         <div><span>Ранг</span><strong>${esc(rank.name)}</strong></div>
         <small>${esc(rank.note)}</small>
       </div>
+
       <div class="notice">${memberState?.profile ? (isAdmin() ? 'Telegram подтверждён · режим администратора' : 'Telegram подтверждён · профиль участника') : 'Профиль появится после защищённой Telegram-авторизации.'}</div>
+
       ${memberState?.admin_setup_available && !isAdmin() ? `
         <form class="bar-form admin-claim-form" id="adminClaimForm">
           <label><span>Одноразовый код администратора</span><input name="code" autocomplete="one-time-code" placeholder="MILAN-XXXXXXXX" required></label>
           <button type="submit" class="primary-btn">АКТИВИРОВАТЬ АДМИНА</button>
         </form>
       ` : ''}
+
       ${isAdmin() ? `<button class="secondary-wide premium-link-btn" data-route="bar" style="margin-top:12px"><span>Настроить бар</span>${icon('arrowRight')}</button>` : ''}
     </article>
+
+    ${fanYearPickerOpen ? `
+      <div class="fan-year-backdrop" data-action="close-fan-year-picker">
+        <section class="fan-year-sheet" data-action="fan-year-sheet" role="dialog" aria-modal="true" aria-label="Выберите год">
+          <div class="fan-year-handle"></div>
+
+          <div class="fan-year-sheet-head">
+            <div>
+              <span class="eyebrow">Rossoneri since</span>
+              <h2>С какого года ты за Milan?</h2>
+            </div>
+            <button class="fan-year-close" data-action="close-fan-year-picker" type="button" aria-label="Закрыть">×</button>
+          </div>
+
+          <p class="fan-year-sheet-copy">Выбери год — он сразу сохранится в твоём Rossoneri ID.</p>
+
+          <div class="fan-year-wheel-wrap">
+            <div class="fan-year-wheel-marker"></div>
+            <div class="fan-year-wheel">
+              ${fanSinceYearButtons(fanSinceYear)}
+            </div>
+          </div>
+
+          <div class="fan-year-sheet-footer">
+            <span>1899</span>
+            <span>Forza Milan</span>
+            <span>${new Date().getFullYear()}</span>
+          </div>
+        </section>
+      </div>
+    ` : ''}
   </section>`;
 }
 
@@ -1010,6 +1069,7 @@ const routes = { home:renderHome, matches:renderMatches, watch:renderWatch, rank
 
 function render(route=currentRoute, {push=true}={}) {
   const nextRoute = routes[route] ? route : 'home';
+  if (nextRoute !== 'profile') fanYearPickerOpen = false;
   if (push && nextRoute !== currentRoute) {
     routeStack.push(nextRoute);
     if (routeStack.length > 20) routeStack.shift();
@@ -1036,6 +1096,11 @@ function render(route=currentRoute, {push=true}={}) {
 }
 
 function goBack() {
+  if (fanYearPickerOpen && currentRoute === 'profile') {
+    fanYearPickerOpen = false;
+    render('profile', {push:false});
+    return;
+  }
   if (currentRoute === 'home') return;
   routeStack.pop();
   const previous = routeStack[routeStack.length - 1] || 'home';
@@ -1056,6 +1121,51 @@ document.addEventListener('click', async e => {
   if(f){ TelegramBridge.haptic(); filter=f.dataset.filter; render('matches', {push:false}); return; }
   const actionEl = e.target.closest('[data-action]');
   const action = actionEl?.dataset.action;
+
+  if(action==='open-fan-year-picker'){
+    fanYearPickerOpen = true;
+    TelegramBridge.haptic('selection');
+    render('profile', {push:false});
+    focusFanYearPicker();
+    return;
+  }
+
+  if(action==='close-fan-year-picker'){
+    fanYearPickerOpen = false;
+    TelegramBridge.haptic('selection');
+    render('profile', {push:false});
+    return;
+  }
+
+  if(action==='fan-year-sheet'){
+    return;
+  }
+
+  if(action==='set-fan-year'){
+    const year = Number(actionEl?.dataset.year);
+    const currentYear = new Date().getFullYear();
+
+    if (!Number.isInteger(year) || year < 1899 || year > currentYear) return;
+    if (!Backend?.updateProfile || !TelegramBridge.isInsideTelegram()) {
+      toast('Откройте приложение из Telegram');
+      return;
+    }
+
+    actionEl.disabled = true;
+    try {
+      const result = await Backend.updateProfile({fan_since_year: year});
+      memberState = {...(memberState || {}), profile: result.profile};
+      fanYearPickerOpen = false;
+      TelegramBridge.haptic('success');
+      render('profile', {push:false});
+      toast(`Болею за Milan с ${year}`);
+    } catch (error) {
+      TelegramBridge.haptic('error');
+      toast(error?.message || 'Не удалось сохранить год');
+      actionEl.disabled = false;
+    }
+    return;
+  }
 
   if(action==='toggle-ranking-help'){
     rankingHelpOpen = !rankingHelpOpen;
@@ -1178,33 +1288,6 @@ document.addEventListener('click', async e => {
     const url = e.target.closest('[data-action="contact"]')?.dataset.url;
     if (url) TelegramBridge.open(url);
     else toast('Telegram-контакт пока не добавлен');
-  }
-});
-
-document.addEventListener('change', async e => {
-  if (e.target.id !== 'fanSinceYearSelect') return;
-
-  const select = e.target;
-  const year = Number(select.value);
-  const currentYear = new Date().getFullYear();
-
-  if (!Number.isInteger(year) || year < 1899 || year > currentYear) return;
-  if (!Backend?.updateProfile || !TelegramBridge.isInsideTelegram()) {
-    toast('Откройте приложение из Telegram');
-    return;
-  }
-
-  select.disabled = true;
-  try {
-    const result = await Backend.updateProfile({fan_since_year: year});
-    memberState = {...(memberState || {}), profile: result.profile};
-    TelegramBridge.haptic('success');
-    render('profile', {push:false});
-    toast(`Теперь в профиле: болею с ${year}`);
-  } catch (error) {
-    TelegramBridge.haptic('error');
-    toast(error?.message || 'Не удалось сохранить год');
-    select.disabled = false;
   }
 });
 
