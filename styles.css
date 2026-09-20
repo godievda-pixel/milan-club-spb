@@ -1615,3 +1615,154 @@ button:disabled {
   font-size: 10px;
   line-height: 1.5;
 }
+
+
+/* RSVP deadline and admin participant search */
+.registration-deadline {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.35;
+  text-align: center;
+}
+.registration-deadline.is-closed {
+  color: #9d393d;
+}
+.registration-closed {
+  opacity: .62;
+  cursor: default;
+}
+.admin-participant-panel {
+  margin: 20px 0 4px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.085);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(215,25,32,.08), transparent 48%),
+    linear-gradient(155deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
+}
+.admin-participant-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.admin-participant-head h3 {
+  margin: 3px 0 0;
+  font-size: 16px;
+  line-height: 1.1;
+  letter-spacing: -.025em;
+}
+.admin-participant-head > span {
+  color: #8f8a84;
+  font-size: 8px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  white-space: nowrap;
+  padding-top: 4px;
+}
+.admin-user-search {
+  position: relative;
+  display: block;
+}
+.admin-user-search-icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #77726c;
+  font-size: 17px;
+  pointer-events: none;
+}
+.admin-user-search input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px 0 38px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 14px;
+  outline: 0;
+  background: rgba(0,0,0,.2);
+  color: var(--text);
+  font-size: 16px;
+}
+.admin-user-search input:focus {
+  border-color: rgba(255,255,255,.18);
+  background: rgba(0,0,0,.28);
+}
+.admin-user-search-results {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+  max-height: 300px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.admin-user-search-status {
+  padding: 10px 4px 2px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+.admin-user-search-status.error {
+  color: #c66d71;
+}
+.admin-user-result {
+  display: grid;
+  grid-template-columns: 36px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 9px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.025);
+  border: 1px solid rgba(255,255,255,.055);
+}
+.admin-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #151515;
+  border: 1px solid rgba(255,255,255,.08);
+  font-size: 12px;
+  font-weight: 850;
+}
+.admin-user-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.admin-user-copy strong,
+.admin-user-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-user-copy strong {
+  font-size: 10px;
+  font-weight: 760;
+}
+.admin-user-copy span {
+  color: var(--muted);
+  font-size: 8px;
+}
+.admin-user-add {
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(215,25,32,.28);
+  background: rgba(215,25,32,.11);
+  color: #efb4b6;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.admin-user-add.is-added,
+.admin-user-add:disabled {
+  border-color: rgba(255,255,255,.07);
+  background: rgba(255,255,255,.025);
+  color: #6f6a65;
+  cursor: default;
+}
