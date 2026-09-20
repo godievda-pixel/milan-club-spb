@@ -743,7 +743,7 @@ function renderMatches() {
           </div>
           <span>${esc(f.competition)}</span>
         </div>
-        <div class="fixture-side"><strong>${esc(f.time)}</strong>${completed ? '<span class="fixture-completed">● ЗАВЕРШЁН</span>' : (home ? '<span class="fixture-home">● СМОТРИМ ДОМА</span>' : (cancelled ? '<span class="fixture-cancelled">● СБОР ОТМЕНЁН</span>' : (f.watched?'<span>● ПРОСМОТР</span>:'')))}</div>
+        <div class="fixture-side"><strong>${esc(f.time)}</strong>${completed ? '<span class="fixture-completed">● ЗАВЕРШЁН</span>' : (home ? '<span class="fixture-home">● СМОТРИМ ДОМА</span>' : (cancelled ? '<span class="fixture-cancelled">● СБОР ОТМЕНЁН</span>' : (f.watched?'<span>● ПРОСМОТР</span>':'')))}</div>
       </article>`;
     }).join('')}</div>
   </section>`;
@@ -863,7 +863,7 @@ function renderWatch() {
         <div class="admin-participant-head">
           <div>
             <span class="eyebrow">Администратор</span>
-            <h3>${firstHome ? 'Статус просмотра' : 'Добавить участника'}</h3>
+            <h3>${firstCompleted ? 'Завершённый сбор' : (firstHome ? 'Статус просмотра' : 'Добавить участника')}</h3>
           </div>
           <span>доступно всегда</span>
         </div>
