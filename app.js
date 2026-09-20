@@ -552,7 +552,7 @@ function renderHome() {
     <p class="page-subtitle">Совместные просмотры и жизнь AC Milan Club San Pietroburgo в одном месте!</p>
 
     <article class="hero tournament-surface" style="${tournamentThemeStyle(nextTheme)}">
-      ${nextTheme.watermark ? `<img class="tournament-watermark hero-tournament-watermark" src="${esc(nextTheme.watermark)}" alt="" aria-hidden="true">` : ''}
+      ${nextTheme.watermark ? `<img class="tournament-watermark hero-tournament-watermark" src="${esc(nextTheme.watermark)}" alt="" aria-hidden="true" onerror="this.hidden=true">` : ''}
       <div class="hero-top"><span class="competition">${competitionShort(next.competition)}</span><span class="live-badge">Ближайший матч</span></div>
       <div class="versus">
         <div class="team">${crest(next.home,'hero')}<strong>${esc(displayTeam(next.home))}</strong></div>
@@ -645,7 +645,7 @@ function renderWatch() {
     <p class="page-subtitle">Все совместные матчи фан-клуба: где встречаемся, когда приходить и кто уже идёт.</p>
 
     <article class="watch-feature tournament-surface" style="${tournamentThemeStyle(firstTheme)}">
-      ${firstTheme.watermark ? `<img class="tournament-watermark watch-tournament-watermark" src="${esc(firstTheme.watermark)}" alt="" aria-hidden="true">` : ''}
+      ${firstTheme.watermark ? `<img class="tournament-watermark watch-tournament-watermark" src="${esc(firstTheme.watermark)}" alt="" aria-hidden="true" onerror="this.hidden=true">` : ''}
       <div class="watch-feature-content">
         <span class="eyebrow">${first.date} ${first.month} · ${esc(first.competition)}</span>
         <div class="watch-match-row">
