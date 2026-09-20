@@ -3,6 +3,43 @@
     return window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
   }
 
+  let desiredBackVisible = false;
+  let backHandler = null;
+  let boundBackButton = null;
+  let boundBackWrapper = null;
+
+  function syncBackButton() {
+    const tg = getTG();
+    const backButton = tg && tg.BackButton;
+    if (!backButton) {
+      nativePostEvent('web_app_setup_back_button', {is_visible: desiredBackVisible});
+      return false;
+    }
+
+    try {
+      if (boundBackButton !== backButton) {
+        if (boundBackButton && boundBackWrapper && typeof boundBackButton.offClick === 'function') {
+          try { boundBackButton.offClick(boundBackWrapper); } catch (_) {}
+        }
+
+        boundBackButton = backButton;
+        boundBackWrapper = function () {
+          if (typeof backHandler === 'function') backHandler();
+        };
+
+        if (typeof backButton.onClick === 'function') {
+          backButton.onClick(boundBackWrapper);
+        }
+      }
+
+      if (desiredBackVisible) backButton.show();
+      else backButton.hide();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   function launchValue(name) {
     try {
       const hash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
@@ -88,6 +125,7 @@
       if (tg.setBackgroundColor) tg.setBackgroundColor('#080808');
       if (tg.setBottomBarColor) tg.setBottomBarColor('#080808');
       if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+      syncBackButton();
       return true;
     } catch (_) {
       return false;
@@ -116,28 +154,29 @@
     setStaticViewportHeight();
 
     window.requestAnimationFrame(setStaticViewportHeight);
-    window.setTimeout(() => {
-      configureSdk();
-      setStaticViewportHeight();
-    }, 180);
-    window.setTimeout(() => {
-      configureSdk();
-      setStaticViewportHeight();
-    }, 900);
 
-    window.addEventListener('orientationchange', () => window.setTimeout(setStaticViewportHeight, 350), {passive:true});
+    [120, 350, 750, 1500, 3000, 6000].forEach((delay) => {
+      window.setTimeout(() => {
+        configureSdk();
+        syncBackButton();
+        setStaticViewportHeight();
+      }, delay);
+    });
+
+    window.addEventListener('orientationchange', () => window.setTimeout(() => {
+      setStaticViewportHeight();
+      syncBackButton();
+    }, 350), {passive:true});
   }
 
   function showBack(show) {
-    const tg = getTG();
-    if (!tg || !tg.BackButton) return;
-    try { show ? tg.BackButton.show() : tg.BackButton.hide(); } catch (_) {}
+    desiredBackVisible = Boolean(show);
+    syncBackButton();
   }
 
   function onBack(handler) {
-    const tg = getTG();
-    if (!tg || !tg.BackButton || !tg.BackButton.onClick) return;
-    try { tg.BackButton.onClick(handler); } catch (_) {}
+    backHandler = typeof handler === 'function' ? handler : null;
+    syncBackButton();
   }
 
   function haptic(type = 'selection') {
