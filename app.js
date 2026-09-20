@@ -157,6 +157,8 @@ let menuItems = [];
 let memberState = null;
 let selectedWatchPartyId = null;
 const participantState = new Map();
+let adminUserSearchState = {partyId:null, query:'', loading:false, loaded:false, items:[], error:''};
+let adminUserSearchTimer = null;
 let rankingState = {loading:false, loaded:false, items:[], error:''};
 let remoteLoaded = false;
 const Backend = window.MilanBackend || null;
@@ -205,6 +207,101 @@ function memberRank(visits = 0) {
   if (visits >= 11) return {name:'Milanista', note:'11–30 просмотров'};
   return {name:'Nuovo', note:'0–10 просмотров'};
 }
+function registrationClosesAt(match) {
+  const kickoff = Date.parse(match?.iso || '');
+  if (!Number.isFinite(kickoff)) return null;
+  return new Date(kickoff - 2 * 60 * 60 * 1000);
+}
+function registrationClosed(match) {
+  const closesAt = registrationClosesAt(match);
+  return closesAt ? Date.now() >= closesAt.getTime() : false;
+}
+function registrationDeadlineText(match) {
+  const closesAt = registrationClosesAt(match);
+  if (!closesAt) return 'Запись закрывается за 2 часа до начала матча';
+  if (Date.now() >= closesAt.getTime()) return 'Запись для участников закрыта';
+  const dt = moscowParts(closesAt.toISOString());
+  return \`Запись до \${dt.time} · за 2 часа до матча\`;
+}
+function userSearchDisplayName(user) {
+  const name = [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim();
+  const username = user?.username ? \`@\${String(user.username).replace(/^@/,'')}\` : '';
+  return {name:name || username || 'Milanista', username};
+}
+function renderAdminUserSearchResults(partyId) {
+  const state = adminUserSearchState.partyId === partyId
+    ? adminUserSearchState
+    : {loading:false, loaded:false, items:[], error:''};
+
+  if (state.loading) return '<div class="admin-user-search-status">Ищем участников…</div>';
+  if (state.error) return \`<div class="admin-user-search-status error">\${esc(state.error)}</div>\`;
+  if (!state.loaded) return '<div class="admin-user-search-status">Начните вводить имя или @username</div>';
+  if (!state.items.length) return '<div class="admin-user-search-status">Ничего не найдено</div>';
+
+  return state.items.map(user => {
+    const label = userSearchDisplayName(user);
+    const inList = user.rsvp_status === 'going';
+    const member = user.member_number ? \`#\${String(user.member_number).padStart(4,'0')}\` : '';
+    return \`<div class="admin-user-result">
+      <div class="admin-user-avatar">\${esc((label.name || 'M').replace(/^@/,'').charAt(0).toUpperCase())}</div>
+      <div class="admin-user-copy">
+        <strong>\${esc(label.name)}</strong>
+        \${label.username && label.username !== label.name ? \`<span>\${esc(label.username)}\${member ? \` · \${esc(member)}\` : ''}</span>\` : (member ? \`<span>\${esc(member)}</span>\` : '')}
+      </div>
+      <button class="admin-user-add \${inList ? 'is-added' : ''}" data-action="admin-add-participant" data-party-id="\${esc(partyId)}" data-user-id="\${esc(user.telegram_user_id)}" \${inList ? 'disabled' : ''}>\${inList ? 'В списке' : 'Добавить'}</button>
+    </div>\`;
+  }).join('');
+}
+function updateAdminUserSearchResults(partyId) {
+  const target = document.querySelector('#adminParticipantSearchResults');
+  if (target && target.dataset.partyId === partyId) {
+    target.innerHTML = renderAdminUserSearchResults(partyId);
+  }
+}
+async function loadAdminUserSearch(partyId, query='', {force=false}={}) {
+  if (!isAdmin() || !partyId || !Backend?.searchUsers || !TelegramBridge.isInsideTelegram()) return;
+
+  const normalizedQuery = String(query || '').trim();
+  if (!force &&
+      adminUserSearchState.partyId === partyId &&
+      adminUserSearchState.query === normalizedQuery &&
+      (adminUserSearchState.loading || adminUserSearchState.loaded)) return;
+
+  adminUserSearchState = {
+    partyId,
+    query:normalizedQuery,
+    loading:true,
+    loaded:false,
+    items:adminUserSearchState.partyId === partyId ? adminUserSearchState.items : [],
+    error:''
+  };
+  updateAdminUserSearchResults(partyId);
+
+  try {
+    const result = await Backend.searchUsers(partyId, normalizedQuery);
+    if (adminUserSearchState.partyId !== partyId || adminUserSearchState.query !== normalizedQuery) return;
+    adminUserSearchState = {
+      partyId,
+      query:normalizedQuery,
+      loading:false,
+      loaded:true,
+      items:Array.isArray(result.users) ? result.users : [],
+      error:''
+    };
+  } catch (error) {
+    if (adminUserSearchState.partyId !== partyId || adminUserSearchState.query !== normalizedQuery) return;
+    adminUserSearchState = {
+      partyId,
+      query:normalizedQuery,
+      loading:false,
+      loaded:true,
+      items:[],
+      error:error?.message || 'Не удалось загрузить пользователей'
+    };
+  }
+  updateAdminUserSearchResults(partyId);
+}
+
 function selectedWatchParty(parties = fixtures.filter(f => f.watched && f.partyId)) {
   return parties.find(f => f.partyId === selectedWatchPartyId) || parties[0] || null;
 }
