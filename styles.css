@@ -4010,3 +4010,50 @@ body.watch-photo-viewer-open {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+
+.watch-photo-viewer-stage {
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.watch-photo-viewer-stage img {
+  transform-origin: center center;
+  will-change: transform;
+  touch-action: none;
+  -webkit-user-drag: none;
+}
+.watch-photo-viewer-stage img.is-animating {
+  transition: transform .2s ease-out;
+}
+.watch-photo-viewer-stage.is-zoomed {
+  cursor: grab;
+}
+.watch-photo-viewer-stage.is-zoomed:active {
+  cursor: grabbing;
+}
+.watch-photo-zoom-hint {
+  position: absolute;
+  top: max(66px, calc(env(safe-area-inset-top) + 50px));
+  left: 50%;
+  z-index: 1;
+  transform: translateX(-50%);
+  max-width: calc(100% - 90px);
+  padding: 7px 10px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 999px;
+  background: rgba(8,8,8,.58);
+  color: rgba(255,255,255,.72);
+  font-size: 9px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  animation: watchPhotoHintOut .45s ease 2.2s forwards;
+}
+@keyframes watchPhotoHintOut {
+  to { opacity: 0; transform: translate(-50%,-6px); }
+}
