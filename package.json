@@ -8,5 +8,8 @@
     "configure-bot": "node scripts/setup-bot.mjs",
     "build": "node scripts/build.mjs",
     "deploy": "npm run build && npx wrangler@latest deploy"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
   }
 }
