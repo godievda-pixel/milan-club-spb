@@ -1335,9 +1335,23 @@ function goBack() {
     render('profile', {push:false});
     return;
   }
-  if (currentRoute === 'home') return;
-  routeStack.pop();
-  const previous = routeStack[routeStack.length - 1] || 'home';
+
+  if (cancellingWatchPartyId && currentRoute === 'watch') {
+    cancellingWatchPartyId = null;
+    render('watch', {push:false});
+    return;
+  }
+
+  if (currentRoute === 'home') {
+    TelegramBridge.showBack(false);
+    return;
+  }
+
+  if (routeStack.length > 1) routeStack.pop();
+
+  let previous = routeStack[routeStack.length - 1] || 'home';
+  if (!routes[previous]) previous = 'home';
+
   render(previous, {push:false});
 }
 TelegramBridge.onBack(goBack);
