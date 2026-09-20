@@ -560,7 +560,7 @@ function renderRanking() {
 
   return `<section class="page ranking-page">
     <div class="eyebrow">AC Milan Club San Pietroburgo</div>
-    <h1 class="page-title">Рейтинг посещений</h1>
+    <h1 class="page-title">Рейтинг участников</h1>
     <p class="page-subtitle">Учёт посещений ведётся с сентября 2021 года.</p>
 
     <div class="ranking-summary">
@@ -604,7 +604,7 @@ function renderRanking() {
       }).join('')}
     </div>
 
-    <div class="ranking-footnote">В рейтинг входят исторические посещения с сентября 2021 года и новые просмотры, подтверждённые администратором.</div>
+    <div class="ranking-footnote">В рейтинге учитывается общее количество посещений с сентября 2021 года. Новые посещения добавляются после подтверждения администратором.</div>
   </section>`;
 }
 
