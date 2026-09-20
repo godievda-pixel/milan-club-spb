@@ -1164,3 +1164,86 @@ button:disabled {
 .club-timeline .timeline-copy p {
   max-width: 390px;
 }
+
+
+/* Clean crest rendering + profile fan year */
+.club-crest,
+.club-crest--hero,
+.club-crest--sm,
+.club-crest--xs,
+.fixture .club-crest--xs,
+.match-card .club-crest--sm,
+.team .club-crest--hero {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+.club-crest::before,
+.club-crest::after {
+  content: none !important;
+  display: none !important;
+}
+.club-crest img {
+  background: transparent !important;
+  filter: none !important;
+}
+.club-crest .crest-fallback[hidden] {
+  display: none !important;
+}
+
+.profile-stats-grid {
+  align-items: stretch;
+}
+.fan-since-stat {
+  margin: 0;
+}
+.fan-since-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fan-since-value input {
+  width: min(100%, 104px);
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 28px !important;
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: -.04em;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.fan-since-value input::placeholder {
+  color: var(--text);
+  opacity: 1;
+}
+.fan-since-value input::-webkit-outer-spin-button,
+.fan-since-value input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.fan-since-save {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.09);
+  background: rgba(255,255,255,.035);
+  color: #ddd8d0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+.fan-since-save .ui-icon {
+  width: 14px;
+  height: 14px;
+}
+.fan-since-save:disabled {
+  opacity: .45;
+}
