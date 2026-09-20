@@ -3447,3 +3447,63 @@ body.ios-miniapp .page {
     animation: none !important;
   }
 }
+
+
+/* Fan year grid alignment fix */
+.fan-year-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 50px;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.fan-year-grid .fan-year-option {
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  min-height: 50px;
+  margin: 0;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1 !important;
+  font-size: 14px !important;
+  font-weight: 760;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0 !important;
+}
+
+.fan-year-grid .fan-year-option > span {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: center !important;
+  line-height: 1 !important;
+  transform: none !important;
+}
+
+.fan-year-grid .fan-year-option.is-selected {
+  font-size: 14px !important;
+  font-weight: 900;
+  transform: none;
+}
+
+@media (max-width: 370px) {
+  .fan-year-grid {
+    grid-auto-rows: 47px;
+    gap: 7px;
+  }
+
+  .fan-year-grid .fan-year-option {
+    height: 47px;
+    min-height: 47px;
+    font-size: 13px !important;
+  }
+
+  .fan-year-grid .fan-year-option.is-selected {
+    font-size: 13px !important;
+  }
+}
