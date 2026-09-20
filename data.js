@@ -40,6 +40,7 @@
       api('rsvp', { watch_party_id: watchPartyId, status, guests }),
     watchParticipants: (watchPartyId) =>
       api('watch_participants', { watch_party_id: watchPartyId }),
+    attendanceRanking: () => api('attendance_ranking'),
     setAttendance: (watchPartyId, telegramUserId, attendanceStatus) =>
       api('admin_set_attendance', {
         watch_party_id: watchPartyId,
