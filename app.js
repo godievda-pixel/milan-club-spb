@@ -161,6 +161,7 @@ let adminUserSearchState = {partyId:null, query:'', loading:false, loaded:false,
 let adminUserSearchTimer = null;
 let rankingState = {loading:false, loaded:false, items:[], error:''};
 let selectedRankingProfile = null;
+let rankingHelpOpen = false;
 let remoteLoaded = false;
 const Backend = window.MilanBackend || null;
 
@@ -692,6 +693,26 @@ function renderRanking() {
     <p class="page-subtitle">Учёт посещений ведётся с сентября 2021 года.</p>
     <div class="ranking-disclaimer">Данные в рейтинге приблизительные. Сезон 2022/23 рассчитан по среднему количеству посещений.</div>
 
+    <button class="ranking-help-toggle" data-action="toggle-ranking-help" aria-expanded="${rankingHelpOpen ? 'true' : 'false'}">
+      <span class="ranking-help-icon">i</span>
+      <span>Как считается рейтинг?</span>
+      <span class="ranking-help-chevron">${rankingHelpOpen ? '−' : '+'}</span>
+    </button>
+
+    ${rankingHelpOpen ? `
+      <div class="ranking-help-card">
+        <p><strong>1 просмотр = 1 подтверждённое посещение</strong> совместного просмотра фан-клуба.</p>
+        <p>Исторические данные внесены отдельно и могут быть приблизительными. Сезон 2022/23 рассчитан по среднему количеству посещений.</p>
+        <div class="ranking-rank-scale">
+          <span><strong>Nuovo</strong><small>0–10</small></span>
+          <span><strong>Milanista</strong><small>11–30</small></span>
+          <span><strong>Rossonero</strong><small>31–60</small></span>
+          <span><strong>Senatore</strong><small>61–99</small></span>
+          <span><strong>Leggenda</strong><small>100+</small></span>
+        </div>
+      </div>
+    ` : ''}
+
     <div class="ranking-summary">
       <div><strong>${items.length}</strong><span>участников в рейтинге</span></div>
       <div><strong>${items.reduce((sum, item) => sum + Number(item.total_visits || 0), 0)}</strong><span>посещений учтено</span></div>
@@ -933,6 +954,15 @@ function renderAdmin() {
   </section>`;
 }
 
+function fanSinceYearOptions(selectedYear = '') {
+  const currentYear = new Date().getFullYear();
+  const options = ['<option value="">Выберите год</option>'];
+  for (let year = currentYear; year >= 1899; year -= 1) {
+    options.push(`<option value="${year}" ${Number(selectedYear) === year ? 'selected' : ''}>${year}</option>`);
+  }
+  return options.join('');
+}
+
 function renderProfile() {
   const tgUser = TelegramBridge.user();
   const name = esc(TelegramBridge.fullName());
@@ -941,7 +971,6 @@ function renderProfile() {
   const visits = Number(memberState?.attendance_total ?? memberState?.rsvps?.filter(r => r.attendance_status === 'attended').length ?? 0);
   const rank = memberRank(visits);
   const fanSinceYear = memberState?.profile?.fan_since_year || '';
-  const currentYear = new Date().getFullYear();
   const photo = tgUser?.photo_url ? `<img class="profile-hero-photo" src="${esc(tgUser.photo_url)}" alt="">` : `<div class="profile-hero-fallback">${name.charAt(0).toUpperCase()}</div>`;
   return `<section class="page">
     <div class="eyebrow">Rossoneri ID</div>
@@ -950,13 +979,16 @@ function renderProfile() {
       <div class="profile-identity">${photo}<div><div class="member-number">AC Milan Club San Pietroburgo · #${memberNumber}</div><div class="member-name">${name}</div><div class="member-handle">${username}</div></div></div>
       <div class="stats-grid profile-stats-grid">
         <div class="stat-card"><strong>${visits}</strong><span>просмотров</span></div>
-        <form class="stat-card fan-since-stat" id="fanSinceForm">
-          <div class="fan-since-value">
-            <input name="fan_since_year" type="number" inputmode="numeric" min="1899" max="${currentYear}" value="${esc(fanSinceYear)}" placeholder="—" aria-label="Год, с которого болеете за Milan">
-            <button type="submit" class="fan-since-save" aria-label="Сохранить год">${icon('check')}</button>
+        <label class="stat-card fan-since-stat fan-since-picker">
+          <span class="fan-since-label">болею за Milan с</span>
+          <div class="fan-since-select-wrap">
+            <select id="fanSinceYearSelect" aria-label="Год, с которого болеете за Milan">
+              ${fanSinceYearOptions(fanSinceYear)}
+            </select>
+            <span class="fan-since-chevron">⌄</span>
           </div>
-          <span>болею с</span>
-        </form>
+          <small>${fanSinceYear ? 'Нажмите, чтобы изменить' : 'Выберите год'}</small>
+        </label>
       </div>
       <div class="member-rank-card">
         <div><span>Ранг</span><strong>${esc(rank.name)}</strong></div>
@@ -1024,6 +1056,13 @@ document.addEventListener('click', async e => {
   if(f){ TelegramBridge.haptic(); filter=f.dataset.filter; render('matches', {push:false}); return; }
   const actionEl = e.target.closest('[data-action]');
   const action = actionEl?.dataset.action;
+
+  if(action==='toggle-ranking-help'){
+    rankingHelpOpen = !rankingHelpOpen;
+    TelegramBridge.haptic('selection');
+    render('ranking', {push:false});
+    return;
+  }
 
   if(action==='open-fan-profile'){
     const index = Number(actionEl?.dataset.rankingIndex);
@@ -1142,6 +1181,33 @@ document.addEventListener('click', async e => {
   }
 });
 
+document.addEventListener('change', async e => {
+  if (e.target.id !== 'fanSinceYearSelect') return;
+
+  const select = e.target;
+  const year = Number(select.value);
+  const currentYear = new Date().getFullYear();
+
+  if (!Number.isInteger(year) || year < 1899 || year > currentYear) return;
+  if (!Backend?.updateProfile || !TelegramBridge.isInsideTelegram()) {
+    toast('Откройте приложение из Telegram');
+    return;
+  }
+
+  select.disabled = true;
+  try {
+    const result = await Backend.updateProfile({fan_since_year: year});
+    memberState = {...(memberState || {}), profile: result.profile};
+    TelegramBridge.haptic('success');
+    render('profile', {push:false});
+    toast(`Теперь в профиле: болею с ${year}`);
+  } catch (error) {
+    TelegramBridge.haptic('error');
+    toast(error?.message || 'Не удалось сохранить год');
+    select.disabled = false;
+  }
+});
+
 document.addEventListener('input', e => {
   if (e.target.id !== 'adminParticipantSearch') return;
 
@@ -1165,37 +1231,6 @@ document.addEventListener('input', e => {
 });
 
 document.addEventListener('submit', async e => {
-  if (e.target.id === 'fanSinceForm') {
-    e.preventDefault();
-    const year = Number(new FormData(e.target).get('fan_since_year'));
-    const currentYear = new Date().getFullYear();
-
-    if (!Number.isInteger(year) || year < 1899 || year > currentYear) {
-      TelegramBridge.haptic('error');
-      toast('Укажите корректный год');
-      return;
-    }
-    if (!Backend?.updateProfile || !TelegramBridge.isInsideTelegram()) {
-      toast('Откройте приложение из Telegram');
-      return;
-    }
-
-    const button = e.target.querySelector('button[type="submit"]');
-    if (button) button.disabled = true;
-    try {
-      const result = await Backend.updateProfile({fan_since_year: year});
-      memberState = {...(memberState || {}), profile: result.profile};
-      TelegramBridge.haptic('success');
-      render('profile', {push:false});
-      toast('Год сохранён');
-    } catch (error) {
-      TelegramBridge.haptic('error');
-      toast(error?.message || 'Не удалось сохранить год');
-      if (button) button.disabled = false;
-    }
-    return;
-  }
-
   if (e.target.id === 'adminClaimForm') {
     e.preventDefault();
     const code = String(new FormData(e.target).get('code') || '').trim();
