@@ -3558,3 +3558,13 @@ body.ios-miniapp .page {
     font-size: 9px;
   }
 }
+
+
+/* Single ranking summary metric */
+.ranking-summary-single {
+  grid-template-columns: 1fr;
+}
+.ranking-summary-single > div {
+  width: 100%;
+  min-height: 90px;
+}
