@@ -157,6 +157,7 @@ let menuItems = [];
 let memberState = null;
 let selectedWatchPartyId = null;
 const participantState = new Map();
+let rankingState = {loading:false, loaded:false, items:[], error:''};
 let remoteLoaded = false;
 const Backend = window.MilanBackend || null;
 
@@ -249,6 +250,34 @@ async function loadWatchParticipants(partyId, {force=false}={}) {
 }
 function partiesForWatch() {
   return fixtures.filter(f => f.watched && f.partyId);
+}
+async function loadAttendanceRanking({force=false}={}) {
+  if (!Backend?.attendanceRanking || !TelegramBridge.isInsideTelegram()) return;
+  if (!force && (rankingState.loading || rankingState.loaded)) return;
+
+  rankingState = {...rankingState, loading:true, error:''};
+  if (currentRoute === 'ranking') render('ranking', {push:false});
+
+  try {
+    const result = await Backend.attendanceRanking();
+    rankingState = {
+      loading:false,
+      loaded:true,
+      items:Array.isArray(result.ranking) ? result.ranking : [],
+      periodStart:result.period_start || '2021-09-01',
+      error:''
+    };
+  } catch (error) {
+    rankingState = {
+      loading:false,
+      loaded:true,
+      items:[],
+      periodStart:'2021-09-01',
+      error:error?.message || 'Не удалось загрузить рейтинг'
+    };
+  }
+
+  if (currentRoute === 'ranking') render('ranking', {push:false});
 }
 
 function moscowParts(iso) {
@@ -524,6 +553,61 @@ function renderClub() {
   </section>`;
 }
 
+function renderRanking() {
+  const tgUser = TelegramBridge.user();
+  const myId = Number(tgUser?.id || 0);
+  const items = rankingState.items || [];
+
+  return `<section class="page ranking-page">
+    <div class="eyebrow">AC Milan Club San Pietroburgo</div>
+    <h1 class="page-title">Рейтинг посещений</h1>
+    <p class="page-subtitle">Учёт посещений ведётся с сентября 2021 года.</p>
+
+    <div class="ranking-summary">
+      <div><strong>${items.length}</strong><span>участников в рейтинге</span></div>
+      <div><strong>${items.reduce((sum, item) => sum + Number(item.total_visits || 0), 0)}</strong><span>посещений учтено</span></div>
+    </div>
+
+    ${rankingState.loading ? `
+      <div class="ranking-loading">
+        <span></span><span></span><span></span>
+      </div>
+    ` : ''}
+
+    ${rankingState.error ? `<div class="notice">${esc(rankingState.error)}</div>` : ''}
+
+    ${!rankingState.loading && !rankingState.error && !items.length ? `
+      <div class="notice">Исторические данные пока не загружены. После импорта списка посещений рейтинг появится здесь.</div>
+    ` : ''}
+
+    <div class="ranking-list">
+      ${items.map((item, index) => {
+        const rank = memberRank(Number(item.total_visits || 0));
+        const isMe = myId && Number(item.telegram_user_id) === myId;
+        const username = item.username ? `@${String(item.username).replace(/^@/,'')}` : '';
+        const initialSource = item.display_name || username || 'M';
+        const initial = String(initialSource).replace(/^@/,'').trim().charAt(0).toUpperCase() || 'M';
+        return `
+          <article class="ranking-row ${isMe ? 'is-me' : ''} ${index < 3 ? `ranking-top ranking-top-${index + 1}` : ''}">
+            <div class="ranking-position">${item.position || index + 1}</div>
+            <div class="ranking-avatar">${esc(initial)}</div>
+            <div class="ranking-person">
+              <strong>${esc(item.display_name || username || 'Milanista')}</strong>
+              ${username && item.display_name !== username ? `<span>${esc(username)}</span>` : ''}
+              <small>${esc(rank.name)}</small>
+            </div>
+            <div class="ranking-visits">
+              <strong>${Number(item.total_visits || 0)}</strong>
+              <span>просмотров</span>
+            </div>
+          </article>`;
+      }).join('')}
+    </div>
+
+    <div class="ranking-footnote">В рейтинг входят исторические посещения с сентября 2021 года и новые просмотры, подтверждённые администратором.</div>
+  </section>`;
+}
+
 function renderMore() {
   return `<section class="page">
     <div class="eyebrow">${esc(clubName())}</div>
@@ -680,7 +764,7 @@ function renderProfile() {
   const name = esc(TelegramBridge.fullName());
   const username = tgUser?.username ? `@${esc(tgUser.username)}` : (TelegramBridge.isInsideTelegram() ? 'Telegram подключён' : 'Откройте приложение из Telegram');
   const memberNumber = memberState?.profile?.member_number ? String(memberState.profile.member_number).padStart(4,'0') : '—';
-  const visits = memberState?.rsvps?.filter(r => r.attendance_status === 'attended').length || 0;
+  const visits = Number(memberState?.attendance_total ?? memberState?.rsvps?.filter(r => r.attendance_status === 'attended').length ?? 0);
   const rank = memberRank(visits);
   const fanSinceYear = memberState?.profile?.fan_since_year || '';
   const currentYear = new Date().getFullYear();
@@ -716,7 +800,7 @@ function renderProfile() {
   </section>`;
 }
 
-const routes = { home:renderHome, matches:renderMatches, watch:renderWatch, club:renderClub, more:renderMore, bar:renderBar, contacts:renderContacts, admin:renderAdmin, profile:renderProfile };
+const routes = { home:renderHome, matches:renderMatches, watch:renderWatch, ranking:renderRanking, club:renderClub, more:renderMore, bar:renderBar, contacts:renderContacts, admin:renderAdmin, profile:renderProfile };
 
 function render(route=currentRoute, {push=true}={}) {
   const nextRoute = routes[route] ? route : 'home';
@@ -733,6 +817,9 @@ function render(route=currentRoute, {push=true}={}) {
   if (nextRoute === 'watch') {
     const party = selectedWatchParty(partiesForWatch());
     if (party?.partyId) window.setTimeout(() => loadWatchParticipants(party.partyId), 0);
+  }
+  if (nextRoute === 'ranking') {
+    window.setTimeout(() => loadAttendanceRanking(), 0);
   }
 }
 
