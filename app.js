@@ -310,7 +310,7 @@ function renderHome() {
   <section class="page home-page">
     <div class="eyebrow">${esc(clubName())}</div>
     <h1 class="page-title home-manifesto"><span>Sempre con te sarò</span><span>Sempre rossonero</span></h1>
-    <p class="page-subtitle">Матчи, совместные просмотры и жизнь ${esc(clubName())} в одном месте.</p>
+    <p class="page-subtitle">Совместные просмотры и жизнь AC Milan Club San Pietroburgo в одном месте!</p>
 
     <article class="hero">
       <img class="hero-club-watermark" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
@@ -335,7 +335,7 @@ function renderHome() {
     <div class="section-head"><h2>${esc(clubName())}</h2><button class="text-btn premium-text-btn" data-route="club"><span>История</span>${icon('arrowRight')}</button></div>
     <article class="club-teaser" data-route="club">
       <img class="club-teaser-logo" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
-      <span class="eyebrow">Milano × San Pietroburgo</span>
+      <span class="eyebrow">AC Milan Club San Pietroburgo</span>
       <div class="big-copy">Больше, чем просто фан-клуб</div>
       <p>Мы большая красно-чёрная семья из города на Неве.</p>
     </article>
@@ -595,16 +595,23 @@ function renderProfile() {
   const username = tgUser?.username ? `@${esc(tgUser.username)}` : (TelegramBridge.isInsideTelegram() ? 'Telegram подключён' : 'Откройте приложение из Telegram');
   const memberNumber = memberState?.profile?.member_number ? String(memberState.profile.member_number).padStart(4,'0') : '—';
   const visits = memberState?.rsvps?.filter(r => r.status === 'going').length || 0;
+  const fanSinceYear = memberState?.profile?.fan_since_year || '';
+  const currentYear = new Date().getFullYear();
   const photo = tgUser?.photo_url ? `<img class="profile-hero-photo" src="${esc(tgUser.photo_url)}" alt="">` : `<div class="profile-hero-fallback">${name.charAt(0).toUpperCase()}</div>`;
   return `<section class="page">
     <div class="eyebrow">Rossoneri ID</div>
     <h1 class="page-title">Профиль</h1>
-    <p class="page-subtitle">Telegram-профиль подставляется автоматически при запуске Mini App.</p>
     <article class="profile-card">
       <div class="profile-identity">${photo}<div><div class="member-number">AC Milan Club San Pietroburgo · #${memberNumber}</div><div class="member-name">${name}</div><div class="member-handle">${username}</div></div></div>
-      <div class="stats-grid">
+      <div class="stats-grid profile-stats-grid">
         <div class="stat-card"><strong>${visits}</strong><span>просмотров</span></div>
-        <div class="stat-card"><strong>—</strong><span>любимый игрок</span></div>
+        <form class="stat-card fan-since-stat" id="fanSinceForm">
+          <div class="fan-since-value">
+            <input name="fan_since_year" type="number" inputmode="numeric" min="1899" max="${currentYear}" value="${esc(fanSinceYear)}" placeholder="—" aria-label="Год, с которого болеете за Milan">
+            <button type="submit" class="fan-since-save" aria-label="Сохранить год">${icon('check')}</button>
+          </div>
+          <span>болею с</span>
+        </form>
       </div>
       <div style="margin-top:18px"><span style="font-size:11px;color:var(--muted)">Путь участника</span><div class="progress"><span></span></div></div>
       <div class="notice">${memberState?.profile ? (isAdmin() ? 'Telegram подтверждён · режим администратора' : 'Telegram подтверждён · профиль участника') : 'Профиль появится после защищённой Telegram-авторизации.'}</div>
@@ -684,6 +691,37 @@ document.addEventListener('click', async e => {
 });
 
 document.addEventListener('submit', async e => {
+  if (e.target.id === 'fanSinceForm') {
+    e.preventDefault();
+    const year = Number(new FormData(e.target).get('fan_since_year'));
+    const currentYear = new Date().getFullYear();
+
+    if (!Number.isInteger(year) || year < 1899 || year > currentYear) {
+      TelegramBridge.haptic('error');
+      toast('Укажите корректный год');
+      return;
+    }
+    if (!Backend?.updateProfile || !TelegramBridge.isInsideTelegram()) {
+      toast('Откройте приложение из Telegram');
+      return;
+    }
+
+    const button = e.target.querySelector('button[type="submit"]');
+    if (button) button.disabled = true;
+    try {
+      const result = await Backend.updateProfile({fan_since_year: year});
+      memberState = {...(memberState || {}), profile: result.profile};
+      TelegramBridge.haptic('success');
+      render('profile', {push:false});
+      toast('Год сохранён');
+    } catch (error) {
+      TelegramBridge.haptic('error');
+      toast(error?.message || 'Не удалось сохранить год');
+      if (button) button.disabled = false;
+    }
+    return;
+  }
+
   if (e.target.id === 'adminClaimForm') {
     e.preventDefault();
     const code = String(new FormData(e.target).get('code') || '').trim();
