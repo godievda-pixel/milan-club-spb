@@ -277,24 +277,28 @@ function applyRemoteData(data) {
   remoteLoaded = true;
 }
 
-async function refreshPublicData() {
-  if (!Backend?.publicBootstrap) return;
+async function refreshPublicData({renderAfter=true}={}) {
+  if (!Backend?.publicBootstrap) return false;
   try {
     const data = await Backend.publicBootstrap();
     applyRemoteData(data);
-    render(currentRoute, {push:false});
+    if (renderAfter) render(currentRoute, {push:false});
+    return true;
   } catch (error) {
     console.warn('Milan Club bootstrap failed', error);
+    return false;
   }
 }
 
-async function refreshMemberState() {
-  if (!Backend?.me || !TelegramBridge.isInsideTelegram()) return;
+async function refreshMemberState({renderAfter=true}={}) {
+  if (!Backend?.me || !TelegramBridge.isInsideTelegram()) return false;
   try {
     memberState = await Backend.me();
-    render(currentRoute, {push:false});
+    if (renderAfter) render(currentRoute, {push:false});
+    return true;
   } catch (error) {
     console.warn('Milan Club member API unavailable', error);
+    return false;
   }
 }
 
@@ -332,8 +336,8 @@ function renderHome() {
     <article class="club-teaser" data-route="club">
       <img class="club-teaser-logo" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
       <span class="eyebrow">Milano × San Pietroburgo</span>
-      <div class="big-copy">Больше, чем просто просмотр футбола.</div>
-      <p>Место для тех, кто остаётся с Milan в любой вечер, при любом счёте и в любом городе.</p>
+      <div class="big-copy">Больше, чем просто фан-клуб</div>
+      <p>Мы большая красно-чёрная семья из города на Неве.</p>
     </article>
   </section>`;
 }
@@ -423,21 +427,12 @@ function renderWatch() {
 }
 
 function renderClub() {
-  return `<section class="page">
-    <div class="eyebrow">Milano × San Pietroburgo</div>
-    <h1 class="page-title club-name-title">AC Milan Club<br>San Pietroburgo</h1>
-    <p class="page-subtitle">Сообщество rossoneri в Санкт-Петербурге: матчи, просмотры, история и люди клуба.</p>
-    <div class="club-logo-showcase">
-      <img src="assets/milan-club-logo-light.webp" alt="AC Milan Club San Pietroburgo">
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card"><strong>SPB</strong><span>наш город</span></div>
-      <div class="stat-card"><strong>∞</strong><span>forza milan</span></div>
-      <div class="stat-card"><strong>90′</strong><span>вместе до конца</span></div>
-      <div class="stat-card"><strong>1</strong><span>rossoneri family</span></div>
-    </div>
-    <div class="section-head"><h2>История</h2></div>
-    <div class="timeline">${(historyEntries.length ? historyEntries : [
+  return `<section class="page club-history-page">
+    <div class="eyebrow">AC Milan Club San Pietroburgo</div>
+    <h1 class="page-title">История</h1>
+    <p class="page-subtitle">Красно-чёрная история нашего сообщества в Санкт-Петербурге.</p>
+
+    <div class="timeline club-timeline">${(historyEntries.length ? historyEntries : [
       {period_label:'START', title:'Первый совместный просмотр', body:'Здесь будет год основания, место первого сбора и короткая история появления фан-клуба.'}
     ]).map(h=>`<div class="timeline-item"><div class="timeline-year">${esc(h.period_label)}</div><div class="timeline-copy"><strong>${esc(h.title)}</strong><p>${esc(h.body)}</p></div></div>`).join('')}</div>
   </section>`;
@@ -816,10 +811,32 @@ document.addEventListener('submit', async e => {
   }
 });
 
-render('home', {push:false});
-TelegramBridge.applyProfileChip();
-refreshPublicData();
-refreshMemberState();
+async function bootApp() {
+  const safety = window.setTimeout(() => {
+    if (!document.body.classList.contains('app-ready')) {
+      render('home', {push:false});
+      TelegramBridge.applyProfileChip();
+      document.body.classList.remove('app-booting');
+      document.body.classList.add('app-ready');
+    }
+  }, 1600);
+
+  await Promise.allSettled([
+    refreshPublicData({renderAfter:false}),
+    refreshMemberState({renderAfter:false})
+  ]);
+
+  window.clearTimeout(safety);
+  render('home', {push:false});
+  TelegramBridge.applyProfileChip();
+
+  requestAnimationFrame(() => {
+    document.body.classList.remove('app-booting');
+    document.body.classList.add('app-ready');
+  });
+}
+
+bootApp();
 
 
 const formControlSelector = 'input, textarea, select, [contenteditable="true"]';
