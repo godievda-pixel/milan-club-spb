@@ -562,6 +562,7 @@ function renderRanking() {
     <div class="eyebrow">AC Milan Club San Pietroburgo</div>
     <h1 class="page-title">Рейтинг участников</h1>
     <p class="page-subtitle">Учёт посещений ведётся с сентября 2021 года.</p>
+    <div class="ranking-disclaimer">Данные в рейтинге приблизительные. Сезон 2022/23 рассчитан по среднему количеству посещений.</div>
 
     <div class="ranking-summary">
       <div><strong>${items.length}</strong><span>участников в рейтинге</span></div>
