@@ -3507,3 +3507,54 @@ body.ios-miniapp .page {
     font-size: 13px !important;
   }
 }
+
+
+/* History timeline alignment */
+.club-timeline .timeline-item {
+  grid-template-columns: 84px minmax(0,1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.club-timeline .timeline-item:not(:last-child)::before {
+  left: 41px;
+  top: 34px;
+}
+
+.club-timeline .timeline-year {
+  width: 84px;
+  min-width: 84px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+.club-timeline .timeline-copy {
+  padding-top: 4px;
+}
+
+@media (max-width: 370px) {
+  .club-timeline .timeline-item {
+    grid-template-columns: 76px minmax(0,1fr);
+    gap: 13px;
+  }
+
+  .club-timeline .timeline-item:not(:last-child)::before {
+    left: 37px;
+  }
+
+  .club-timeline .timeline-year {
+    width: 76px;
+    min-width: 76px;
+    font-size: 9px;
+  }
+}
