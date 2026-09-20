@@ -4057,3 +4057,47 @@ body.watch-photo-viewer-open {
 @keyframes watchPhotoHintOut {
   to { opacity: 0; transform: translate(-50%,-6px); }
 }
+
+
+/* Watch state: no gathering published yet */
+.gathering-not-created-banner {
+  margin-top: 12px;
+  padding: 12px 13px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 15px;
+  background: rgba(255,255,255,.025);
+}
+.gathering-not-created-banner strong,
+.watch-not-created-state strong,
+.watch-not-created-location strong {
+  display: block;
+  color: #f0ece6;
+}
+.gathering-not-created-banner span,
+.watch-not-created-state span,
+.watch-not-created-location small {
+  display: block;
+  margin-top: 4px;
+  color: #8d8882;
+  line-height: 1.4;
+}
+.watch-not-created-location,
+.watch-not-created-state {
+  border-color: rgba(255,255,255,.07);
+  background: rgba(255,255,255,.018);
+}
+.fixture-no-watch {
+  color: #8d8882 !important;
+}
+.fixture-score {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
+.match-tournament-card.fixture-clickable,
+.match-card.fixture-clickable {
+  cursor: pointer;
+}
+.match-tournament-card.fixture-clickable:active,
+.match-card.fixture-clickable:active {
+  transform: scale(.992);
+}
