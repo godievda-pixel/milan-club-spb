@@ -38,6 +38,14 @@
     me: () => api('me'),
     rsvp: (watchPartyId, status, guests = 0) =>
       api('rsvp', { watch_party_id: watchPartyId, status, guests }),
+    watchParticipants: (watchPartyId) =>
+      api('watch_participants', { watch_party_id: watchPartyId }),
+    setAttendance: (watchPartyId, telegramUserId, attendanceStatus) =>
+      api('admin_set_attendance', {
+        watch_party_id: watchPartyId,
+        telegram_user_id: telegramUserId,
+        attendance_status: attendanceStatus
+      }),
     claimAdmin: (code) => api('claim_admin', { code }),
     updateProfile: (payload) => api('update_profile', payload),
     updateVenue: (venue) =>
