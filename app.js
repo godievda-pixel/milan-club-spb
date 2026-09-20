@@ -210,6 +210,7 @@ let menuCategories = [];
 let menuItems = [];
 let memberState = null;
 let selectedWatchPartyId = null;
+let selectedWatchMatchId = null;
 const participantState = new Map();
 const watchPhotoState = new Map();
 let adminUserSearchState = {partyId:null, query:'', loading:false, loaded:false, items:[], error:''};
@@ -302,6 +303,38 @@ function watchStateText(match) {
   if (watchHome(match)) return 'Сбора не будет, смотрим дома';
   if (watchCancelled(match)) return 'Сбор отменён';
   return 'Сбор подтверждён';
+}
+
+function matchHasScore(match) {
+  return Number.isFinite(Number(match?.homeScore)) && Number.isFinite(Number(match?.awayScore));
+}
+function matchFinished(match) {
+  const status = String(match?.matchStatus || '').toLowerCase();
+  if (['finished','completed','final','ft'].includes(status)) return true;
+  if (!matchHasScore(match)) return false;
+  const kickoff = Date.parse(match?.iso || '');
+  return !Number.isFinite(kickoff) || Date.now() >= kickoff;
+}
+function matchScoreText(match) {
+  return matchHasScore(match) ? `${Number(match.homeScore)}:${Number(match.awayScore)}` : '';
+}
+function watchBadgeText(match) {
+  if (!match?.watched || !match?.partyId) return 'СБОР НЕ СОЗДАН';
+  if (watchCompleted(match)) return 'ЗАВЕРШЁН';
+  if (watchHome(match)) return 'СМОТРИМ ДОМА';
+  if (watchCancelled(match)) return 'СБОР ОТМЕНЁН';
+  return 'СБОР СОЗДАН';
+}
+function selectedWatchMatch() {
+  if (selectedWatchMatchId) {
+    const selected = fixtures.find(match => String(match.id) === String(selectedWatchMatchId));
+    if (selected) return selected;
+  }
+  if (selectedWatchPartyId) {
+    const selected = fixtures.find(match => String(match.partyId) === String(selectedWatchPartyId));
+    if (selected) return selected;
+  }
+  return homeUpcomingFixtures()[0] || fixtures[0] || null;
 }
 
 function homeUpcomingFixtures() {
@@ -639,7 +672,10 @@ function applyRemoteData(data) {
         collectionStatus:party?.collection_status || (party ? 'active' : null),
         cancelReason:party?.cancel_reason || '',
         cancelledAt:party?.cancelled_at || null,
-        completedAt:party?.completed_at || null
+        completedAt:party?.completed_at || null,
+        matchStatus:m.status || 'scheduled',
+        homeScore:m.home_score == null ? null : Number(m.home_score),
+        awayScore:m.away_score == null ? null : Number(m.away_score)
       };
     });
   }
@@ -784,14 +820,15 @@ function renderHome() {
 }
 
 function matchCard(f) {
-  return `<article class="match-card" data-route="matches">
+  const score = matchFinished(f) ? matchScoreText(f) : '';
+  return `<article class="match-card fixture-clickable" data-action="open-watch-match" data-match-id="${esc(f.id)}">
     <div class="match-card-top"><span>${esc(f.competition)}</span><span>${f.date} ${f.month}</span></div>
     <div class="match-card-clubs">
       <div class="mini-team">${crest(f.home,'sm')}<span>${esc(displayTeam(f.home))}</span></div>
-      <span class="match-dash">—</span>
+      <span class="match-dash">${score ? esc(score) : '—'}</span>
       <div class="mini-team mini-team-away">${crest(f.away,'sm')}<span>${esc(displayTeam(f.away))}</span></div>
     </div>
-    <div class="match-card-bottom"><strong>${esc(f.time)}</strong>${f.watched?'<span class="watch-pill">● просмотр</span>':''}</div>
+    <div class="match-card-bottom"><strong>${score ? 'Матч завершён' : esc(f.time)}</strong><span class="watch-pill">${esc(watchBadgeText(f))}</span></div>
   </article>`;
 }
 
@@ -808,15 +845,18 @@ function renderMatches() {
       const home = watchHome(f);
       const completed = watchCompleted(f);
       return `
-      <article class="fixture match-tournament-card" style="${tournamentThemeStyle(theme)}">
+      <article class="fixture match-tournament-card fixture-clickable" style="${tournamentThemeStyle(theme)}" data-action="open-watch-match" data-match-id="${esc(f.id)}">
         <div class="fixture-date"><strong>${f.date}</strong><span>${f.month}</span></div>
         <div class="fixture-main">
           <div class="fixture-clubs">
-            ${crest(f.home,'xs')}<strong>${esc(displayTeam(f.home))}</strong><span class="fixture-vs">—</span>${crest(f.away,'xs')}<strong>${esc(displayTeam(f.away))}</strong>
+            ${crest(f.home,'xs')}<strong>${esc(displayTeam(f.home))}</strong><span class="fixture-vs">${matchFinished(f) && matchScoreText(f) ? esc(matchScoreText(f)) : '—'}</span>${crest(f.away,'xs')}<strong>${esc(displayTeam(f.away))}</strong>
           </div>
           <span>${esc(f.competition)}</span>
         </div>
-        <div class="fixture-side"><strong>${esc(f.time)}</strong>${completed ? '<span class="fixture-completed">● ЗАВЕРШЁН</span>' : (home ? '<span class="fixture-home">● СМОТРИМ ДОМА</span>' : (cancelled ? '<span class="fixture-cancelled">● СБОР ОТМЕНЁН</span>' : (f.watched?'<span>● ПРОСМОТР</span>':'')))}</div>
+        <div class="fixture-side">
+          <strong class="${matchFinished(f) && matchScoreText(f) ? 'fixture-score' : ''}">${matchFinished(f) && matchScoreText(f) ? esc(matchScoreText(f)) : esc(f.time)}</strong>
+          ${matchFinished(f) ? '<span class="fixture-completed">● ЗАВЕРШЁН</span>' : (home ? '<span class="fixture-home">● СМОТРИМ ДОМА</span>' : (cancelled ? '<span class="fixture-cancelled">● СБОР ОТМЕНЁН</span>' : (f.watched?'<span>● СБОР СОЗДАН</span>':'<span class="fixture-no-watch">● СБОР НЕ СОЗДАН</span>')))}
+        </div>
       </article>`;
     }).join('')}</div>
   </section>`;
@@ -824,20 +864,25 @@ function renderMatches() {
 
 function renderWatch() {
   const parties = partiesForWatch();
-  if (!parties.length) {
+  const first = selectedWatchMatch();
+
+  if (!first) {
     return `<section class="page">
       <div class="eyebrow">${esc(clubName())}</div>
       <h1 class="page-title">Просмотры</h1>
-      <p class="page-subtitle">Как только организаторы опубликуют совместный просмотр, он появится здесь у всех участников.</p>
-      <div class="notice">Сейчас активных просмотров нет. Матчи продолжают отображаться в календаре.</div>
+      <p class="page-subtitle">Ближайший матч и информация о совместном сборе появятся здесь.</p>
+      <div class="notice">Календарь пока не загружен.</div>
     </section>`;
   }
 
-  const first = selectedWatchParty(parties);
-  if (!selectedWatchPartyId) selectedWatchPartyId = first.partyId;
+  if (first.partyId) selectedWatchPartyId = first.partyId;
   const bar = getVenue(first.venueId);
   const participants = participantState.get(first.partyId) || {loading:true, loaded:false, items:[], canManage:false, error:''};
-  const otherParties = parties.filter(p => p.partyId !== first.partyId);
+  const otherMatches = homeUpcomingFixtures().filter(match => String(match.id) !== String(first.id)).slice(0, 8);
+  const completedParties = fixtures
+    .filter(match => match.watched && match.partyId && watchCompleted(match) && String(match.id) !== String(first.id))
+    .sort((a, b) => Date.parse(b.iso || '') - Date.parse(a.iso || ''))
+    .slice(0, 8);
   const firstJoined = joined(first.partyId);
   const firstRegistrationClosed = registrationClosed(first);
   const firstTheme = tournamentTheme(first.competition);
@@ -859,7 +904,12 @@ function renderWatch() {
       <img class="watch-club-watermark" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
       <div class="watch-feature-content">
         <span class="eyebrow">${first.date} ${first.month} · ${esc(first.competition)}</span>
-        ${firstCompleted ? `
+        ${!first.watched || !first.partyId ? `
+          <div class="gathering-not-created-banner">
+            <strong>Сбор пока не создан</strong>
+            <span>Организаторы ещё не опубликовали совместный просмотр на этот матч</span>
+          </div>
+        ` : (firstCompleted ? `
           <div class="gathering-completed-banner">
             <strong>Сбор завершён</strong>
             <span>Матч уже начался</span>
@@ -874,13 +924,18 @@ function renderWatch() {
             <strong>Сбор отменён</strong>
             <span>${esc(first.cancelReason || 'Просмотр не состоится')}</span>
           </div>
-        ` : ''))}
+        ` : '')))}
         <div class="watch-match-row">
           <div class="watch-team">${crest(first.home,'hero')}<strong>${esc(displayTeam(first.home))}</strong></div>
           <div class="watch-vs">vs</div>
           <div class="watch-team">${crest(first.away,'hero')}<strong>${esc(displayTeam(first.away))}</strong></div>
         </div>
-        ${firstHome ? `
+        ${!first.watched || !first.partyId ? `
+          <div class="watch-home-location watch-not-created-location">
+            <strong>Сбор не создан</strong>
+            <small>Начало матча: ${esc(first.time)}</small>
+          </div>
+        ` : (firstHome ? `
           <div class="watch-home-location">
             <strong>Смотрим дома</strong>
             <small>Совместного сбора на этот матч не будет</small>
@@ -899,11 +954,17 @@ function renderWatch() {
             <strong>${esc(bar.name)} · Санкт-Петербург</strong>
             <small>${esc(bar.address)}</small>
           </div>
-        `)}
-        ${!firstHome ? `<p class="watch-meeting-copy">${esc(bar.meeting)} · Начало: ${esc(first.time)}</p>` : ''}
+        `))}
+        ${first.watched && first.partyId && !firstHome ? `<p class="watch-meeting-copy">${esc(bar.meeting)} · Начало: ${esc(first.time)}</p>` : ''}
       </div>
       <div class="watch-feature-content">
-        ${firstHome ? `
+        ${!first.watched || !first.partyId ? `
+          <div class="watch-home-state-card watch-not-created-state">
+            <strong>Совместный просмотр не опубликован</strong>
+            <span>Как только сбор появится, здесь будут место, список участников и запись.</span>
+          </div>
+          <button style="margin-top:10px" class="primary-btn premium-btn registration-closed" type="button" disabled><span>СБОР НЕ СОЗДАН</span></button>
+        ` : (firstHome ? `
           <div class="watch-home-state-card">
             <strong>Сбора не будет</strong>
             <span>Смотрим дома</span>
@@ -927,11 +988,11 @@ function renderWatch() {
             : (firstCancelled
             ? `<div class="registration-deadline is-closed">${esc(first.cancelReason || 'Просмотр не состоится')}</div>`
             : `<div class="registration-deadline ${firstRegistrationClosed ? 'is-closed' : ''}">${esc(registrationDeadlineText(first))}</div>`)}
-        `}
+        `)}
       </div>
     </article>
 
-    ${isAdmin() ? `
+    ${isAdmin() && first.watched && first.partyId ? `
       <section class="admin-participant-panel">
         <div class="admin-participant-head">
           <div>
@@ -1027,7 +1088,9 @@ function renderWatch() {
       </div>
     ` : (firstCompleted ? '<div class="watch-photo-empty">Фото со сбора пока не добавлены.</div>' : '')}
 
-    ${firstHome ? '<div class="watch-home-note">Для этого матча совместного сбора нет — список участников не ведётся.</div>' : `    <div class="section-head participants-head">
+    ${!first.watched || !first.partyId
+      ? '<div class="watch-home-note">Список участников появится после публикации сбора.</div>'
+      : (firstHome ? '<div class="watch-home-note">Для этого матча совместного сбора нет — список участников не ведётся.</div>' : `    <div class="section-head participants-head">
       <h2>Участники</h2>
       <span class="participants-count">${participants.loaded ? participants.items.length : first.attendeeCount || 0}</span>
     </div>
@@ -1070,18 +1133,31 @@ function renderWatch() {
         </article>`).join('')}
     </div>
 
-`}
+`)}
 
-    <div class="section-head"><h2>Другие просмотры</h2></div>
-    <div class="fixture-list">${otherParties.map(f=>`
-      <article class="fixture fixture-clickable" data-action="open-watch-party" data-party-id="${esc(f.partyId)}">
+    <div class="section-head"><h2>Ближайшие матчи</h2></div>
+    <div class="fixture-list">${otherMatches.map(f=>`
+      <article class="fixture fixture-clickable" data-action="open-watch-match" data-match-id="${esc(f.id)}">
         <div class="fixture-date"><strong>${f.date}</strong><span>${f.month}</span></div>
         <div class="fixture-main">
           <div class="fixture-clubs">${crest(f.home,'xs')}<strong>${esc(displayTeam(f.home))}</strong><span class="fixture-vs">—</span>${crest(f.away,'xs')}<strong>${esc(displayTeam(f.away))}</strong></div>
-          <span>${esc(f.competition)} · ${watchHome(f) ? 'Смотрим дома' : esc(getVenue(f.venueId).name)}</span>
+          <span>${esc(f.competition)} · ${f.watched && f.partyId ? (watchHome(f) ? 'Смотрим дома' : esc(getVenue(f.venueId).name)) : 'Сбор ещё не создан'}</span>
         </div>
-        <div class="fixture-side"><strong>${esc(f.time)}</strong><span class="${watchCompleted(f) ? 'fixture-completed' : (watchHome(f) ? 'fixture-home' : (watchCancelled(f) ? 'fixture-cancelled' : ''))}">${watchCompleted(f) ? '● ЗАВЕРШЁН' : (watchHome(f) ? '● СМОТРИМ ДОМА' : (watchCancelled(f) ? '● СБОР ОТМЕНЁН' : '● FAN CLUB'))}</span></div>
-      </article>`).join('') || '<div class="notice">Других просмотров пока не опубликовано.</div>'}</div>
+        <div class="fixture-side"><strong>${esc(f.time)}</strong><span class="${f.watched && f.partyId ? (watchHome(f) ? 'fixture-home' : (watchCancelled(f) ? 'fixture-cancelled' : '')) : 'fixture-no-watch'}">● ${esc(watchBadgeText(f))}</span></div>
+      </article>`).join('') || '<div class="notice">Следующие матчи пока не опубликованы.</div>'}</div>
+
+    ${completedParties.length ? `
+      <div class="section-head"><h2>Прошедшие сборы</h2></div>
+      <div class="fixture-list">${completedParties.map(f=>`
+        <article class="fixture fixture-clickable" data-action="open-watch-match" data-match-id="${esc(f.id)}">
+          <div class="fixture-date"><strong>${f.date}</strong><span>${f.month}</span></div>
+          <div class="fixture-main">
+            <div class="fixture-clubs">${crest(f.home,'xs')}<strong>${esc(displayTeam(f.home))}</strong><span class="fixture-vs">${matchScoreText(f) ? esc(matchScoreText(f)) : '—'}</span>${crest(f.away,'xs')}<strong>${esc(displayTeam(f.away))}</strong></div>
+            <span>${esc(f.competition)} · Фото и участники</span>
+          </div>
+          <div class="fixture-side"><strong>${matchScoreText(f) ? esc(matchScoreText(f)) : esc(f.time)}</strong><span class="fixture-completed">● ЗАВЕРШЁН</span></div>
+        </article>`).join('')}</div>
+    ` : ''}
   </section>`;
 }
 
@@ -1552,13 +1628,14 @@ function render(route=currentRoute, {push=true}={}) {
   TelegramBridge.applyProfileChip();
   window.scrollTo({top:0, behavior:'instant'});
   if (nextRoute === 'watch') {
-    const party = selectedWatchParty(partiesForWatch());
-    if (party?.partyId) {
-      window.setTimeout(() => loadWatchParticipants(party.partyId), 0);
-      window.setTimeout(() => loadWatchPhotos(party.partyId), 0);
+    const match = selectedWatchMatch();
+    if (match?.partyId) {
+      selectedWatchPartyId = match.partyId;
+      window.setTimeout(() => loadWatchParticipants(match.partyId), 0);
+      window.setTimeout(() => loadWatchPhotos(match.partyId), 0);
       if (isAdmin()) {
-        const query = adminUserSearchState.partyId === party.partyId ? adminUserSearchState.query : '';
-        window.setTimeout(() => loadAdminUserSearch(party.partyId, query), 0);
+        const query = adminUserSearchState.partyId === match.partyId ? adminUserSearchState.query : '';
+        window.setTimeout(() => loadAdminUserSearch(match.partyId, query), 0);
       }
     }
   }
@@ -1767,7 +1844,15 @@ function openWatchPhotoViewer(photoId) {
 
 document.addEventListener('click', async e => {
   const route = e.target.closest('[data-route]');
-  if(route){ TelegramBridge.haptic(); render(route.dataset.route); return; }
+  if(route){
+    if (route.dataset.route === 'watch') {
+      selectedWatchMatchId = null;
+      selectedWatchPartyId = null;
+    }
+    TelegramBridge.haptic();
+    render(route.dataset.route);
+    return;
+  }
   const f = e.target.closest('[data-filter]');
   if(f){ TelegramBridge.haptic(); filter=f.dataset.filter; render('matches', {push:false}); return; }
   const actionEl = e.target.closest('[data-action]');
@@ -1917,10 +2002,26 @@ document.addEventListener('click', async e => {
     return;
   }
 
+  if(action==='open-watch-match'){
+    const matchId = actionEl?.dataset.matchId;
+    const match = fixtures.find(item => String(item.id) === String(matchId));
+    if (!match) return;
+
+    selectedWatchMatchId = match.id;
+    selectedWatchPartyId = match.partyId || null;
+    if (match.partyId && adminUserSearchState.partyId !== match.partyId) {
+      adminUserSearchState = {partyId:match.partyId, query:'', loading:false, loaded:false, items:[], error:''};
+    }
+    TelegramBridge.haptic('selection');
+    render('watch');
+    return;
+  }
+
   if(action==='open-watch-party'){
     const partyId = actionEl?.dataset.partyId;
     if (partyId) {
       selectedWatchPartyId = partyId;
+      selectedWatchMatchId = fixtures.find(match => String(match.partyId) === String(partyId))?.id || null;
       if (adminUserSearchState.partyId !== partyId) {
         adminUserSearchState = {partyId, query:'', loading:false, loaded:false, items:[], error:''};
       }
