@@ -1603,3 +1603,15 @@ button:disabled {
     display: none;
   }
 }
+
+
+.ranking-disclaimer {
+  margin: 12px 0 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  background: rgba(255,255,255,.025);
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
