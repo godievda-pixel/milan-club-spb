@@ -863,12 +863,6 @@ function renderRanking() {
   const tgUser = TelegramBridge.user();
   const myId = Number(tgUser?.id || 0);
   const items = rankingState.items || [];
-  const totalVisits = items.reduce((sum, item) => sum + Number(item.total_visits || 0), 0);
-  const averageVisits = items.length ? totalVisits / items.length : 0;
-  const averageVisitsLabel = Number.isInteger(averageVisits)
-    ? String(averageVisits)
-    : averageVisits.toFixed(1).replace('.', ',');
-
   return `<section class="page ranking-page">
     <div class="eyebrow">AC Milan Club San Pietroburgo</div>
     <h1 class="page-title">Рейтинг участников</h1>
@@ -894,9 +888,8 @@ function renderRanking() {
       </div>
     ` : ''}
 
-    <div class="ranking-summary">
-      <div><strong>${items.length}</strong><span>участников в рейтинге</span></div>
-      <div><strong>${averageVisitsLabel}</strong><span>среднее на участника</span></div>
+    <div class="ranking-summary ranking-summary-single">
+      <div><strong>${items.length}</strong><span>всего участников</span></div>
     </div>
 
     ${rankingState.loading ? `
