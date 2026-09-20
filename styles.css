@@ -3155,3 +3155,214 @@ button:disabled {
   width: 17px;
   height: 17px;
 }
+
+
+/* Watch page brand card + watch-at-home state */
+.watch-brand-surface {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-color: rgba(255,255,255,.12) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.055), transparent 32%),
+    radial-gradient(circle at 25% 15%, rgba(255,255,255,.08), transparent 30%),
+    linear-gradient(140deg, #2b0508 0%, #b71219 48%, #5c080d 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 22px 52px rgba(0,0,0,.30);
+}
+.watch-brand-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(105deg, transparent 0 34px, rgba(255,255,255,.018) 34px 35px);
+}
+.watch-feature-content {
+  position: relative;
+  z-index: 2;
+}
+.watch-tournament-watermark-left {
+  position: absolute;
+  left: -32px;
+  top: 66px;
+  z-index: 1;
+  width: 124px;
+  max-width: 29%;
+  max-height: 36%;
+  object-fit: contain;
+  opacity: .075;
+  filter: grayscale(1) brightness(2.25) contrast(.8);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  user-select: none;
+}
+.watch-club-watermark {
+  position: absolute;
+  right: -38px;
+  bottom: 38px;
+  z-index: 1;
+  width: 188px;
+  max-width: 45%;
+  height: auto;
+  opacity: .085;
+  filter: saturate(.85) contrast(1.08);
+  pointer-events: none;
+  user-select: none;
+}
+.watch-brand-surface .eyebrow,
+.watch-brand-surface .watch-team strong,
+.watch-brand-surface .watch-stat strong {
+  color: #fff;
+}
+.watch-brand-surface .watch-vs {
+  color: rgba(255,255,255,.48);
+}
+.watch-brand-surface .watch-stat,
+.watch-brand-surface .watch-venue-link,
+.watch-brand-surface .watch-venue-static,
+.watch-brand-surface .watch-home-location,
+.watch-brand-surface .watch-home-state-card {
+  background: rgba(8,8,8,.22);
+  border-color: rgba(255,255,255,.14);
+  backdrop-filter: blur(10px);
+}
+.watch-brand-surface .watch-venue-copy strong,
+.watch-brand-surface .watch-venue-static strong,
+.watch-brand-surface .watch-home-location strong,
+.watch-brand-surface .watch-home-state-card strong {
+  color: #fff;
+}
+.watch-brand-surface .watch-venue-copy small,
+.watch-brand-surface .watch-venue-static small,
+.watch-brand-surface .watch-meeting-copy,
+.watch-brand-surface .watch-stat span,
+.watch-brand-surface .watch-home-location small,
+.watch-brand-surface .watch-home-state-card span {
+  color: rgba(255,255,255,.68) !important;
+}
+.watch-brand-surface .primary-btn.joined {
+  background:
+    linear-gradient(180deg, rgba(20,20,20,.96), rgba(10,10,10,.95));
+  border-color: rgba(255,255,255,.16);
+}
+.gathering-home-banner {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 14px;
+  background: rgba(0,0,0,.21);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  backdrop-filter: blur(8px);
+}
+.gathering-home-banner strong {
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.gathering-home-banner span {
+  color: rgba(255,255,255,.68);
+  font-size: 9px;
+}
+.watch-home-location {
+  margin-top: 14px;
+  padding: 11px 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 15px;
+  display: grid;
+  gap: 3px;
+}
+.watch-home-location strong {
+  font-size: 10px;
+  line-height: 1.25;
+}
+.watch-home-location small {
+  font-size: 9px;
+  line-height: 1.35;
+}
+.watch-home-state-card {
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 17px;
+  display: grid;
+  gap: 4px;
+}
+.watch-home-state-card strong {
+  font-size: 15px;
+}
+.watch-home-state-card span {
+  font-size: 9px;
+}
+.gathering-home-btn {
+  background: rgba(14,14,14,.92) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.15) !important;
+  box-shadow: none !important;
+}
+.home-watch-state.is-home {
+  border-color: rgba(255,255,255,.16);
+  background: rgba(0,0,0,.22);
+}
+.home-watch-state.is-home strong {
+  color: #fff;
+}
+.fixture-side .fixture-home {
+  color: #d9d4cd !important;
+}
+.admin-status-actions {
+  display: grid;
+  gap: 8px;
+}
+.admin-home-watch {
+  border-color: rgba(255,255,255,.10);
+  background: rgba(255,255,255,.025);
+  color: #c8c2bb;
+}
+.admin-watch-home-copy {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 13px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.02);
+  display: grid;
+  gap: 3px;
+}
+.admin-watch-home-copy strong {
+  color: #e8e3dc;
+  font-size: 9px;
+}
+.admin-watch-home-copy span {
+  color: #867f79;
+  font-size: 9px;
+}
+.watch-home-note {
+  margin: 18px 0 0;
+  padding: 13px 14px;
+  border-radius: 15px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.018);
+  color: #7d7771;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+@media (max-width: 370px) {
+  .watch-tournament-watermark-left {
+    left: -28px;
+    width: 106px;
+  }
+  .watch-club-watermark {
+    right: -34px;
+    width: 165px;
+  }
+  .gathering-home-banner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
