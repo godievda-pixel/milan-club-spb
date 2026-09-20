@@ -17,7 +17,7 @@
   }
 
   async function api(action, payload = {}) {
-    const initData = window.Telegram?.WebApp?.initData || '';
+    const initData = window.MilanTelegram?.initData?.() || window.Telegram?.WebApp?.initData || '';
     if (!initData) throw new Error('Откройте приложение из Telegram');
 
     const response = await fetch(API_URL, {
