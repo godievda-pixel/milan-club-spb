@@ -7,8 +7,63 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>AC Milan Club San Pietroburgo</title>
+  <script async src="https://telegram.org/js/telegram-web-app.js?63"></script>
+  <script>
+    (function () {
+      if (!Object.fromEntries) {
+        Object.fromEntries = function (entries) {
+          var obj = {};
+          Array.from(entries).forEach(function (entry) { obj[entry[0]] = entry[1]; });
+          return obj;
+        };
+      }
+      if (!Promise.allSettled) {
+        Promise.allSettled = function (items) {
+          return Promise.all(Array.from(items).map(function (item) {
+            return Promise.resolve(item).then(
+              function (value) { return {status:'fulfilled', value:value}; },
+              function (reason) { return {status:'rejected', reason:reason}; }
+            );
+          }));
+        };
+      }
+
+      function nativeReady() {
+        try {
+          if (window.TelegramWebviewProxy && typeof window.TelegramWebviewProxy.postEvent === 'function') {
+            window.TelegramWebviewProxy.postEvent('web_app_ready', '');
+          } else if (window.external && typeof window.external.notify === 'function') {
+            window.external.notify(JSON.stringify({eventType:'web_app_ready', eventData:null}));
+          }
+        } catch (_) {}
+      }
+
+      window.__milanNativeReady = nativeReady;
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', nativeReady);
+      } else {
+        nativeReady();
+      }
+      window.setTimeout(nativeReady, 700);
+
+      window.setTimeout(function () {
+        var app = document.getElementById('app');
+        if (!app || String(app.innerHTML || '').replace(/\s/g, '')) return;
+        nativeReady();
+        document.body.classList.remove('app-booting');
+        document.body.classList.add('app-ready');
+        app.innerHTML =
+          '<section style="padding:24px 8px;color:#f4f0e9;font-family:Arial,sans-serif">' +
+          '<div style="font-size:12px;color:#ef2430;font-weight:700;letter-spacing:.12em;text-transform:uppercase">AC Milan Club San Pietroburgo</div>' +
+          '<h1 style="font-size:28px;margin:10px 0">Не удалось запустить приложение</h1>' +
+          '<p style="color:#918e89;line-height:1.5">Нажмите «Повторить». Если экран снова не откроется, обновите Telegram и Android System WebView.</p>' +
+          '<button onclick="location.reload()" style="margin-top:12px;width:100%;min-height:50px;border:0;border-radius:16px;background:#d71920;color:white;font-weight:700">ПОВТОРИТЬ</button>' +
+          '</section>';
+      }, 3200);
+    })();
+  </script>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=20260920v" />
+  <link rel="stylesheet" href="styles.css?v=20260920w" />
 </head>
 <body class="app-booting">
   <div class="ambient ambient-a"></div>
@@ -59,9 +114,8 @@
     </nav>
   </div>
 
-  <script src="https://telegram.org/js/telegram-web-app.js?61"></script>
-  <script src="telegram.js?v=20260920v"></script>
-  <script src="data.js?v=20260920v"></script>
-  <script src="app.js?v=20260920v"></script>
+  <script src="telegram.js?v=20260920w"></script>
+  <script src="data.js?v=20260920w"></script>
+  <script src="app.js?v=20260920w"></script>
 </body>
 </html>
