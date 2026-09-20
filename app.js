@@ -196,11 +196,11 @@ function joined(partyId = activePartyId()) {
   return false;
 }
 function memberRank(visits = 0) {
-  if (visits >= 50) return {name:'Leggenda', note:'50+ просмотров'};
-  if (visits >= 25) return {name:'Senatore', note:'25+ просмотров'};
-  if (visits >= 10) return {name:'Rossonero', note:'10+ просмотров'};
-  if (visits >= 3) return {name:'Milanista', note:'3+ просмотра'};
-  return {name:'Nuovo', note:'первые просмотры впереди'};
+  if (visits >= 100) return {name:'Leggenda', note:'100+ просмотров'};
+  if (visits >= 61) return {name:'Senatore', note:'61–99 просмотров'};
+  if (visits >= 31) return {name:'Rossonero', note:'31–60 просмотров'};
+  if (visits >= 11) return {name:'Milanista', note:'11–30 просмотров'};
+  return {name:'Nuovo', note:'0–10 просмотров'};
 }
 
 function moscowParts(iso) {
