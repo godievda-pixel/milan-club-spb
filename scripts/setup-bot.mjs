@@ -1,6 +1,10 @@
+import { createHash } from 'node:crypto';
+
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const appUrl = process.env.MINI_APP_URL;
 const menuText = process.env.MENU_BUTTON_TEXT || 'Milan Club';
+const webhookUrl = `${appUrl.replace(/\/$/, '')}/telegram-webhook`;
+const webhookSecret = createHash('sha256').update(token).digest('hex').slice(0, 48);
 
 if (!token || !appUrl) {
   console.error('Set TELEGRAM_BOT_TOKEN and MINI_APP_URL before running this script.');
@@ -34,9 +38,16 @@ await call('setChatMenuButton', {
 });
 await call('setMyCommands', {
   commands: [
-    {command: 'start', description: 'Открыть Milan Club'},
+    {command: 'start', description: 'Запустить Milan Club'},
     {command: 'app', description: 'Открыть приложение'}
   ]
 });
 
+await call('setWebhook', {
+  url: webhookUrl,
+  secret_token: webhookSecret,
+  allowed_updates: ['message']
+});
+
 console.log(`Configured @${me.username}: ${menuText} -> ${appUrl}`);
+console.log(`Webhook: ${webhookUrl}`);
