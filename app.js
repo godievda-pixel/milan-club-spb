@@ -1579,7 +1579,8 @@ function openWatchPhotoViewer(photoId) {
   viewer.innerHTML = `
     <button class="watch-photo-viewer-close" data-action="close-watch-photo-viewer" type="button" aria-label="Закрыть">×</button>
     <div class="watch-photo-viewer-stage" data-action="watch-photo-viewer-stage">
-      <img src="${esc(photo.public_url)}" alt="Фото со сбора">
+      <img src="${esc(photo.public_url)}" alt="Фото со сбора" draggable="false">
+      <div class="watch-photo-zoom-hint">Разведите пальцы, чтобы приблизить</div>
       ${photo.caption ? `<div class="watch-photo-viewer-caption">${esc(photo.caption)}</div>` : ''}
     </div>
   `;
@@ -1588,6 +1589,136 @@ function openWatchPhotoViewer(photoId) {
   document.body.classList.add('watch-photo-viewer-open');
   TelegramBridge.showBack(true);
   TelegramBridge.haptic('selection');
+
+  const stage = viewer.querySelector('.watch-photo-viewer-stage');
+  const image = stage?.querySelector('img');
+  if (!stage || !image) return;
+
+  let scale = 1;
+  let translateX = 0;
+  let translateY = 0;
+  let gestureScale = 1;
+  let gestureDistance = 0;
+  let dragOriginX = 0;
+  let dragOriginY = 0;
+  let dragTranslateX = 0;
+  let dragTranslateY = 0;
+  let lastTapAt = 0;
+  let moved = false;
+  const pointers = new Map();
+
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+  const applyTransform = (animate = false) => {
+    image.classList.toggle('is-animating', animate);
+    image.style.transform = `translate3d(${translateX}px,${translateY}px,0) scale(${scale})`;
+    stage.classList.toggle('is-zoomed', scale > 1.01);
+    if (scale <= 1.01) {
+      translateX = 0;
+      translateY = 0;
+    }
+    if (animate) window.setTimeout(() => image.classList.remove('is-animating'), 220);
+  };
+  const resetZoom = (animate = true) => {
+    scale = 1;
+    translateX = 0;
+    translateY = 0;
+    applyTransform(animate);
+  };
+  const pointerDistance = () => {
+    const values = [...pointers.values()];
+    if (values.length < 2) return 0;
+    return Math.hypot(values[0].x - values[1].x, values[0].y - values[1].y);
+  };
+
+  stage.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    stage.setPointerCapture?.(event.pointerId);
+    pointers.set(event.pointerId, {x:event.clientX, y:event.clientY});
+    moved = false;
+
+    if (pointers.size === 1) {
+      dragOriginX = event.clientX;
+      dragOriginY = event.clientY;
+      dragTranslateX = translateX;
+      dragTranslateY = translateY;
+    } else if (pointers.size === 2) {
+      gestureDistance = pointerDistance();
+      gestureScale = scale;
+    }
+  });
+
+  stage.addEventListener('pointermove', event => {
+    if (!pointers.has(event.pointerId)) return;
+    const previous = pointers.get(event.pointerId);
+    if (Math.hypot(event.clientX - previous.x, event.clientY - previous.y) > 3) moved = true;
+    pointers.set(event.pointerId, {x:event.clientX, y:event.clientY});
+
+    if (pointers.size >= 2) {
+      const distance = pointerDistance();
+      if (gestureDistance > 0) {
+        scale = clamp(gestureScale * (distance / gestureDistance), 1, 4);
+        if (scale <= 1.01) {
+          translateX = 0;
+          translateY = 0;
+        }
+        applyTransform(false);
+      }
+      event.preventDefault();
+      return;
+    }
+
+    if (pointers.size === 1 && scale > 1.01) {
+      translateX = dragTranslateX + (event.clientX - dragOriginX);
+      translateY = dragTranslateY + (event.clientY - dragOriginY);
+      applyTransform(false);
+      event.preventDefault();
+    }
+  }, {passive:false});
+
+  const finishPointer = event => {
+    if (!pointers.has(event.pointerId)) return;
+    pointers.delete(event.pointerId);
+
+    if (pointers.size === 1) {
+      const remaining = [...pointers.values()][0];
+      dragOriginX = remaining.x;
+      dragOriginY = remaining.y;
+      dragTranslateX = translateX;
+      dragTranslateY = translateY;
+    }
+
+    if (scale < 1.06) resetZoom(true);
+
+    if (!moved && pointers.size === 0) {
+      const now = Date.now();
+      if (now - lastTapAt < 300) {
+        if (scale > 1.01) resetZoom(true);
+        else {
+          scale = 2.5;
+          translateX = 0;
+          translateY = 0;
+          applyTransform(true);
+        }
+        lastTapAt = 0;
+      } else {
+        lastTapAt = now;
+      }
+    }
+  };
+
+  stage.addEventListener('pointerup', finishPointer);
+  stage.addEventListener('pointercancel', finishPointer);
+
+  stage.addEventListener('wheel', event => {
+    event.preventDefault();
+    const next = clamp(scale + (event.deltaY < 0 ? .3 : -.3), 1, 4);
+    scale = next;
+    if (scale <= 1.01) {
+      translateX = 0;
+      translateY = 0;
+    }
+    applyTransform(false);
+  }, {passive:false});
 }
 
 document.addEventListener('click', async e => {
