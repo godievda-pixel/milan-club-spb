@@ -1766,3 +1766,175 @@ button:disabled {
   color: #6f6a65;
   cursor: default;
 }
+
+
+/* Fan profiles from ranking */
+.ranking-row {
+  cursor: pointer;
+  transition: transform .16s ease, border-color .18s ease, background .18s ease;
+}
+.ranking-row:active {
+  transform: scale(.992);
+}
+.ranking-avatar {
+  position: relative;
+  overflow: hidden;
+}
+.ranking-avatar > span {
+  position: relative;
+  z-index: 0;
+}
+.ranking-avatar img {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  background: #151515;
+}
+
+.fan-profile-page {
+  padding-bottom: 28px;
+}
+.fan-profile-card {
+  position: relative;
+  overflow: hidden;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.085);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(215,25,32,.11), transparent 42%),
+    linear-gradient(150deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
+}
+.fan-profile-card:after {
+  content: "SPB";
+  position: absolute;
+  right: -8px;
+  top: 4px;
+  color: rgba(255,255,255,.025);
+  font-size: 82px;
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: -.08em;
+  pointer-events: none;
+}
+.fan-profile-hero {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 92px minmax(0,1fr);
+  gap: 16px;
+  align-items: center;
+}
+.fan-profile-photo-shell {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.12);
+  background:
+    radial-gradient(circle at 35% 20%, rgba(215,25,32,.2), transparent 56%),
+    #151515;
+  box-shadow: 0 16px 36px rgba(0,0,0,.32);
+}
+.fan-profile-photo-fallback,
+.fan-profile-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.fan-profile-photo-fallback {
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  font-weight: 900;
+}
+.fan-profile-photo {
+  object-fit: cover;
+}
+.fan-profile-identity {
+  min-width: 0;
+}
+.fan-profile-identity .member-number {
+  margin-bottom: 5px;
+}
+.fan-profile-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 23px;
+  line-height: 1.04;
+  font-weight: 850;
+  letter-spacing: -.04em;
+}
+.fan-profile-stats {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+.fan-profile-stats > div {
+  min-height: 82px;
+  padding: 12px 9px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 17px;
+  background: rgba(0,0,0,.16);
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  text-align: center;
+}
+.fan-profile-stats strong {
+  font-size: 21px;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+.fan-profile-stats span {
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.3;
+}
+.fan-profile-rank {
+  position: relative;
+  z-index: 1;
+}
+.fan-profile-status {
+  position: relative;
+  z-index: 1;
+  margin-top: 12px;
+  padding: 11px 13px;
+  border: 1px solid rgba(255,255,255,.065);
+  border-radius: 14px;
+  background: rgba(0,0,0,.14);
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+.fan-profile-status.is-linked {
+  color: #b7b2ac;
+}
+@media (max-width: 370px) {
+  .fan-profile-hero {
+    grid-template-columns: 78px minmax(0,1fr);
+    gap: 13px;
+  }
+  .fan-profile-photo-shell {
+    width: 78px;
+    height: 78px;
+    border-radius: 24px;
+  }
+  .fan-profile-name {
+    font-size: 20px;
+  }
+  .fan-profile-stats > div {
+    min-height: 76px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}
