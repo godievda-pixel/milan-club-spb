@@ -1282,3 +1282,155 @@ button:disabled {
   max-width: 130px;
   line-height: 1.35;
 }
+
+
+/* Watch participants and attendance */
+.participants-head {
+  margin-top: 30px;
+}
+.participants-count {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: 99px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.09);
+  background: rgba(255,255,255,.035);
+  color: #d8d3cc;
+  font-size: 10px;
+  font-weight: 800;
+}
+.participants-list {
+  display: grid;
+  gap: 8px;
+}
+.participant-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  background:
+    linear-gradient(155deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+}
+.participant-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.1);
+  background:
+    radial-gradient(circle at 35% 20%, rgba(215,25,32,.2), transparent 58%),
+    #151515;
+  color: #eee9e2;
+  font-size: 15px;
+  font-weight: 850;
+}
+.participant-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.participant-copy strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 760;
+}
+.participant-copy span,
+.participant-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 9px;
+}
+.attendance-control {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 5px;
+  justify-items: end;
+}
+.attendance-btn {
+  min-height: 31px;
+  padding: 0 9px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.09);
+  background: rgba(255,255,255,.025);
+  color: #8f8b86;
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.attendance-btn.active.attendance-yes {
+  border-color: rgba(127,196,137,.34);
+  background: rgba(127,196,137,.11);
+  color: #a8d9b0;
+}
+.attendance-btn.active.attendance-no {
+  border-color: rgba(215,25,32,.34);
+  background: rgba(215,25,32,.11);
+  color: #ee8f94;
+}
+.attendance-state {
+  grid-column: 1 / -1;
+  color: #5f5b57;
+  font-size: 8px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+.participants-loading {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  min-height: 58px;
+}
+.participants-loading span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #77726c;
+  animation: participantPulse 1s ease-in-out infinite;
+}
+.participants-loading span:nth-child(2) { animation-delay: .13s; }
+.participants-loading span:nth-child(3) { animation-delay: .26s; }
+@keyframes participantPulse {
+  0%, 100% { opacity: .25; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-3px); }
+}
+.fixture-clickable {
+  cursor: pointer;
+}
+.fixture-clickable:active {
+  transform: scale(.99);
+}
+@media (max-width: 410px) {
+  .participant-row {
+    grid-template-columns: 38px minmax(0,1fr);
+  }
+  .participant-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
+  }
+  .attendance-control {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    margin-top: 3px;
+  }
+  .attendance-btn {
+    min-height: 34px;
+  }
+  .attendance-state {
+    text-align: center;
+  }
+}
