@@ -45,7 +45,8 @@
         name: venue.name,
         address: venue.address,
         meeting_note: venue.meeting,
-        map_url: venue.mapUrl
+        map_url: venue.mapUrl,
+        menu_url: venue.menuUrl
       }),
     updateSettings: (settings) => api('admin_update_settings', settings),
     saveWatchParty: (payload) => api('admin_save_watch_party', payload),
