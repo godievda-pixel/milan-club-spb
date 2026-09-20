@@ -820,7 +820,7 @@ function renderFanProfile() {
 function renderMore() {
   return `<section class="page">
     <div class="eyebrow">${esc(clubName())}</div>
-    <h1 class="page-title">Ещё</h1>
+    <h1 class="page-title">Меню</h1>
     <p class="page-subtitle">Всё, что нужно вне матчей и просмотров.</p>
     <div class="more-grid">
       <button class="more-tile premium-tile" data-route="bar"><span class="tile-icon">${icon('pin')}</span><div><strong>Наш бар</strong><span>Адрес, меню и matchday предложения</span></div>${icon('arrowUpRight','tile-arrow')}</button>
@@ -993,12 +993,10 @@ function fanSinceYearButtons(selectedYear = '') {
 
 function focusFanYearPicker() {
   window.setTimeout(() => {
-    const wheel = document.querySelector('.fan-year-wheel');
-    const target = wheel?.querySelector('.fan-year-option.is-selected, .fan-year-option[data-year-anchor="true"]');
-    if (!wheel || !target) return;
-
-    const centeredTop = target.offsetTop - ((wheel.clientHeight - target.offsetHeight) / 2);
-    wheel.scrollTop = Math.max(0, centeredTop);
+    const grid = document.querySelector('.fan-year-grid');
+    const target = grid?.querySelector('.fan-year-option.is-selected, .fan-year-option[data-year-anchor="true"]');
+    if (!grid || !target) return;
+    target.scrollIntoView({block:'center', inline:'nearest', behavior:'instant'});
   }, 70);
 }
 
@@ -1064,16 +1062,15 @@ function renderProfile() {
 
           <p class="fan-year-sheet-copy">Выбери год — он сразу сохранится в твоём Rossoneri ID.</p>
 
-          <div class="fan-year-wheel-wrap">
-            <div class="fan-year-wheel-marker"></div>
-            <div class="fan-year-wheel">
+          <div class="fan-year-grid-wrap">
+            <div class="fan-year-grid">
               ${fanSinceYearButtons(fanSinceYear)}
             </div>
           </div>
 
           <div class="fan-year-sheet-footer">
             <span>1899</span>
-            <span>Forza Milan</span>
+            <span>Выбери свой год</span>
             <span>${new Date().getFullYear()}</span>
           </div>
         </section>
