@@ -282,8 +282,12 @@ function registrationDeadlineText(match) {
 function watchCancelled(match) {
   return match?.collectionStatus === 'cancelled';
 }
+function watchHome(match) {
+  return match?.collectionStatus === 'home';
+}
 function watchStateText(match) {
   if (!match?.watched) return 'Сбор пока не подтверждён';
+  if (watchHome(match)) return 'Сбора не будет, смотрим дома';
   if (watchCancelled(match)) return 'Сбор отменён';
   return 'Сбор подтверждён';
 }
@@ -558,6 +562,7 @@ function renderHome() {
   const nextRegistrationClosed = next.watched && registrationClosed(next);
   const nextTheme = tournamentTheme(next.competition);
   const nextCancelled = watchCancelled(next);
+  const nextHome = watchHome(next);
 
   return `
   <section class="page home-page">
@@ -575,19 +580,21 @@ function renderHome() {
         <div class="team">${crest(next.away,'hero')}<strong>${esc(displayTeam(next.away))}</strong></div>
       </div>
 
-      <div class="home-watch-state ${nextCancelled ? 'is-cancelled' : (next.watched ? 'is-active' : 'is-pending')}">
+      <div class="home-watch-state ${nextHome ? 'is-home' : (nextCancelled ? 'is-cancelled' : (next.watched ? 'is-active' : 'is-pending'))}">
         <strong>${esc(watchStateText(next))}</strong>
         ${nextCancelled && next.cancelReason ? `<span>${esc(next.cancelReason)}</span>` : ''}
       </div>
 
-      <div class="hero-meta">${next.watched ? `${esc(getVenue(next.venueId).name)} · ${esc(getVenue(next.venueId).meeting)}` : 'Совместный просмотр ещё не опубликован'}</div>
+      <div class="hero-meta">${nextHome ? 'Этот матч смотрим дома' : (next.watched ? `${esc(getVenue(next.venueId).name)} · ${esc(getVenue(next.venueId).meeting)}` : 'Совместный просмотр ещё не опубликован')}</div>
       <div class="hero-actions">
         ${next.watched
-          ? (nextCancelled
-            ? '<button class="primary-btn premium-btn gathering-cancelled-btn" type="button" disabled><span>СБОР ОТМЕНЁН</span></button>'
-            : (nextRegistrationClosed && !nextJoined
-              ? '<button class="primary-btn premium-btn registration-closed" type="button" disabled><span>ЗАПИСЬ ЗАКРЫТА</span></button>'
-              : `<button class="primary-btn premium-btn ${nextJoined ? 'joined' : ''}" data-action="rsvp" data-party-id="${esc(next.partyId)}">${nextJoined ? `${icon('check')}<span>Я ИДУ</span>` : '<span>ИДУ НА ПРОСМОТР</span>'}</button>`))
+          ? (nextHome
+            ? '<button class="primary-btn premium-btn gathering-home-btn" type="button" disabled><span>СМОТРИМ ДОМА</span></button>'
+            : (nextCancelled
+              ? '<button class="primary-btn premium-btn gathering-cancelled-btn" type="button" disabled><span>СБОР ОТМЕНЁН</span></button>'
+              : (nextRegistrationClosed && !nextJoined
+                ? '<button class="primary-btn premium-btn registration-closed" type="button" disabled><span>ЗАПИСЬ ЗАКРЫТА</span></button>'
+                : `<button class="primary-btn premium-btn ${nextJoined ? 'joined' : ''}" data-action="rsvp" data-party-id="${esc(next.partyId)}">${nextJoined ? `${icon('check')}<span>Я ИДУ</span>` : '<span>ИДУ НА ПРОСМОТР</span>'}</button>`)))
           : '<button class="primary-btn premium-btn joined" type="button" disabled><span>СБОР НЕ ПОДТВЕРЖДЁН</span></button>'}
         <button class="secondary-btn hero-details-btn" data-route="watch"><span>Подробнее</span></button>
       </div>
@@ -628,6 +635,7 @@ function renderMatches() {
     <div class="fixture-list">${filtered.map(f=>{
       const theme = tournamentTheme(f.competition);
       const cancelled = watchCancelled(f);
+      const home = watchHome(f);
       return `
       <article class="fixture match-tournament-card" style="${tournamentThemeStyle(theme)}">
         <div class="fixture-date"><strong>${f.date}</strong><span>${f.month}</span></div>
@@ -637,7 +645,7 @@ function renderMatches() {
           </div>
           <span>${esc(f.competition)}</span>
         </div>
-        <div class="fixture-side"><strong>${esc(f.time)}</strong>${cancelled ? '<span class="fixture-cancelled">● СБОР ОТМЕНЁН</span>' : (f.watched?'<span>● ПРОСМОТР</span>':'')}</div>
+        <div class="fixture-side"><strong>${esc(f.time)}</strong>${home ? '<span class="fixture-home">● СМОТРИМ ДОМА</span>' : (cancelled ? '<span class="fixture-cancelled">● СБОР ОТМЕНЁН</span>' : (f.watched?'<span>● ПРОСМОТР</span>':''))}</div>
       </article>`;
     }).join('')}</div>
   </section>`;
@@ -663,6 +671,7 @@ function renderWatch() {
   const firstRegistrationClosed = registrationClosed(first);
   const firstTheme = tournamentTheme(first.competition);
   const firstCancelled = watchCancelled(first);
+  const firstHome = watchHome(first);
   const searchState = adminUserSearchState.partyId === first.partyId
     ? adminUserSearchState
     : {partyId:first.partyId, query:'', loading:false, loaded:false, items:[], error:''};
@@ -672,22 +681,34 @@ function renderWatch() {
     <h1 class="page-title">Просмотры</h1>
     <p class="page-subtitle">Все совместные матчи фан-клуба: где встречаемся, когда приходить и кто уже идёт.</p>
 
-    <article class="watch-feature tournament-surface" style="${tournamentThemeStyle(firstTheme)}">
-      ${firstTheme.watermark ? `<img class="tournament-watermark watch-tournament-watermark" src="${esc(firstTheme.watermark)}" alt="" aria-hidden="true" onerror="this.hidden=true">` : ''}
+    <article class="watch-feature watch-brand-surface">
+      ${firstTheme.watermark ? `<img class="watch-tournament-watermark-left" src="${esc(firstTheme.watermark)}" alt="" aria-hidden="true" onerror="this.hidden=true">` : ''}
+      <img class="watch-club-watermark" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
       <div class="watch-feature-content">
         <span class="eyebrow">${first.date} ${first.month} · ${esc(first.competition)}</span>
-        ${firstCancelled ? `
+        ${firstHome ? `
+          <div class="gathering-home-banner">
+            <strong>Сбора не будет</strong>
+            <span>Смотрим дома</span>
+          </div>
+        ` : (firstCancelled ? `
           <div class="gathering-cancelled-banner">
             <strong>Сбор отменён</strong>
             <span>${esc(first.cancelReason || 'Просмотр не состоится')}</span>
           </div>
-        ` : ''}
+        ` : '')}
         <div class="watch-match-row">
           <div class="watch-team">${crest(first.home,'hero')}<strong>${esc(displayTeam(first.home))}</strong></div>
           <div class="watch-vs">vs</div>
           <div class="watch-team">${crest(first.away,'hero')}<strong>${esc(displayTeam(first.away))}</strong></div>
         </div>
-        ${bar.mapUrl ? `
+        ${firstHome ? `
+          <div class="watch-home-location">
+            <strong>Смотрим дома</strong>
+            <small>Совместного сбора на этот матч не будет</small>
+          </div>
+          <p class="watch-meeting-copy">Начало матча: ${esc(first.time)}</p>
+        ` : (bar.mapUrl ? `
           <button class="watch-venue-link" data-action="open-map" data-url="${esc(bar.mapUrl)}" type="button">
             <span class="watch-venue-copy">
               <strong>${esc(bar.name)} · Санкт-Петербург</strong>
@@ -700,23 +721,31 @@ function renderWatch() {
             <strong>${esc(bar.name)} · Санкт-Петербург</strong>
             <small>${esc(bar.address)}</small>
           </div>
-        `}
-        <p class="watch-meeting-copy">${esc(bar.meeting)} · Начало: ${esc(first.time)}</p>
+        `)}
+        ${!firstHome ? `<p class="watch-meeting-copy">${esc(bar.meeting)} · Начало: ${esc(first.time)}</p>` : ''}
       </div>
       <div class="watch-feature-content">
-        <div class="watch-stats">
-          <div class="watch-stat"><strong>${first.attendeeCount || 0}</strong><span>уже идут</span></div>
-          <div class="watch-stat"><strong>${first.capacity || '∞'}</strong><span>мест</span></div>
-          <div class="watch-stat"><strong>SPB</strong><span>наш город</span></div>
-        </div>
-        ${firstCancelled
-          ? '<button style="margin-top:10px" class="primary-btn premium-btn gathering-cancelled-btn" type="button" disabled><span>СБОР ОТМЕНЁН</span></button>'
-          : (firstRegistrationClosed && !firstJoined
-            ? '<button style="margin-top:10px" class="primary-btn premium-btn registration-closed" type="button" disabled><span>ЗАПИСЬ ЗАКРЫТА</span></button>'
-            : `<button style="margin-top:10px" class="primary-btn premium-btn ${firstJoined?'joined':''}" data-action="rsvp" data-party-id="${esc(first.partyId)}">${firstJoined?`${icon('check')}<span>ВЫ В СПИСКЕ</span>`:'<span>ПРИСОЕДИНИТЬСЯ</span>'}</button>`)}
-        ${firstCancelled
-          ? `<div class="registration-deadline is-closed">${esc(first.cancelReason || 'Просмотр не состоится')}</div>`
-          : `<div class="registration-deadline ${firstRegistrationClosed ? 'is-closed' : ''}">${esc(registrationDeadlineText(first))}</div>`}
+        ${firstHome ? `
+          <div class="watch-home-state-card">
+            <strong>Сбора не будет</strong>
+            <span>Смотрим дома</span>
+          </div>
+          <button style="margin-top:10px" class="primary-btn premium-btn gathering-home-btn" type="button" disabled><span>СМОТРИМ ДОМА</span></button>
+        ` : `
+          <div class="watch-stats">
+            <div class="watch-stat"><strong>${first.attendeeCount || 0}</strong><span>уже идут</span></div>
+            <div class="watch-stat"><strong>${first.capacity || '∞'}</strong><span>мест</span></div>
+            <div class="watch-stat"><strong>SPB</strong><span>наш город</span></div>
+          </div>
+          ${firstCancelled
+            ? '<button style="margin-top:10px" class="primary-btn premium-btn gathering-cancelled-btn" type="button" disabled><span>СБОР ОТМЕНЁН</span></button>'
+            : (firstRegistrationClosed && !firstJoined
+              ? '<button style="margin-top:10px" class="primary-btn premium-btn registration-closed" type="button" disabled><span>ЗАПИСЬ ЗАКРЫТА</span></button>'
+              : `<button style="margin-top:10px" class="primary-btn premium-btn ${firstJoined?'joined':''}" data-action="rsvp" data-party-id="${esc(first.partyId)}">${firstJoined?`${icon('check')}<span>ВЫ В СПИСКЕ</span>`:'<span>ПРИСОЕДИНИТЬСЯ</span>'}</button>`)}
+          ${firstCancelled
+            ? `<div class="registration-deadline is-closed">${esc(first.cancelReason || 'Просмотр не состоится')}</div>`
+            : `<div class="registration-deadline ${firstRegistrationClosed ? 'is-closed' : ''}">${esc(registrationDeadlineText(first))}</div>`}
+        `}
       </div>
     </article>
 
@@ -725,25 +754,39 @@ function renderWatch() {
         <div class="admin-participant-head">
           <div>
             <span class="eyebrow">Администратор</span>
-            <h3>Добавить участника</h3>
+            <h3>${firstHome ? 'Статус просмотра' : 'Добавить участника'}</h3>
           </div>
           <span>доступно всегда</span>
         </div>
-        <label class="admin-user-search">
-          <span class="admin-user-search-icon">⌕</span>
-          <input id="adminParticipantSearch" data-party-id="${esc(first.partyId)}" type="search" value="${esc(searchState.query || '')}" placeholder="Имя или @username" autocomplete="off">
-        </label>
-        <div class="admin-user-search-results" id="adminParticipantSearchResults" data-party-id="${esc(first.partyId)}">${renderAdminUserSearchResults(first.partyId)}</div>
+        ${!firstHome ? `
+          <label class="admin-user-search">
+            <span class="admin-user-search-icon">⌕</span>
+            <input id="adminParticipantSearch" data-party-id="${esc(first.partyId)}" type="search" value="${esc(searchState.query || '')}" placeholder="Имя или @username" autocomplete="off">
+          </label>
+          <div class="admin-user-search-results" id="adminParticipantSearchResults" data-party-id="${esc(first.partyId)}">${renderAdminUserSearchResults(first.partyId)}</div>
+        ` : ''}
 
         <div class="admin-watch-status">
-          ${firstCancelled ? `
+          ${firstHome ? `
+            <div class="admin-watch-home-copy">
+              <strong>Сбора не будет</strong>
+              <span>Смотрим дома</span>
+            </div>
+            <button class="secondary-wide admin-restore-watch" data-action="admin-restore-watch" data-party-id="${esc(first.partyId)}" type="button">Провести сбор</button>
+          ` : (firstCancelled ? `
             <div class="admin-watch-cancelled-copy">
               <strong>Сбор отменён</strong>
               <span>${esc(first.cancelReason || 'Причина не указана')}</span>
             </div>
-            <button class="secondary-wide admin-restore-watch" data-action="admin-restore-watch" data-party-id="${esc(first.partyId)}" type="button">Возобновить сбор</button>
+            <div class="admin-status-actions">
+              <button class="secondary-wide admin-restore-watch" data-action="admin-restore-watch" data-party-id="${esc(first.partyId)}" type="button">Возобновить сбор</button>
+              <button class="secondary-wide admin-home-watch" data-action="admin-home-watch" data-party-id="${esc(first.partyId)}" type="button">Смотрим дома</button>
+            </div>
           ` : `
-            <button class="secondary-wide admin-cancel-watch" data-action="open-cancel-watch" data-party-id="${esc(first.partyId)}" type="button">Отменить сбор</button>
+            <div class="admin-status-actions">
+              <button class="secondary-wide admin-home-watch" data-action="admin-home-watch" data-party-id="${esc(first.partyId)}" type="button">Сбора не будет — смотрим дома</button>
+              <button class="secondary-wide admin-cancel-watch" data-action="open-cancel-watch" data-party-id="${esc(first.partyId)}" type="button">Отменить сбор</button>
+            </div>
             ${cancellingWatchPartyId === first.partyId ? `
               <form class="cancel-watch-form" id="adminCancelWatchForm">
                 <input type="hidden" name="watch_party_id" value="${esc(first.partyId)}">
@@ -757,12 +800,12 @@ function renderWatch() {
                 </div>
               </form>
             ` : ''}
-          `}
+          `)}
         </div>
       </section>
     ` : ''}
 
-    <div class="section-head participants-head">
+    ${firstHome ? '<div class="watch-home-note">Для этого матча совместного сбора нет — список участников не ведётся.</div>' : `    <div class="section-head participants-head">
       <h2>Участники</h2>
       <span class="participants-count">${participants.loaded ? participants.items.length : first.attendeeCount || 0}</span>
     </div>
@@ -789,6 +832,8 @@ function renderWatch() {
         </article>`).join('')}
     </div>
 
+`}
+
     <div class="section-head"><h2>Другие просмотры</h2></div>
     <div class="fixture-list">${otherParties.map(f=>`
       <article class="fixture fixture-clickable" data-action="open-watch-party" data-party-id="${esc(f.partyId)}">
@@ -797,7 +842,7 @@ function renderWatch() {
           <div class="fixture-clubs">${crest(f.home,'xs')}<strong>${esc(displayTeam(f.home))}</strong><span class="fixture-vs">—</span>${crest(f.away,'xs')}<strong>${esc(displayTeam(f.away))}</strong></div>
           <span>${esc(f.competition)} · ${esc(getVenue(f.venueId).name)}</span>
         </div>
-        <div class="fixture-side"><strong>${esc(f.time)}</strong><span class="${watchCancelled(f) ? 'fixture-cancelled' : ''}">${watchCancelled(f) ? '● СБОР ОТМЕНЁН' : '● FAN CLUB'}</span></div>
+        <div class="fixture-side"><strong>${esc(f.time)}</strong><span class="${watchHome(f) ? 'fixture-home' : (watchCancelled(f) ? 'fixture-cancelled' : '')}">${watchHome(f) ? '● СМОТРИМ ДОМА' : (watchCancelled(f) ? '● СБОР ОТМЕНЁН' : '● FAN CLUB')}</span></div>
       </article>`).join('') || '<div class="notice">Других просмотров пока не опубликовано.</div>'}</div>
   </section>`;
 }
@@ -1414,6 +1459,26 @@ document.addEventListener('click', async e => {
     cancellingWatchPartyId = null;
     TelegramBridge.haptic('selection');
     render('watch', {push:false});
+    return;
+  }
+
+  if(action==='admin-home-watch'){
+    if (!isAdmin() || !Backend?.setWatchStatus) { toast('Нужны права администратора'); return; }
+    const partyId = actionEl?.dataset.partyId;
+    if (!partyId) return;
+    actionEl.disabled = true;
+    try {
+      await Backend.setWatchStatus(partyId, 'home', '');
+      cancellingWatchPartyId = null;
+      TelegramBridge.haptic('success');
+      await refreshPublicData({renderAfter:false});
+      render('watch', {push:false});
+      toast('Статус: сбора не будет, смотрим дома');
+    } catch (error) {
+      TelegramBridge.haptic('error');
+      toast(error?.message || 'Не удалось изменить статус');
+      actionEl.disabled = false;
+    }
     return;
   }
 
