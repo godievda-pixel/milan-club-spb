@@ -1499,6 +1499,7 @@ function render(route=currentRoute, {push=true}={}) {
     const party = selectedWatchParty(partiesForWatch());
     if (party?.partyId) {
       window.setTimeout(() => loadWatchParticipants(party.partyId), 0);
+      window.setTimeout(() => loadWatchPhotos(party.partyId), 0);
       if (isAdmin()) {
         const query = adminUserSearchState.partyId === party.partyId ? adminUserSearchState.query : '';
         window.setTimeout(() => loadAdminUserSearch(party.partyId, query), 0);
