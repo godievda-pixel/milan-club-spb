@@ -87,7 +87,8 @@ const ICONS = {
   user: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.7-3.4 3.2-5.4 6.5-5.4s5.8 2 6.5 5.4"/></svg>',
   settings: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 13.7v-3.4l-2-.7-.6-1.5.9-1.9-2.4-2.4-1.9.9-1.5-.6-.7-2H9.2l-.7 2-1.5.6-1.9-.9-2.4 2.4.9 1.9-.6 1.5-2 .7v3.4l2 .7.6 1.5-.9 1.9 2.4 2.4 1.9-.9 1.5.6.7 2h3.4l.7-2 1.5-.6 1.9.9 2.4-2.4-.9-1.9.6-1.5 2-.7Z"/></svg>',
   edit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 16-.8 3.8L8 19l9.8-9.8-3-3L5 16Z"/><path d="m13.8 7.2 3 3"/></svg>',
-  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg>'
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg>',
+  socials: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="12" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="18" cy="18" r="2.2"/><path d="m8 11 7.8-4M8 13l7.8 4"/></svg>'
 };
 
 function icon(name, className='') {
@@ -941,9 +942,67 @@ function renderMore() {
     <div class="more-grid">
       <button class="more-tile premium-tile" data-route="bar"><span class="tile-icon">${icon('pin')}</span><div><strong>Наш бар</strong><span>Адрес, меню и matchday предложения</span></div>${icon('arrowUpRight','tile-arrow')}</button>
       <button class="more-tile premium-tile" data-route="contacts"><span class="tile-icon">${icon('message')}</span><div><strong>Контакты</strong><span>Кому написать по просмотрам и членству</span></div>${icon('arrowUpRight','tile-arrow')}</button>
+      <button class="more-tile premium-tile" data-route="socials"><span class="tile-icon">${icon('socials')}</span><div><strong>Соцсети</strong><span>Telegram, VK и Instagram</span></div>${icon('arrowUpRight','tile-arrow')}</button>
       <button class="more-tile premium-tile" data-route="club"><span class="tile-icon">${icon('history')}</span><div><strong>История</strong><span>Люди и события ${esc(clubName())}</span></div>${icon('arrowUpRight','tile-arrow')}</button>
       <button class="more-tile premium-tile" data-route="profile"><span class="tile-icon">${icon('user')}</span><div><strong>Мой профиль</strong><span>Карточка участника и посещения</span></div>${icon('arrowUpRight','tile-arrow')}</button>
       ${isAdmin() ? `<button class="more-tile premium-tile admin-tile" data-route="admin"><span class="tile-icon">${icon('settings')}</span><div><strong>Админка</strong><span>Просмотры, меню, контакты и история</span></div>${icon('arrowUpRight','tile-arrow')}</button>` : ''}
+    </div>
+  </section>`;
+}
+
+function renderSocials() {
+  const socials = [
+    {
+      type:'telegram',
+      title:'Telegram-канал',
+      handle:'@milanspb_news',
+      note:'Новости и анонсы фан-клуба',
+      url:'https://t.me/milanspb_news',
+      icon:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.7 4.1 3.8 10.6c-1.2.5-1.2 1.2-.2 1.5l4.3 1.3 1.7 5.1c.2.7.1 1 .8 1 .5 0 .7-.2 1-.5l2.1-2 4.4 3.2c.8.5 1.4.3 1.6-.8l2.9-13.8c.3-1.3-.5-1.9-1.7-1.5Z"/><path d="m8.1 13.2 9.8-6.1c.5-.3.9-.1.5.2l-8.1 7.3-.3 3.6"/></svg>`
+    },
+    {
+      type:'telegram',
+      title:'Telegram-чат',
+      handle:'Чат фан-клуба',
+      note:'Общение, матчи и встречи',
+      url:'https://t.me/+F1uR8Zl9ics0OWYy',
+      icon:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.7 4.1 3.8 10.6c-1.2.5-1.2 1.2-.2 1.5l4.3 1.3 1.7 5.1c.2.7.1 1 .8 1 .5 0 .7-.2 1-.5l2.1-2 4.4 3.2c.8.5 1.4.3 1.6-.8l2.9-13.8c.3-1.3-.5-1.9-1.7-1.5Z"/><path d="m8.1 13.2 9.8-6.1c.5-.3.9-.1.5.2l-8.1 7.3-.3 3.6"/></svg>`
+    },
+    {
+      type:'vk',
+      title:'ВКонтакте',
+      handle:'spbacmilan',
+      note:'Сообщество Milan Club SPB',
+      url:'https://vk.ru/spbacmilan',
+      icon:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5.5h3.8c.2 3.5 1.7 6.6 3 7.3V5.5h3.6v4.2c1.3-.1 2.7-2.3 3.2-4.2h3.6c-.4 2.2-2.1 4.6-3.5 5.6 1.4.8 3.6 3.2 4.3 5.9h-4c-.6-1.8-2.1-4-3.6-4.2V17h-.4C7.9 17 4.8 13.2 3.5 5.5Z"/></svg>`
+    },
+    {
+      type:'instagram',
+      title:'Instagram',
+      handle:'@acmilansaintp',
+      note:'Фото и жизнь фан-клуба',
+      url:'https://www.instagram.com/acmilansaintp/',
+      icon:`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.8" r="1"/></svg>`
+    }
+  ];
+
+  return `<section class="page social-page">
+    <div class="eyebrow">${esc(clubName())}</div>
+    <h1 class="page-title">Соцсети</h1>
+    <p class="page-subtitle">Все официальные площадки AC Milan Club San Pietroburgo.</p>
+
+    <div class="social-list">
+      ${socials.map(item => `
+        <button class="social-card social-card-${item.type}" data-action="social-link" data-url="${esc(item.url)}" type="button">
+          <span class="social-brand-icon">${item.icon}</span>
+          <span class="social-copy">
+            <strong>${esc(item.title)}</strong>
+            <span>${esc(item.handle)}</span>
+            <small>${esc(item.note)}</small>
+          </span>
+          ${icon('arrowUpRight','social-arrow')}
+        </button>
+      `).join('')}
     </div>
   </section>`;
 }
@@ -1195,7 +1254,7 @@ function renderProfile() {
   </section>`;
 }
 
-const routes = { home:renderHome, matches:renderMatches, watch:renderWatch, ranking:renderRanking, fanprofile:renderFanProfile, club:renderClub, more:renderMore, bar:renderBar, contacts:renderContacts, admin:renderAdmin, profile:renderProfile };
+const routes = { home:renderHome, matches:renderMatches, watch:renderWatch, ranking:renderRanking, fanprofile:renderFanProfile, club:renderClub, more:renderMore, socials:renderSocials, bar:renderBar, contacts:renderContacts, admin:renderAdmin, profile:renderProfile };
 
 function render(route=currentRoute, {push=true}={}) {
   const nextRoute = routes[route] ? route : 'home';
@@ -1251,6 +1310,14 @@ document.addEventListener('click', async e => {
   if(f){ TelegramBridge.haptic(); filter=f.dataset.filter; render('matches', {push:false}); return; }
   const actionEl = e.target.closest('[data-action]');
   const action = actionEl?.dataset.action;
+
+  if(action==='social-link'){
+    const url = actionEl?.dataset.url;
+    if (!url) return;
+    TelegramBridge.haptic('selection');
+    TelegramBridge.open(url);
+    return;
+  }
 
   if(action==='open-map'){
     const url = actionEl?.dataset.url;
