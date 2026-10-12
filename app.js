@@ -856,7 +856,7 @@ function renderMatches() {
         </div>
         <div class="fixture-side">
           <strong class="${matchFinished(f) && matchScoreText(f) ? 'fixture-score' : ''}">${matchFinished(f) && matchScoreText(f) ? esc(matchScoreText(f)) : esc(f.time)}</strong>
-          ${matchFinished(f) ? '<span class="fixture-completed">● ЗАВЕРШЁН</span>' : (home ? '<span class="fixture-home">● СМОТРИМ ДОМА</span>' : (cancelled ? '<span class="fixture-cancelled">● СБОР ОТМЕНЁН</span>' : (f.watched?'<span>● СБОР СОЗДАН</span>':'<span class="fixture-no-watch">● СБОР НЕ СОЗДАН</span>')))}
+          ${matchFinished(f) ? '<span class="fixture-completed">● МАТЧ ЗАВЕРШЁН</span>' : (completed ? '<span class="fixture-completed">● СБОР ЗАВЕРШЁН</span>' : (home ? '<span class="fixture-home">● СМОТРИМ ДОМА</span>' : (cancelled ? '<span class="fixture-cancelled">● СБОР ОТМЕНЁН</span>' : (f.watched?'<span>● СБОР СОЗДАН</span>':'<span class="fixture-no-watch">● СБОР НЕ СОЗДАН</span>'))))}
         </div>
       </article>`;
     }).join('')}</div>
