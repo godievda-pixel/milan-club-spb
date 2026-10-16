@@ -1436,6 +1436,14 @@ function renderAdmin() {
   const venueOptions = (venues.length ? venues : [bar]).map(v => `<option value="${esc(v.id || '')}">${esc(v.name)} · ${esc(v.address)}</option>`).join('');
   const matchOptions = fixtures.map(f => `<option value="${esc(f.id)}">${esc(displayTeam(f.home))} — ${esc(displayTeam(f.away))} · ${f.date} ${f.month} · ${esc(f.time)}</option>`).join('');
   const categoryOptions = menuCategories.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+  const scoreMatches = fixtures.filter(f => {
+    const kickoff = Date.parse(f.iso || '');
+    return Number.isFinite(kickoff) && kickoff + 2 * 60 * 60 * 1000 <= Date.now();
+  }).sort((a, b) => Date.parse(b.iso) - Date.parse(a.iso));
+  const scoreMatchOptions = scoreMatches.map(f =>
+    `<option value="${esc(f.id)}">${esc(displayTeam(f.home))} — ${esc(displayTeam(f.away))} · ${f.date} ${f.month}${matchHasScore(f) ? ` · ${esc(matchScoreText(f))}` : ''}</option>`
+  ).join('');
+  const initialScoreMatch = scoreMatches[0] || null;
 
   return `<section class="page">
     <div class="eyebrow">Управление AC Milan Club San Pietroburgo</div>
@@ -1451,6 +1459,19 @@ function renderAdmin() {
         <label><span>Комментарий</span><input name="note" placeholder="Бронь столов, депозит, важная информация"></label>
         <label class="check-row"><input name="published" type="checkbox" checked><span>Опубликовать просмотр сразу</span></label>
         <button type="submit" class="primary-btn">СОХРАНИТЬ ПРОСМОТР</button>
+      </form>
+    </article>
+
+    <article class="admin-card">
+      <h2>Итоговый счёт матча</h2>
+      <p class="page-subtitle">После матча укажите результат — он появится у всех в «Матчах» и «Прошедших сборах».</p>
+      <form class="bar-form" id="adminMatchScoreForm">
+        <label><span>Завершённый матч</span><select id="adminMatchScoreSelect" name="match_id" required>${scoreMatchOptions || '<option value="">Завершённых матчей пока нет</option>'}</select></label>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+          <label><span>Голы хозяев</span><input name="home_score" type="number" min="0" max="30" step="1" inputmode="numeric" value="${initialScoreMatch?.homeScore ?? ''}" placeholder="0" required></label>
+          <label><span>Голы гостей</span><input name="away_score" type="number" min="0" max="30" step="1" inputmode="numeric" value="${initialScoreMatch?.awayScore ?? ''}" placeholder="0" required></label>
+        </div>
+        <button type="submit" class="primary-btn" ${scoreMatches.length ? '' : 'disabled'}>СОХРАНИТЬ СЧЁТ</button>
       </form>
     </article>
 
@@ -1842,6 +1863,15 @@ function openWatchPhotoViewer(photoId) {
     applyTransform(false);
   }, {passive:false});
 }
+
+document.addEventListener('change', e => {
+  if (e.target?.id !== 'adminMatchScoreSelect') return;
+  const match = fixtures.find(f => String(f.id) === String(e.target.value));
+  const form = e.target.closest('form');
+  if (!form) return;
+  form.elements.namedItem('home_score').value = match?.homeScore ?? '';
+  form.elements.namedItem('away_score').value = match?.awayScore ?? '';
+});
 
 document.addEventListener('click', async e => {
   const route = e.target.closest('[data-route]');
@@ -2311,6 +2341,29 @@ document.addEventListener('submit', async e => {
     } catch (error) {
       TelegramBridge.haptic('error');
       toast(error?.message || 'Не удалось отменить сбор');
+      if (button) button.disabled = false;
+    }
+    return;
+  }
+
+  if (e.target.id === 'adminMatchScoreForm') {
+    e.preventDefault();
+    if (!isAdmin() || !Backend?.setMatchScore) {
+      toast('Нужны права администратора');
+      return;
+    }
+    const fields = new FormData(e.target);
+    const button = e.target.querySelector('button[type="submit"]');
+    if (button) button.disabled = true;
+    try {
+      await Backend.setMatchScore(fields.get('match_id'), fields.get('home_score'), fields.get('away_score'));
+      TelegramBridge.haptic('success');
+      await refreshPublicData({renderAfter:false});
+      render('admin', {push:false});
+      toast('Итоговый счёт сохранён');
+    } catch (error) {
+      TelegramBridge.haptic('error');
+      toast(error?.message || 'Не удалось сохранить счёт');
       if (button) button.disabled = false;
     }
     return;

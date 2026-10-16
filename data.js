@@ -70,6 +70,12 @@
       }),
     updateSettings: (settings) => api('admin_update_settings', settings),
     saveWatchParty: (payload) => api('admin_save_watch_party', payload),
+    setMatchScore: (matchId, homeScore, awayScore) =>
+      api('admin_set_match_score', {
+        match_id: matchId,
+        home_score: homeScore,
+        away_score: awayScore
+      }),
     setWatchStatus: (watchPartyId, collectionStatus, cancelReason = '') =>
       api('admin_set_watch_status', {
         watch_party_id: watchPartyId,
