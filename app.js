@@ -251,6 +251,7 @@ function saveBar(data) {
 let currentRoute = 'home';
 let filter = 'Все';
 let editingBar = false;
+let editingVenueId = null;
 const app = document.querySelector('#app');
 const routeStack = ['home'];
 
@@ -1366,20 +1367,23 @@ function renderSocials() {
 }
 
 function renderBar() {
-  const bar = getBar();
+  const creatingBar = editingBar && editingVenueId === 'new';
+  const bar = creatingBar
+    ? {...defaultBar, name:'', address:''}
+    : (editingBar && editingVenueId ? getVenue(editingVenueId) : getBar());
   if (editingBar) {
     return `<section class="page">
       <div class="eyebrow">Настройки площадки</div>
-      <h1 class="page-title">Бар</h1>
-      <p class="page-subtitle">Эти данные подставляются на главную и во все карточки совместных просмотров.</p>
+      <h1 class="page-title">${creatingBar ? 'Добавить бар' : 'Редактировать бар'}</h1>
+      <p class="page-subtitle">Информация о площадке будет доступна при выборе бара для совместного просмотра.</p>
       <form class="bar-form" id="barForm">
         <label><span>Название бара</span><input name="name" value="${esc(bar.name === defaultBar.name ? '' : bar.name)}" placeholder="Например, Tara Brooch" required></label>
-        <label><span>Адрес</span><input name="address" value="${esc(bar.address === defaultBar.address ? '' : bar.address)}" placeholder="Санкт-Петербург, улица, дом"></label>
+        <label><span>Адрес</span><input name="address" value="${esc(bar.address === defaultBar.address ? '' : bar.address)}" placeholder="Санкт-Петербург, улица, дом" required></label>
         <label><span>Текст про сбор</span><input name="meeting" value="${esc(bar.meeting)}" placeholder="Сбор гостей за 60 минут до матча"></label>
         <label><span>Ссылка на карту</span><input name="mapUrl" value="${esc(bar.mapUrl)}" placeholder="https://..."></label>
         <label><span>Ссылка на меню</span><input name="menuUrl" value="${esc(bar.menuUrl || '')}" placeholder="https://.../menu.pdf"></label>
         <div class="form-actions">
-          <button type="submit" class="primary-btn premium-btn"><span>СОХРАНИТЬ БАР</span></button>
+          <button type="submit" class="primary-btn premium-btn"><span>${creatingBar ? 'ДОБАВИТЬ БАР' : 'СОХРАНИТЬ БАР'}</span></button>
           <button type="button" class="secondary-wide" data-action="cancel-bar-edit">Отмена</button>
         </div>
       </form>
@@ -1391,7 +1395,7 @@ function renderBar() {
     <div class="eyebrow">Matchday places</div>
     <div class="bar-title-row">
       <h1 class="page-title">Наши бары</h1>
-      ${isAdmin() ? `<button class="edit-chip premium-chip" data-action="edit-bar">${icon('edit')}<span>Изменить</span></button>` : ''}
+      ${isAdmin() ? `<button class="edit-chip premium-chip" data-action="add-bar" type="button"><span>+ Добавить бар</span></button>` : ''}
     </div>
     <p class="page-subtitle">Площадки AC Milan Club San Pietroburgo для совместных просмотров.</p>
 
@@ -1410,6 +1414,7 @@ function renderBar() {
           <div class="venue-actions">
             ${venue.mapUrl ? `<a class="secondary-wide link-button premium-link-btn" href="${esc(venue.mapUrl)}" target="_blank" rel="noopener"><span>На карте</span>${icon('arrowUpRight')}</a>` : ''}
             ${venue.menuUrl ? `<a class="secondary-wide link-button premium-link-btn venue-menu-btn" href="${esc(venue.menuUrl)}" target="_blank" rel="noopener"><span>Меню PDF</span>${icon('arrowUpRight')}</a>` : ''}
+            ${isAdmin() && venue.id ? `<button class="secondary-wide premium-link-btn" type="button" data-action="edit-bar" data-venue-id="${esc(venue.id)}"><span>Изменить бар</span>${icon('edit')}</button>` : ''}
           </div>
         </article>`).join('')}
     </div>
@@ -2213,8 +2218,19 @@ document.addEventListener('click', async e => {
       button.disabled = false;
     }
   }
-  if(action==='edit-bar'){ if (!isAdmin()) { toast('Нужны права администратора'); return; } editingBar = true; render('bar'); }
-  if(action==='cancel-bar-edit'){ editingBar = false; render('bar'); }
+  if(action==='add-bar'){
+    if (!isAdmin()) { toast('Нужны права администратора'); return; }
+    editingVenueId = 'new';
+    editingBar = true;
+    render('bar');
+  }
+  if(action==='edit-bar'){
+    if (!isAdmin()) { toast('Нужны права администратора'); return; }
+    editingVenueId = e.target.closest('[data-action="edit-bar"]')?.dataset.venueId || getBar().id;
+    editingBar = true;
+    render('bar');
+  }
+  if(action==='cancel-bar-edit'){ editingBar = false; editingVenueId = null; render('bar'); }
   if(action==='contact') {
     TelegramBridge.haptic();
     const url = e.target.closest('[data-action="contact"]')?.dataset.url;
@@ -2451,28 +2467,38 @@ document.addEventListener('submit', async e => {
   if(e.target.id !== 'barForm') return;
   e.preventDefault();
   const data = Object.fromEntries(new FormData(e.target).entries());
+  const creating = editingVenueId === 'new';
   const venue = {
-    id: getBar().id,
-    name: (data.name || '').trim() || defaultBar.name,
-    address: (data.address || '').trim() || defaultBar.address,
-    meeting: (data.meeting || '').trim() || defaultBar.meeting,
-    mapUrl: (data.mapUrl || '').trim(),
-    menuUrl: (data.menuUrl || '').trim()
+    id: creating ? null : (editingVenueId || getBar().id),
+    name: String(data.name || '').trim(),
+    address: String(data.address || '').trim(),
+    meeting: String(data.meeting || '').trim() || defaultBar.meeting,
+    mapUrl: String(data.mapUrl || '').trim(),
+    menuUrl: String(data.menuUrl || '').trim()
   };
-  if (!isAdmin() || !Backend?.updateVenue || !venue.id) {
+  if (!venue.name || !venue.address) {
+    toast('Укажите название и адрес бара');
+    return;
+  }
+  if (!isAdmin() || !(creating ? Backend?.createVenue : Backend?.updateVenue) || (!creating && !venue.id)) {
     toast('Нужны права администратора');
     return;
   }
+  const button = e.target.querySelector('button[type="submit"]');
+  if (button) button.disabled = true;
   try {
-    await Backend.updateVenue(venue);
+    if (creating) await Backend.createVenue(venue);
+    else await Backend.updateVenue(venue);
     editingBar = false;
+    editingVenueId = null;
     TelegramBridge.haptic('success');
-    await refreshPublicData();
+    await refreshPublicData({renderAfter:false});
     render('bar', {push:false});
-    toast('Бар сохранён для всех');
+    toast(creating ? 'Новый бар добавлен' : 'Бар сохранён для всех');
   } catch (error) {
     TelegramBridge.haptic('error');
     toast(error?.message || 'Не удалось сохранить бар');
+    if (button) button.disabled = false;
   }
 });
 
