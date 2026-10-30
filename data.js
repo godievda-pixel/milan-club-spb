@@ -68,6 +68,14 @@
         map_url: venue.mapUrl,
         menu_url: venue.menuUrl
       }),
+    createVenue: (venue) =>
+      api('admin_create_venue', {
+        name: venue.name,
+        address: venue.address,
+        meeting_note: venue.meeting,
+        map_url: venue.mapUrl,
+        menu_url: venue.menuUrl
+      }),
     updateSettings: (settings) => api('admin_update_settings', settings),
     saveWatchParty: (payload) => api('admin_save_watch_party', payload),
     setMatchScore: (matchId, homeScore, awayScore) =>
