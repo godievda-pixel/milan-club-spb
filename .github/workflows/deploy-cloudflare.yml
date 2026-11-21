@@ -1,28 +1,13 @@
-name: Deploy Milan Club Mini App
+name: Deploy El Nord Mini App
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - index.html
-      - styles.css
-      - app.js
-      - telegram.js
-      - data.js
-      - manifest.webmanifest
-      - scripts/build.mjs
-      - wrangler.jsonc
-      - worker.js
-      - package.json
-      - .github/workflows/deploy-cloudflare.yml
 
 permissions:
   contents: read
 
 concurrency:
-  group: milan-club-production
+  group: el-nord-production
   cancel-in-progress: true
 
 jobs:
