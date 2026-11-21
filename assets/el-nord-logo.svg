@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-labelledby="title">
+<title id="title">El Nord — FC Barcelona Supporters Club Saint Petersburg</title>
+<defs>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe28a"/><stop offset=".55" stop-color="#f5bc4c"/><stop offset="1" stop-color="#c99130"/></linearGradient>
+ <clipPath id="inner"><circle cx="320" cy="314" r="191"/></clipPath>
+ <path id="arc" d="M 96 304 A 224 224 0 0 1 544 304"/>
+</defs>
+<circle cx="320" cy="320" r="303" fill="#06152b" stroke="url(#gold)" stroke-width="12"/>
+<circle cx="320" cy="314" r="205" fill="#071f42" stroke="url(#gold)" stroke-width="9"/>
+<g clip-path="url(#inner)">
+ <rect x="120" y="120" width="390" height="390" fill="#071f42"/>
+ <rect x="185" y="120" width="72" height="300" fill="#8c2043"/>
+ <rect x="326" y="120" width="73" height="300" fill="#8c2043"/>
+ <rect x="466" y="120" width="75" height="300" fill="#8c2043"/>
+ <path d="M100 404H540V510H100Z" fill="#06152b"/>
+ <g fill="url(#gold)">
+  <path d="M301 363V303h9v-22h-5v-9h5v-25h-5l10-73 5-51 5 51 10 73h-5v25h5v9h-5v22h9v60Z"/>
+  <path d="M288 360h63v13h-63zm10-77h45v7h-45zm4 29h37v6h-37z"/>
+  <path d="M314 132h12v-6h-3v-16h-6v16h-3Z"/>
+  <path d="M216 392v-40h14v-32l9-14 9 14v32h14v40Zm184 0v-48h10v-15l8-8 8 8v15h12v48Z"/>
+  <path d="M165 398h310v14H165zM183 381h108v19H183zM344 377h127v23H344z"/>
+ </g>
+ <g fill="#06152b"><rect x="316" y="310" width="8" height="17"/><rect x="316" y="339" width="8" height="21"/><rect x="235" y="348" width="7" height="14"/><rect x="415" y="353" width="7" height="12"/></g>
+ <g stroke="url(#gold)" stroke-width="6" stroke-linecap="round" fill="none">
+  <path d="M169 439q46-12 90 0t90 0t90 0t65 0"/>
+  <path d="M190 455q44 11 84 0t84 0t84 0"/>
+  <path d="M205 472q40-10 79 0t79 0t79 0"/>
+ </g>
+</g>
+<g fill="url(#gold)">
+<path d="M79 311l8 15 15 8-15 8-8 15-8-15-15-8 15-8z"/>
+<path d="M561 311l8 15 15 8-15 8-8 15-8-15-15-8 15-8z"/>
+</g>
+<text font-family="Arial,Helvetica,sans-serif" font-size="68" font-weight="900" letter-spacing="11" fill="url(#gold)" text-anchor="middle"><textPath href="#arc" startOffset="50%">EL NORD</textPath></text>
+<text x="320" y="547" text-anchor="middle" fill="#f5bc4c" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="27" letter-spacing="4">FC BARCELONA</text>
+<text x="320" y="580" text-anchor="middle" fill="#f5bc4c" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="19" letter-spacing="3">SUPPORTERS CLUB · SPB</text>
+</svg>
