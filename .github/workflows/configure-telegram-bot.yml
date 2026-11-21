@@ -18,4 +18,5 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.EL_NORD_TELEGRAM_BOT_TOKEN }}
           MINI_APP_URL: ${{ secrets.EL_NORD_MINI_APP_URL }}
           MENU_BUTTON_TEXT: El Nord
+          EXPECTED_BOT_USERNAME: el_nord_bot
         run: npm run configure-bot
