@@ -1,5 +1,5 @@
-const APP_URL = 'https://milan-club-spb.ciao-web.workers.dev';
-const NOTIFICATION_API_URL = 'https://lcnwccnkkxaosxnfvjvr.supabase.co/functions/v1/milan-api';
+
+
 
 const encoder = new TextEncoder();
 
@@ -37,7 +37,7 @@ function commandFrom(message) {
   return text.split(/\s+/)[0].split('@')[0].toLowerCase();
 }
 
-async function sendWelcome(token, message) {
+async function sendWelcome(token, message, appUrl) {
   const firstName = String(message?.from?.first_name || '').trim();
   const hello = firstName ? `Привет, ${firstName}!\n\n` : '';
 
@@ -46,14 +46,14 @@ async function sendWelcome(token, message) {
     parse_mode: 'HTML',
     disable_web_page_preview: true,
     text:
-      `${hello}<b>Добро пожаловать в AC Milan Club San Pietroburgo 🔴⚫</b>\n\n` +
-      'Здесь собраны ближайшие матчи «Милана», совместные просмотры в Санкт-Петербурге, наши бары, история фан-клуба и твой Rossoneri ID.\n\n' +
-      '<i>Sempre con te sarò. Sempre rossonero.</i>',
+      `${hello}<b>Добро пожаловать в EL NORD · FC Barcelona Supporters Club 🔵🔴</b>\n\n` +
+      'Здесь собраны ближайшие матчи «Барселоны», совместные просмотры в Санкт-Петербурге, наши бары, история фан-клуба и твой El Nord ID.\n\n' +
+      '<i>Més que un club.</i>',
     reply_markup: {
       inline_keyboard: [[
         {
-          text: 'Открыть Milan Club',
-          web_app: {url: APP_URL}
+          text: 'Открыть El Nord',
+          web_app: {url: appUrl}
         }
       ]]
     }
@@ -62,12 +62,10 @@ async function sendWelcome(token, message) {
 
 async function runNotificationTick(env) {
   const token = env.TELEGRAM_BOT_TOKEN;
-  if (!token) {
-    console.error('Notification tick skipped: bot token is not configured');
-    return;
-  }
+  const notificationApiUrl = env.EL_NORD_NOTIFICATION_API_URL;
+  if (!token || !notificationApiUrl) return;
 
-  const response = await fetch(NOTIFICATION_API_URL, {
+  const response = await fetch(notificationApiUrl, {
     method: 'POST',
     headers: {'content-type':'application/json'},
     body: JSON.stringify({
@@ -82,7 +80,7 @@ async function runNotificationTick(env) {
   }
 
   if (result.announcements || result.reminders || result.messages_failed) {
-    console.log('Milan notification tick', result);
+    console.log('El Nord notification tick', result);
   }
 }
 
@@ -102,7 +100,7 @@ async function handleTelegramWebhook(request, env) {
 
   const command = commandFrom(message);
   if (command === '/start' || command === '/app') {
-    await sendWelcome(token, message);
+    await sendWelcome(token, message, env.MINI_APP_URL || new URL(request.url).origin);
   }
 
   return json({ok:true});
