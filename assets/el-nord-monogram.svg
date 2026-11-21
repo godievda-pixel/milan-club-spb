@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-labelledby="title"><title id="title">El Nord monogram</title>
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe28a"/><stop offset="1" stop-color="#edac36"/></linearGradient><clipPath id="c"><circle cx="240" cy="240" r="190"/></clipPath></defs>
+<circle cx="240" cy="240" r="221" fill="#06152b" stroke="url(#g)" stroke-width="12"/>
+<g clip-path="url(#c)"><rect x="50" y="50" width="380" height="380" fill="#0a2852"/><rect x="101" y="50" width="75" height="370" fill="#861d40"/><rect x="250" y="50" width="80" height="370" fill="#861d40"/><rect x="408" y="50" width="50" height="370" fill="#861d40"/></g>
+<text x="240" y="314" text-anchor="middle" font-family="Georgia,Times,serif" font-size="224" font-weight="700" fill="url(#g)" stroke="#06152b" stroke-width="3" paint-order="stroke">EN</text>
+<path d="M224 200l16-139 16 139-5 0v62h-22v-62Z" fill="url(#g)" stroke="#06152b" stroke-width="3"/>
+<g fill="none" stroke="url(#g)" stroke-width="6" stroke-linecap="round"><path d="M150 375q45 15 90 0t90 0t18 0"/><path d="M178 394q30 12 62 0t62 0"/></g></svg>
