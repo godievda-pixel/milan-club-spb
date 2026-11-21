@@ -3,9 +3,6 @@ import { createHash } from 'node:crypto';
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const appUrl = process.env.MINI_APP_URL;
 const menuText = process.env.MENU_BUTTON_TEXT || 'El Nord';
-const webhookUrl = `${appUrl.replace(/\/$/, '')}/telegram-webhook`;
-const webhookSecret = createHash('sha256').update(token).digest('hex').slice(0, 48);
-
 if (!token || !appUrl) {
   console.error('Set TELEGRAM_BOT_TOKEN and MINI_APP_URL before running this script.');
   process.exit(1);
@@ -14,6 +11,10 @@ if (!/^https:\/\//i.test(appUrl)) {
   console.error('MINI_APP_URL must be an HTTPS URL.');
   process.exit(1);
 }
+
+const webhookUrl = `${appUrl.replace(/\/$/, '')}/telegram-webhook`;
+const webhookSecret = createHash('sha256').update(token).digest('hex').slice(0, 48);
+const expectedBotUsername = (process.env.EXPECTED_BOT_USERNAME || 'el_nord_bot').replace(/^@/, '').toLowerCase();
 
 const api = `https://api.telegram.org/bot${token}`;
 async function call(method, payload = {}) {
@@ -28,7 +29,10 @@ async function call(method, payload = {}) {
 }
 
 const me = await call('getMe');
-console.log(`Bot ID: ${me.id}`);
+if (String(me.username || '').toLowerCase() !== expectedBotUsername) {
+  throw new Error(`Refusing to configure @${me.username || 'unknown'}: expected @${expectedBotUsername}`);
+}
+console.log(`Verified bot: @${me.username} (ID ${me.id})`);
 await call('setChatMenuButton', {
   menu_button: {
     type: 'web_app',
