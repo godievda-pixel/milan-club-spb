@@ -1,10 +1,17 @@
 {
-  "name": "AC Milan Club San Pietroburgo",
-  "short_name": "AC Milan Club SPB",
+  "name": "EL NORD — FC Barcelona Supporters Club",
+  "short_name": "El Nord SPB",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#080808",
-  "theme_color": "#080808",
+  "background_color": "#06152b",
+  "theme_color": "#06152b",
   "lang": "ru",
-  "icons": []
+  "icons": [
+    {
+      "src": "assets/el-nord-monogram.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
