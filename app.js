@@ -1,18 +1,18 @@
-const TelegramBridge = window.MilanTelegram || {
-  init(){}, user(){ return null; }, fullName(){ return 'Milanista'; }, isInsideTelegram(){ return false; },
+const TelegramBridge = window.ElNordTelegram || {
+  init(){}, user(){ return null; }, fullName(){ return 'Culé'; }, isInsideTelegram(){ return false; },
   showBack(){}, onBack(){}, haptic(){}, open(url){ if (url) window.open(url, '_blank', 'noopener'); }, applyProfileChip(){}
 };
 TelegramBridge.init();
 
-const CLUB_NAME = 'AC Milan Club San Pietroburgo';
+const CLUB_NAME = 'EL NORD · FC Barcelona Supporters Club';
 let clubSettings = {
   club_name: CLUB_NAME,
-  subtitle: 'Sempre con te sarò · Sempre rossonero'
+  subtitle: 'Més que un club · Sant Petersburg'
 };
 
 const TEAM_LOGOS = {
-  'AC Milan': 'assets/clubs/ac-milan.png',
-  'Milan': 'assets/clubs/ac-milan.png',
+  'FC Barcelona': 'assets/el-nord-monogram.svg',
+  'Barcelona': 'assets/el-nord-monogram.svg',
   'Lecce': 'assets/clubs/lecce.png',
   'US Lecce': 'assets/clubs/lecce.png',
   'Sassuolo': 'assets/clubs/sassuolo.png',
@@ -45,8 +45,8 @@ const TEAM_LOGOS = {
 };
 
 const TEAM_DISPLAY = {
-  'AC Milan': 'Милан',
-  'Milan': 'Милан',
+  'FC Barcelona': 'Барселона',
+  'Barcelona': 'Барселона',
   'Lecce': 'Лечче',
   'US Lecce': 'Лечче',
   'Sassuolo': 'Сассуоло',
@@ -98,66 +98,34 @@ function clubName() { return clubSettings?.club_name || CLUB_NAME; }
 function displayTeam(name='') { return TEAM_DISPLAY[name] || name; }
 function competitionName(name='') {
   const raw = String(name || '');
-  if (raw.startsWith('Serie A') || raw.startsWith('Италия. Серия А')) return 'Италия. Серия А';
-  if (raw.startsWith('Europa League') || raw.startsWith('Лига Европы')) return 'Лига Европы';
+  if (/la\s?liga|laliga|ла\s?лига|примера/i.test(raw)) return 'Испания. Ла Лига';
+  if (/champions league|лига чемпионов/i.test(raw)) return 'Лига чемпионов';
+  if (/copa del rey|кубок испании/i.test(raw)) return 'Кубок Испании';
   return raw;
 }
 function competitionShort(name='') {
   const translated = competitionName(name);
-  if (translated === 'Италия. Серия А') return 'СЕРИЯ А';
-  if (translated === 'Лига Европы') return 'ЛИГА ЕВРОПЫ';
+  if (translated === 'Испания. Ла Лига') return 'ЛА ЛИГА';
+  if (translated === 'Лига чемпионов') return 'ЛИГА ЧЕМПИОНОВ';
+  if (translated === 'Кубок Испании') return 'КУБОК ИСПАНИИ';
   return translated.toUpperCase();
 }
 function tournamentWithRound(name='', round='') {
   return [competitionName(name), round].filter(Boolean).join(' · ');
 }
 const TOURNAMENT_THEMES = {
-  serieA: {
-    from: '#061A4D',
-    mid: '#0A3D91',
-    to: '#0F52BA',
-    accent: '#9CC3FF',
-    watermark: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Serie%20A.svg'
-  },
-  europa: {
-    from: '#17100C',
-    mid: '#7C2A08',
-    to: '#E05A12',
-    accent: '#FFC08D',
-    watermark: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/UEFA_Europa_League_logo_(2024_version).svg'
-  },
-  champions: {
-    from: '#071337',
-    mid: '#162B76',
-    to: '#2448B8',
-    accent: '#A8BCFF',
-    watermark: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/UEFA_Champions_League_logo_no_text.svg'
-  },
-  coppa: {
-    from: '#061D18',
-    mid: '#086B54',
-    to: '#12A37D',
-    accent: '#A6F0D7',
-    watermark: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_of_Coppa_Italia_Frecciarossa_(2024-2025).svg'
-  },
-  default: {
-    from: '#2B0508',
-    mid: '#9E1017',
-    to: '#D71920',
-    accent: '#FFB2B7',
-    watermark: ''
-  }
+  laliga: {from:'#081B41',mid:'#133A78',to:'#871F43',accent:'#F3BA45',watermark:''},
+  champions: {from:'#071337',mid:'#162B76',to:'#2448B8',accent:'#F3BA45',watermark:'https://commons.wikimedia.org/wiki/Special:Redirect/file/UEFA_Champions_League_logo_no_text.svg'},
+  copa: {from:'#081B41',mid:'#512549',to:'#A52A4B',accent:'#F3BA45',watermark:''},
+  default: {from:'#06152B',mid:'#102C59',to:'#87213F',accent:'#F3BA45',watermark:''}
 };
-
 function tournamentTheme(name='') {
   const raw = String(name || '').toLowerCase();
-  if (raw.includes('serie a') || raw.includes('серия а')) return TOURNAMENT_THEMES.serieA;
-  if (raw.includes('europa league') || raw.includes('лига европы')) return TOURNAMENT_THEMES.europa;
+  if (raw.includes('la liga') || raw.includes('laliga') || raw.includes('ла лига') || raw.includes('примера')) return TOURNAMENT_THEMES.laliga;
   if (raw.includes('champions league') || raw.includes('лига чемпионов')) return TOURNAMENT_THEMES.champions;
-  if (raw.includes('coppa italia') || raw.includes('кубок италии')) return TOURNAMENT_THEMES.coppa;
+  if (raw.includes('copa del rey') || raw.includes('кубок испании')) return TOURNAMENT_THEMES.copa;
   return TOURNAMENT_THEMES.default;
 }
-
 function tournamentThemeStyle(theme) {
   return `--tour-from:${theme.from};--tour-mid:${theme.mid};--tour-to:${theme.to};--tour-accent:${theme.accent};`;
 }
@@ -172,33 +140,11 @@ function crest(name, size='lg') {
   return `<span class="club-crest club-crest--${size}"><img src="${esc(src)}" alt="${esc(displayTeam(name))}" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="crest-fallback" hidden>${fallback}</span></span>`;
 }
 
-let fixtures = [
-  {date:'20', month:'сен', iso:'2026-09-20', home:'AC Milan', away:'Lecce', competition:'Италия. Серия А · 5 тур', time:'21:45 МСК', watched:true, status:'ПРОСМОТР'},
-  {date:'10/11', month:'окт', iso:'2026-10-10', home:'Sassuolo', away:'AC Milan', competition:'Италия. Серия А · 6 тур', time:'время уточняется', watched:false, status:''},
-  {date:'15', month:'окт', iso:'2026-10-15', home:'Salzburg', away:'AC Milan', competition:'Лига Европы · 2 тур', time:'19:45 МСК', watched:true, status:'ПРОСМОТР'},
-  {date:'17/18', month:'окт', iso:'2026-10-17', home:'AC Milan', away:'Atalanta', competition:'Италия. Серия А · 7 тур', time:'время уточняется', watched:true, status:'ПРОСМОТР'},
-  {date:'22', month:'окт', iso:'2026-10-22', home:'Bournemouth', away:'AC Milan', competition:'Лига Европы · 3 тур', time:'22:00 МСК', watched:true, status:'ПРОСМОТР'},
-  {date:'24/25', month:'окт', iso:'2026-10-24', home:'Udinese', away:'AC Milan', competition:'Италия. Серия А · 8 тур', time:'время уточняется', watched:false, status:''},
-  {date:'28', month:'окт', iso:'2026-10-28', home:'AC Milan', away:'Bologna', competition:'Италия. Серия А · 9 тур', time:'время уточняется', watched:true, status:'ПРОСМОТР'},
-  {date:'31/01', month:'окт/ноя', iso:'2026-10-31', home:'AC Milan', away:'Inter', competition:'Италия. Серия А · Дерби', time:'время уточняется', watched:true, status:'ПРОСМОТР'}
-];
+let fixtures = [];
 
-let menu = {
-  'Пиво': [
-    ['Guinness','0,5 л','690 ₽'], ['Kilkenny','0,5 л','690 ₽'], ['Сидр','0,5 л','590 ₽']
-  ],
-  'Закуски': [
-    ['Fish & Chips','','890 ₽'], ['Крылья Buffalo','','690 ₽'], ['Начос','','590 ₽']
-  ],
-  'Основное': [
-    ['Irish Burger','','890 ₽'], ['Steak Pie','','990 ₽'], ['Club Sandwich','','790 ₽']
-  ]
-};
+let menu = {};
 
-let contacts = [
-  {name:'Даниил', role:'Организация просмотров', initials:'Д'},
-  {name:'AC Milan Club San Pietroburgo', role:'Членство и мероприятия', initials:'M'}
-];
+let contacts = [];
 
 let remoteBar = null;
 let venues = [];
@@ -222,7 +168,7 @@ let fanYearPickerOpen = false;
 let cancellingWatchPartyId = null;
 let homeRolloverTimer = null;
 let remoteLoaded = false;
-const Backend = window.MilanBackend || null;
+const Backend = window.ElNordBackend || null;
 
 const defaultBar = {
   name: 'Бар пока не выбран',
@@ -233,7 +179,7 @@ const defaultBar = {
 
 function getBar() {
   if (remoteBar) return {...defaultBar, ...remoteBar};
-  try { return {...defaultBar, ...JSON.parse(localStorage.getItem('milanclub:bar') || '{}')}; }
+  try { return {...defaultBar, ...JSON.parse(localStorage.getItem('elnord:bar') || '{}')}; }
   catch { return {...defaultBar}; }
 }
 function getVenue(id) {
@@ -245,7 +191,7 @@ function getVenue(id) {
 }
 
 function saveBar(data) {
-  localStorage.setItem('milanclub:bar', JSON.stringify(data));
+  localStorage.setItem('elnord:bar', JSON.stringify(data));
 }
 
 let currentRoute = 'home';
@@ -263,11 +209,11 @@ function joined(partyId = activePartyId()) {
   return false;
 }
 function memberRank(visits = 0) {
-  if (visits >= 100) return {name:'Leggenda', note:'100+ просмотров'};
-  if (visits >= 61) return {name:'Senatore', note:'61–99 просмотров'};
-  if (visits >= 31) return {name:'Rossonero', note:'31–60 просмотров'};
-  if (visits >= 11) return {name:'Milanista', note:'11–30 просмотров'};
-  return {name:'Nuovo', note:'0–10 просмотров'};
+  if (visits >= 100) return {name:'Llegenda', note:'100+ просмотров'};
+  if (visits >= 61) return {name:'Veterà', note:'61–99 просмотров'};
+  if (visits >= 31) return {name:'Blaugrana', note:'31–60 просмотров'};
+  if (visits >= 11) return {name:'Culé', note:'11–30 просмотров'};
+  return {name:'Novell', note:'0–10 просмотров'};
 }
 function registrationClosesAt(match) {
   const kickoff = Date.parse(match?.iso || '');
@@ -376,7 +322,7 @@ function scheduleHomeRollover(match) {
 function userSearchDisplayName(user) {
   const name = [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim();
   const username = user?.username ? `@${String(user.username).replace(/^@/,'')}` : '';
-  return {name:name || username || 'Milanista', username};
+  return {name:name || username || 'Culé', username};
 }
 function renderAdminUserSearchResults(partyId) {
   const state = adminUserSearchState.partyId === partyId
@@ -734,7 +680,7 @@ async function refreshPublicData({renderAfter=true}={}) {
     if (renderAfter) render(currentRoute, {push:false});
     return true;
   } catch (error) {
-    console.warn('Milan Club bootstrap failed', error);
+    console.warn('El Nord bootstrap failed', error);
     return false;
   }
 }
@@ -746,7 +692,7 @@ async function refreshMemberState({renderAfter=true}={}) {
     if (renderAfter) render(currentRoute, {push:false});
     return true;
   } catch (error) {
-    console.warn('Milan Club member API unavailable', error);
+    console.warn('El Nord member API unavailable', error);
     return false;
   }
 }
@@ -758,8 +704,23 @@ function renderHome() {
   homeRolloverTimer = null;
 
   if (!next) {
-    return '<section class="page"><div class="notice">Ближайшие матчи пока не опубликованы.</div></section>';
-  }
+  return `<section class="page home-page el-nord-empty">
+    <div class="eyebrow">FC Barcelona Supporters Club · Saint Petersburg</div>
+    <h1 class="page-title home-manifesto"><span>EL NORD</span><span>MÉS QUE UN CLUB</span></h1>
+    <p class="page-subtitle">Сине-гранатовое сообщество Петербурга. Вместе смотрим матчи «Барселоны», встречаемся и создаём историю фан-клуба.</p>
+    <article class="hero el-nord-welcome">
+      <img class="el-nord-welcome-logo" src="assets/el-nord-logo.svg" alt="Эмблема El Nord">
+      <div class="el-nord-welcome-copy"><span>BARÇA · SPB</span><strong>СЕВЕР<br>СИНЕ-ГРАНАТОВЫЙ</strong><small>Ближайшие матчи появятся после подключения отдельного календаря El Nord.</small></div>
+    </article>
+    <div class="section-head"><h2>Наш фан-клуб</h2></div>
+    <article class="club-teaser" data-route="club">
+      <img class="club-teaser-logo" src="assets/el-nord-monogram.svg" alt="" aria-hidden="true">
+      <span class="eyebrow">EL NORD · SAINT PETERSBURG</span>
+      <div class="big-copy">Больше, чем футбол</div><p>Вместе — на каждом матче.</p>
+    </article>
+    <button class="dark-btn el-nord-explore" data-route="more">Узнать о фан-клубе</button>
+  </section>`;
+}
 
   scheduleHomeRollover(next);
   const timeMain = next.time.includes('МСК') ? next.time.replace(' МСК','') : next.time;
@@ -773,12 +734,12 @@ function renderHome() {
   return `
   <section class="page home-page">
     <div class="eyebrow">${esc(clubName())}</div>
-    <h1 class="page-title home-manifesto"><span>Sempre con te sarò</span><span>Sempre rossonero</span></h1>
-    <p class="page-subtitle">Совместные просмотры и жизнь AC Milan Club San Pietroburgo в одном месте!</p>
+    <h1 class="page-title home-manifesto"><span>MÉS QUE UN CLUB</span><span>SANT PETERSBURG</span></h1>
+    <p class="page-subtitle">Совместные просмотры и жизнь EL NORD · FC Barcelona Supporters Club в одном месте!</p>
 
     <article class="hero home-hero-brand">
       ${nextTheme.watermark ? `<img class="home-tournament-watermark" src="${esc(nextTheme.watermark)}" alt="" aria-hidden="true" onerror="this.hidden=true">` : ''}
-      <img class="hero-club-watermark" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
+      <img class="hero-club-watermark" src="assets/el-nord-logo.svg" alt="" aria-hidden="true">
       <div class="hero-top"><span class="competition">${competitionShort(next.competition)}</span><span class="live-badge">Ближайший матч</span></div>
       <div class="versus">
         <div class="team">${crest(next.home,'hero')}<strong>${esc(displayTeam(next.home))}</strong></div>
@@ -813,10 +774,10 @@ function renderHome() {
 
     <div class="section-head"><h2>${esc(clubName())}</h2><button class="text-btn premium-text-btn" data-route="club"><span>История</span>${icon('arrowRight')}</button></div>
     <article class="club-teaser" data-route="club">
-      <img class="club-teaser-logo" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
-      <span class="eyebrow">AC Milan Club San Pietroburgo</span>
+      <img class="club-teaser-logo" src="assets/el-nord-logo.svg" alt="" aria-hidden="true">
+      <span class="eyebrow">EL NORD · FC Barcelona Supporters Club</span>
       <div class="big-copy">Больше, чем просто фан-клуб</div>
-      <p>Мы большая красно-чёрная семья из города на Неве.</p>
+      <p>Сине-гранатовая семья из города на Неве.</p>
     </article>
   </section>`;
 }
@@ -835,12 +796,12 @@ function matchCard(f) {
 }
 
 function renderMatches() {
-  const filtered = fixtures.filter(f => filter==='Все' || (filter==='Серия А' ? f.competition.startsWith('Италия. Серия А') : f.competition.startsWith('Лига Европы')));
+  const filtered = fixtures.filter(f => filter==='Все' || (filter==='Ла Лига' ? f.competition.startsWith('Испания. Ла Лига') : f.competition.startsWith('Лига чемпионов')));
   return `<section class="page">
     <div class="eyebrow">${esc(clubName())}</div>
     <h1 class="page-title">Матчи</h1>
     <p class="page-subtitle">Время указано по Москве. Точный слот обновляется в календаре после публикации лигой.</p>
-    <div class="filter-row">${['Все','Серия А','Лига Европы'].map(x=>`<button class="filter premium-filter ${filter===x?'active':''}" data-filter="${x}">${x}</button>`).join('')}</div>
+    <div class="filter-row">${['Все','Ла Лига','Лига чемпионов'].map(x=>`<button class="filter premium-filter ${filter===x?'active':''}" data-filter="${x}">${x}</button>`).join('')}</div>
     <div class="fixture-list">${filtered.map(f=>{
       const theme = tournamentTheme(f.competition);
       const cancelled = watchCancelled(f);
@@ -903,7 +864,7 @@ function renderWatch() {
 
     <article class="watch-feature watch-brand-surface">
       ${firstTheme.watermark ? `<img class="watch-tournament-watermark-left" src="${esc(firstTheme.watermark)}" alt="" aria-hidden="true" onerror="this.hidden=true">` : ''}
-      <img class="watch-club-watermark" src="assets/milan-club-logo-dark.webp" alt="" aria-hidden="true">
+      <img class="watch-club-watermark" src="assets/el-nord-logo.svg" alt="" aria-hidden="true">
       <div class="watch-feature-content">
         <span class="eyebrow">${first.date} ${first.month} · ${esc(first.competition)}</span>
         ${!first.watched || !first.partyId ? `
@@ -1108,7 +1069,7 @@ function renderWatch() {
             ${p.photo_url ? `<img src="${esc(p.photo_url)}" alt="" loading="lazy">` : ''}
           </div>
           <div class="participant-copy">
-            <strong>${esc(p.display_name || p.name || 'Milanista')}</strong>
+            <strong>${esc(p.display_name || p.name || 'Culé')}</strong>
             ${p.username ? `<span>@${esc(String(p.username).replace(/^@/,''))}${p.member_number ? ` · #${String(p.member_number).padStart(4,'0')}` : ''}</span>` : (p.member_number ? `<span>#${String(p.member_number).padStart(4,'0')}</span>` : '')}
             ${p.guests ? `<small>+${Number(p.guests)} ${Number(p.guests) === 1 ? 'гость' : 'гостя'}</small>` : ''}
           </div>
@@ -1165,9 +1126,9 @@ function renderWatch() {
 
 function renderClub() {
   return `<section class="page club-history-page">
-    <div class="eyebrow">AC Milan Club San Pietroburgo</div>
+    <div class="eyebrow">EL NORD · FC Barcelona Supporters Club</div>
     <h1 class="page-title">История</h1>
-    <p class="page-subtitle">Красно-чёрная история нашего сообщества в Санкт-Петербурге.</p>
+    <p class="page-subtitle">Сине-гранатовая история нашего сообщества в Санкт-Петербурге.</p>
 
     <div class="timeline club-timeline">${(historyEntries.length ? historyEntries : [
       {period_label:'START', title:'Первый совместный просмотр', body:'Здесь будет год основания, место первого сбора и короткая история появления фан-клуба.'}
@@ -1180,10 +1141,10 @@ function renderRanking() {
   const myId = Number(tgUser?.id || 0);
   const items = rankingState.items || [];
   return `<section class="page ranking-page">
-    <div class="eyebrow">AC Milan Club San Pietroburgo</div>
+    <div class="eyebrow">EL NORD · FC Barcelona Supporters Club</div>
     <h1 class="page-title">Рейтинг участников</h1>
-    <p class="page-subtitle">Учёт посещений ведётся с сентября 2021 года.</p>
-    <div class="ranking-disclaimer">Данные в рейтинге приблизительные. Сезон 2022/23 рассчитан по среднему количеству посещений.</div>
+    <p class="page-subtitle">Рейтинг формируется по подтверждённым посещениям совместных просмотров El Nord.</p>
+    
 
     <button class="ranking-help-toggle" data-action="toggle-ranking-help" aria-expanded="${rankingHelpOpen ? 'true' : 'false'}">
       <span class="ranking-help-icon">i</span>
@@ -1195,11 +1156,11 @@ function renderRanking() {
       <div class="ranking-help-card">
         <p><strong>1 просмотр = 1 подтверждённое посещение</strong> совместного просмотра фан-клуба.</p>
         <div class="ranking-rank-scale">
-          <span><strong>Nuovo</strong><small>0–10</small></span>
-          <span><strong>Milanista</strong><small>11–30</small></span>
-          <span><strong>Rossonero</strong><small>31–60</small></span>
-          <span><strong>Senatore</strong><small>61–99</small></span>
-          <span><strong>Leggenda</strong><small>100+</small></span>
+          <span><strong>Novell</strong><small>0–10</small></span>
+          <span><strong>Culé</strong><small>11–30</small></span>
+          <span><strong>Blaugrana</strong><small>31–60</small></span>
+          <span><strong>Veterà</strong><small>61–99</small></span>
+          <span><strong>Llegenda</strong><small>100+</small></span>
         </div>
       </div>
     ` : ''}
@@ -1232,7 +1193,7 @@ function renderRanking() {
             <div class="ranking-position">${item.position || index + 1}</div>
             <div class="ranking-avatar"><span>${esc(initial)}</span>${item.photo_url ? `<img src="${esc(item.photo_url)}" alt="" loading="lazy">` : ''}</div>
             <div class="ranking-person">
-              <strong>${esc(item.display_name || username || 'Milanista')}</strong>
+              <strong>${esc(item.display_name || username || 'Culé')}</strong>
               ${username && item.display_name !== username ? `<span>${esc(username)}</span>` : ''}
               <small>${esc(rank.name)}</small>
             </div>
@@ -1255,7 +1216,7 @@ function renderFanProfile() {
   const visits = Number(item.total_visits || 0);
   const rank = memberRank(visits);
   const username = item.username ? `@${String(item.username).replace(/^@/,'')}` : '';
-  const name = item.display_name || username || 'Milanista';
+  const name = item.display_name || username || 'Culé';
   const initial = String(name).replace(/^@/,'').trim().charAt(0).toUpperCase() || 'M';
   const memberNumber = item.member_number ? String(item.member_number).padStart(4,'0') : '—';
   const fanSince = item.fan_since_year || '—';
@@ -1264,13 +1225,13 @@ function renderFanProfile() {
     : `<div class="fan-profile-photo-shell"><div class="fan-profile-photo-fallback">${esc(initial)}</div></div>`;
 
   return `<section class="page fan-profile-page">
-    <div class="eyebrow">Rossoneri ID</div>
+    <div class="eyebrow">El Nord ID</div>
     <h1 class="page-title">Профиль участника</h1>
     <article class="fan-profile-card">
       <div class="fan-profile-hero">
         ${photo}
         <div class="fan-profile-identity">
-          <div class="member-number">AC Milan Club San Pietroburgo · #${memberNumber}</div>
+          <div class="member-number">EL NORD · FC Barcelona Supporters Club · #${memberNumber}</div>
           <div class="fan-profile-name">${esc(name)}</div>
           ${username && username !== name ? `<div class="member-handle">${esc(username)}</div>` : ''}
         </div>
@@ -1310,62 +1271,13 @@ function renderMore() {
 }
 
 function renderSocials() {
-  const socials = [
-    {
-      type:'telegram',
-      title:'Telegram-канал',
-      handle:'@milanspb_news',
-      note:'Новости и анонсы фан-клуба',
-      url:'https://t.me/milanspb_news',
-      icon:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.7 4.1 3.8 10.6c-1.2.5-1.2 1.2-.2 1.5l4.3 1.3 1.7 5.1c.2.7.1 1 .8 1 .5 0 .7-.2 1-.5l2.1-2 4.4 3.2c.8.5 1.4.3 1.6-.8l2.9-13.8c.3-1.3-.5-1.9-1.7-1.5Z"/><path d="m8.1 13.2 9.8-6.1c.5-.3.9-.1.5.2l-8.1 7.3-.3 3.6"/></svg>`
-    },
-    {
-      type:'telegram',
-      title:'Telegram-чат',
-      handle:'Чат фан-клуба',
-      note:'Общение, матчи и встречи',
-      url:'https://t.me/+F1uR8Zl9ics0OWYy',
-      icon:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.7 4.1 3.8 10.6c-1.2.5-1.2 1.2-.2 1.5l4.3 1.3 1.7 5.1c.2.7.1 1 .8 1 .5 0 .7-.2 1-.5l2.1-2 4.4 3.2c.8.5 1.4.3 1.6-.8l2.9-13.8c.3-1.3-.5-1.9-1.7-1.5Z"/><path d="m8.1 13.2 9.8-6.1c.5-.3.9-.1.5.2l-8.1 7.3-.3 3.6"/></svg>`
-    },
-    {
-      type:'vk',
-      title:'ВКонтакте',
-      handle:'spbacmilan',
-      note:'Сообщество Milan Club SPB',
-      url:'https://vk.ru/spbacmilan',
-      icon:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5.5h3.8c.2 3.5 1.7 6.6 3 7.3V5.5h3.6v4.2c1.3-.1 2.7-2.3 3.2-4.2h3.6c-.4 2.2-2.1 4.6-3.5 5.6 1.4.8 3.6 3.2 4.3 5.9h-4c-.6-1.8-2.1-4-3.6-4.2V17h-.4C7.9 17 4.8 13.2 3.5 5.5Z"/></svg>`
-    },
-    {
-      type:'instagram',
-      title:'Instagram',
-      handle:'@acmilansaintp',
-      note:'Фото и жизнь фан-клуба',
-      url:'https://www.instagram.com/acmilansaintp/',
-      icon:`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.8" r="1"/></svg>`
-    }
-  ];
-
   return `<section class="page social-page">
-    <div class="eyebrow">${esc(clubName())}</div>
+    <div class="eyebrow">EL NORD</div>
     <h1 class="page-title">Соцсети</h1>
-    <p class="page-subtitle">Все официальные площадки AC Milan Club San Pietroburgo.</p>
-
-    <div class="social-list">
-      ${socials.map(item => `
-        <button class="social-card social-card-${item.type}" data-action="social-link" data-url="${esc(item.url)}" type="button">
-          <span class="social-brand-icon">${item.icon}</span>
-          <span class="social-copy">
-            <strong>${esc(item.title)}</strong>
-            <span>${esc(item.handle)}</span>
-            <small>${esc(item.note)}</small>
-          </span>
-          ${icon('arrowUpRight','social-arrow')}
-        </button>
-      `).join('')}
-    </div>
+    <p class="page-subtitle">Официальные ссылки фан-клуба будут добавлены организаторами.</p>
+    <div class="notice">Telegram, VK и Instagram пока не указаны.</div>
   </section>`;
 }
-
 function renderBar() {
   const creatingBar = editingBar && editingVenueId === 'new';
   const bar = creatingBar
@@ -1397,7 +1309,7 @@ function renderBar() {
       <h1 class="page-title">Наши бары</h1>
       ${isAdmin() ? `<button class="edit-chip premium-chip" data-action="add-bar" type="button"><span>+ Добавить бар</span></button>` : ''}
     </div>
-    <p class="page-subtitle">Площадки AC Milan Club San Pietroburgo для совместных просмотров.</p>
+    <p class="page-subtitle">Площадки EL NORD · FC Barcelona Supporters Club для совместных просмотров.</p>
 
     <div class="venue-list">
       ${list.map((venue, index) => `
@@ -1434,7 +1346,7 @@ function renderContacts() {
 
 function renderAdmin() {
   if (!isAdmin()) {
-    return `<section class="page"><div class="eyebrow">AC Milan Club San Pietroburgo</div><h1 class="page-title">Админка</h1><div class="notice">Нужны права администратора.</div></section>`;
+    return `<section class="page"><div class="eyebrow">EL NORD · FC Barcelona Supporters Club</div><h1 class="page-title">Админка</h1><div class="notice">Нужны права администратора.</div></section>`;
   }
 
   const bar = getBar();
@@ -1451,7 +1363,7 @@ function renderAdmin() {
   const initialScoreMatch = scoreMatches[0] || null;
 
   return `<section class="page">
-    <div class="eyebrow">Управление AC Milan Club San Pietroburgo</div>
+    <div class="eyebrow">Управление EL NORD · FC Barcelona Supporters Club</div>
     <h1 class="page-title">Админка</h1>
     <p class="page-subtitle">Все изменения сохраняются в общей базе и сразу появляются у всех участников.</p>
 
@@ -1571,22 +1483,22 @@ function renderProfile() {
   const photo = tgUser?.photo_url ? `<img class="profile-hero-photo" src="${esc(tgUser.photo_url)}" alt="">` : `<div class="profile-hero-fallback">${name.charAt(0).toUpperCase()}</div>`;
 
   return `<section class="page">
-    <div class="eyebrow">Rossoneri ID</div>
+    <div class="eyebrow">El Nord ID</div>
     <h1 class="page-title">Профиль</h1>
 
     <article class="profile-card">
-      <div class="profile-identity">${photo}<div><div class="member-number">AC Milan Club San Pietroburgo · #${memberNumber}</div><div class="member-name">${name}</div><div class="member-handle">${username}</div></div></div>
+      <div class="profile-identity">${photo}<div><div class="member-number">EL NORD · FC Barcelona Supporters Club · #${memberNumber}</div><div class="member-name">${name}</div><div class="member-handle">${username}</div></div></div>
 
       <div class="stats-grid profile-stats-grid">
         <div class="stat-card"><strong>${visits}</strong><span>просмотров</span></div>
 
         <button class="stat-card fan-since-stat fan-since-premium" data-action="open-fan-year-picker" type="button">
-          <span class="fan-since-label">болею за Milan с</span>
+          <span class="fan-since-label">болею за «Барселону» с</span>
           <span class="fan-since-premium-row">
             <strong>${fanSinceYear || '—'}</strong>
             <span class="fan-since-edit">${fanSinceYear ? 'Изменить' : 'Указать'}</span>
           </span>
-          <small>${fanSinceYear ? 'Rossonero since' : 'Добавь свой год'}</small>
+          <small>${fanSinceYear ? 'Culé since' : 'Добавь свой год'}</small>
         </button>
       </div>
 
@@ -1599,7 +1511,7 @@ function renderProfile() {
 
       ${memberState?.admin_setup_available && !isAdmin() ? `
         <form class="bar-form admin-claim-form" id="adminClaimForm">
-          <label><span>Одноразовый код администратора</span><input name="code" autocomplete="one-time-code" placeholder="MILAN-XXXXXXXX" required></label>
+          <label><span>Одноразовый код администратора</span><input name="code" autocomplete="one-time-code" placeholder="ELNORD-XXXXXXXX" required></label>
           <button type="submit" class="primary-btn">АКТИВИРОВАТЬ АДМИНА</button>
         </form>
       ` : ''}
@@ -1620,7 +1532,7 @@ function renderProfile() {
             <button class="fan-year-close" data-action="close-fan-year-picker" type="button" aria-label="Закрыть">×</button>
           </div>
 
-          <p class="fan-year-sheet-copy">Выбери год — он сразу сохранится в твоём Rossoneri ID.</p>
+          <p class="fan-year-sheet-copy">Выбери год — он сразу сохранится в твоём El Nord ID.</p>
 
           <div class="fan-year-grid-wrap">
             <div class="fan-year-grid">
@@ -2510,7 +2422,7 @@ function showBootFailure(error) {
   const app = document.getElementById('app');
   if (!app || app.innerHTML.trim()) return;
   app.innerHTML = `<section class="page">
-    <div class="eyebrow">AC Milan Club San Pietroburgo</div>
+    <div class="eyebrow">EL NORD · FC Barcelona Supporters Club</div>
     <h1 class="page-title">Не удалось запустить приложение</h1>
     <p class="page-subtitle">Перезапусти Mini App. Если проблема повторится, обнови Telegram и Android System WebView.</p>
     <button class="primary-btn premium-btn" onclick="location.reload()"><span>ПОВТОРИТЬ</span></button>
