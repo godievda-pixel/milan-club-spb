@@ -1,69 +1,54 @@
-# Milan Club San Pietroburgo — Mini App v0.3
+# EL NORD — FC Barcelona Supporters Club Saint Petersburg
 
-Premium mobile-first fan club app for Milan Club SPB.
+Telegram Mini App для фан-клуба «Барселоны» в Санкт-Петербурге. Основа — личный проект `milan-club-spb`. Новая версия находится в ветке `el-nord-barcelona` и **не затрагивает главную ветку и работающий бот «Милана»**.
 
-## Сейчас работает
-- Главная и ближайшие матчи
-- Календарь и фильтры
-- Совместные просмотры + локальный RSVP
-- Fan Club / история
-- Бар и меню
-- Ручная настройка бара
-- Контакты
-- Telegram Mini App SDK
-- Telegram-профиль в интерфейсе
-- Telegram BackButton и safe-area friendly UI
+## Что перенесено
 
-## Telegram
-В `index.html` подключён официальный Telegram WebApp SDK.
-`telegram.js` вызывает `ready()` / `expand()`, настраивает цвета Mini App, BackButton и читает `initDataUnsafe.user` только для отображения профиля.
+- Главная, календарь матчей, совместные просмотры, регистрация, профили, рейтинг посещений, бар, контакты, история и админка.
+- Цветовая система: тёмно-синий `#06152B`, сине-гранатовые элементы `#812245`, золото `#F5C35D`.
+- Иконки и SVG-эмблемы El Nord на основе визуальных референсов. Это векторная адаптация; для полного совпадения с исходником лучше использовать оригинальную эмблему в SVG/PNG, если она доступна.
+- Ла Лига, Лига чемпионов и Кубок Испании в названиях разделов и фильтрах.
+- Отдельные настройки Cloudflare Worker и Telegram-бота.
 
-Важно: перед использованием Telegram-профиля на сервере нужно валидировать `initData`. Клиентским данным доверять нельзя.
+## Статус: приложение не опубликовано
 
-## Привязка к боту
-После публикации приложения на публичном HTTPS URL:
+**Интерфейс подготовлен, но боевой бэкенд El Nord ещё не подключён.** Данные Милана преднамеренно исключены: нельзя переносить чужие списки участников, записи на просмотры и администраторские права.
 
-```bash
-TELEGRAM_BOT_TOKEN=... MINI_APP_URL=https://... npm run configure-bot
+Для полноценной работы необходимы:
+1. Отдельный проект Supabase с таблицами пользователей, матчей, совместных просмотров, регистраций, посещений, истории, баров и меню, защищённым API и валидацией Telegram initData.
+2. Публичный источник или редактор расписания «Барселоны». Пока реальных матчей нет, приложение показывает корректный экран ожидания вместо вымышленных дат.
+3. Собственный Telegram-бот El Nord с отдельным токеном.
+4. Отдельный адрес Cloudflare Workers и подключение мини-приложения к боту.
+
+## Настройка клиентского API
+
+В `index.html` перед `data.js` подключить отдельный скрипт `config.js` (не коммитить приватные значения):
+
+```js
+window.EL_NORD_CONFIG = {
+  supabaseUrl: 'https://YOUR-PROJECT.supabase.co',
+  supabasePublishableKey: 'YOUR_PUBLIC_PUBLISHABLE_KEY',
+  apiUrl: 'https://YOUR-PROJECT.supabase.co/functions/v1/el-nord-api'
+};
 ```
 
-Скрипт `scripts/setup-bot.mjs` установит Mini App как menu button через `setChatMenuButton` и добавит команды `/start` и `/app`. В GitHub Action адрес Mini App уже задан как `https://milan-club-spb.ciao-web.workers.dev`.
-
-## Настройка бара
-Откройте `Ещё → Наш бар → Изменить`. Пока настройка хранится локально на устройстве. В production перенесём её в общую БД/админку.
+Серверный API использует ту же структуру действий, что приложение-источник, с новым `en_public_bootstrap` и `el-nord-api`. Надо реализовать собственную серверную логику, а не указывать старый API `milan-api`. Никогда не помещайте service_role/secret keys в приложение.
 
 ## Локальная проверка
 
 ```bash
+npm install
 npm run check
+npm run build
 python3 -m http.server 8080
 ```
 
-Для настоящего запуска внутри Telegram нужен публичный HTTPS адрес.
+Telegram SDK работает полноценно только внутри Telegram на HTTPS.
 
-## Cloudflare Workers Static Assets
+## Публикация
 
-Проект подготовлен для отдельного Worker `milan-club-spb`.
+В `wrangler.jsonc` указан отдельный Worker `el-nord-spb`. Workflow `Deploy El Nord Mini App` запускается **только вручную**. Для него нужны GitHub Secrets `CLOUDFLARE_API_TOKEN` и `CLOUDFLARE_ACCOUNT_ID`.
 
-```bash
-npm run build
-npx wrangler@latest deploy
-```
+После появления отдельного бота укажите GitHub Secrets `EL_NORD_TELEGRAM_BOT_TOKEN` и `EL_NORD_MINI_APP_URL`. Workflow настройки бота тоже только ручной; токен бота Милана нельзя повторно использовать.
 
-`wrangler.jsonc` публикует папку `dist/` через Workers Static Assets. После первого deploy Cloudflare выдаст публичный HTTPS URL, который нужно передать в `MINI_APP_URL` и затем выполнить `npm run configure-bot`.
-
-Cloudflare рекомендует Workers Static Assets для новых проектов и `wrangler.jsonc` как основной формат конфигурации.
-
-## GitHub Actions
-
-В репозитории есть два ручных workflow:
-
-- `Deploy Milan Club Mini App` — проверяет JS, собирает `dist/` и деплоит отдельный Worker через `cloudflare/wrangler-action@v4`.
-- `Configure Telegram Bot` — ставит текущий опубликованный Mini App в menu button бота.
-
-Нужные GitHub Secrets:
-- `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
-- `TELEGRAM_BOT_TOKEN`
-
-Workflow запускаются только вручную через вкладку Actions.
+Для самостоятельного репозитория перенесите содержимое ветки `el-nord-barcelona` в новый репозиторий `el-nord-spb`. Это исключит возможность случайного релиза поверх приложения «Милана».
