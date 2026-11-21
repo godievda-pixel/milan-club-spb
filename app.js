@@ -566,7 +566,7 @@ async function loadAttendanceRanking({force=false}={}) {
       loading:false,
       loaded:true,
       items:Array.isArray(result.ranking) ? result.ranking : [],
-      periodStart:result.period_start || '2021-09-01',
+      periodStart:result.period_start || null,
       error:''
     };
   } catch (error) {
@@ -574,7 +574,7 @@ async function loadAttendanceRanking({force=false}={}) {
       loading:false,
       loaded:true,
       items:[],
-      periodStart:'2021-09-01',
+      periodStart:null,
       error:error?.message || 'Не удалось загрузить рейтинг'
     };
   }
@@ -1526,8 +1526,8 @@ function renderProfile() {
 
           <div class="fan-year-sheet-head">
             <div>
-              <span class="eyebrow">Rossoneri since</span>
-              <h2>С какого года ты за Milan?</h2>
+              <span class="eyebrow">Culé since</span>
+              <h2>С какого года ты за «Барселону»?</h2>
             </div>
             <button class="fan-year-close" data-action="close-fan-year-picker" type="button" aria-label="Закрыть">×</button>
           </div>
@@ -1918,7 +1918,7 @@ document.addEventListener('click', async e => {
       fanYearPickerOpen = false;
       TelegramBridge.haptic('success');
       render('profile', {push:false});
-      toast(`Болею за Milan с ${year}`);
+      toast(`Болею за «Барселону» с ${year}`);
     } catch (error) {
       TelegramBridge.haptic('error');
       toast(error?.message || 'Не удалось сохранить год');
@@ -2415,8 +2415,8 @@ document.addEventListener('submit', async e => {
 });
 
 function showBootFailure(error) {
-  try { console.error('Milan Club boot failed', error); } catch (_) {}
-  try { window.__milanNativeReady?.(); } catch (_) {}
+  try { console.error('El Nord boot failed', error); } catch (_) {}
+  try { window.__elNordNativeReady?.(); } catch (_) {}
   document.body.classList.remove('app-booting');
   document.body.classList.add('app-ready');
   const app = document.getElementById('app');
