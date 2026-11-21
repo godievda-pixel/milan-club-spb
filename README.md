@@ -22,7 +22,7 @@ Telegram Mini App для фан-клуба «Барселоны» в Санкт-
 
 ## Настройка клиентского API
 
-В `index.html` перед `data.js` подключить отдельный скрипт `config.js` (не коммитить приватные значения):
+В `index.html` уже есть `window.EL_NORD_CONFIG` перед `data.js`. Заполните значения для **отдельного** проекта Supabase. В браузер можно помещать только publishable key (не секретный ключ):
 
 ```js
 window.EL_NORD_CONFIG = {
