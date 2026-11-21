@@ -1274,8 +1274,14 @@ function renderSocials() {
   return `<section class="page social-page">
     <div class="eyebrow">EL NORD</div>
     <h1 class="page-title">Соцсети</h1>
-    <p class="page-subtitle">Официальные ссылки фан-клуба будут добавлены организаторами.</p>
-    <div class="notice">Telegram, VK и Instagram пока не указаны.</div>
+    <p class="page-subtitle">Официальный Telegram-бот фан-клуба. Другие площадки добавим после подтверждения ссылок.</p>
+    <div class="social-list">
+      <button class="social-card social-card-telegram" type="button" data-action="social-link" data-url="https://t.me/el_nord_bot">
+        <span class="social-brand-icon">${icon('message')}</span>
+        <span class="social-copy"><strong>Telegram-бот El Nord</strong><span>@el_nord_bot</span><small>Открыть бота фан-клуба</small></span>
+        ${icon('arrowUpRight', 'social-arrow')}
+      </button>
+    </div>
   </section>`;
 }
 function renderBar() {
