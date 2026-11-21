@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const appUrl = process.env.MINI_APP_URL;
-const menuText = process.env.MENU_BUTTON_TEXT || 'Milan Club';
+const menuText = process.env.MENU_BUTTON_TEXT || 'El Nord';
 const webhookUrl = `${appUrl.replace(/\/$/, '')}/telegram-webhook`;
 const webhookSecret = createHash('sha256').update(token).digest('hex').slice(0, 48);
 
@@ -38,7 +38,7 @@ await call('setChatMenuButton', {
 });
 await call('setMyCommands', {
   commands: [
-    {command: 'start', description: 'Запустить Milan Club'},
+    {command: 'start', description: 'Запустить El Nord'},
     {command: 'app', description: 'Открыть приложение'}
   ]
 });
