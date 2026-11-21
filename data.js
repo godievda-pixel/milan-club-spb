@@ -1,10 +1,13 @@
 (() => {
-  const SUPABASE_URL = 'https://lcnwccnkkxaosxnfvjvr.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_ZqBVy-GIs0swsIZoFQoMJQ_3JVivZGh';
-  const API_URL = `${SUPABASE_URL}/functions/v1/milan-api`;
+  const config = window.EL_NORD_CONFIG || {};
+  const SUPABASE_URL = String(config.supabaseUrl || '').replace(/\/$/, '');
+  const SUPABASE_KEY = String(config.supabasePublishableKey || '');
+  const API_URL = String(config.apiUrl || `${SUPABASE_URL}/functions/v1/el-nord-api`);
+
+  if (!SUPABASE_URL || !SUPABASE_KEY) { window.ElNordBackend = null; return; }
 
   async function publicBootstrap() {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/mc_public_bootstrap`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/en_public_bootstrap`, {
       method: 'POST',
       headers: {
         apikey: SUPABASE_KEY,
@@ -17,7 +20,7 @@
   }
 
   async function api(action, payload = {}) {
-    const initData = window.MilanTelegram?.initData?.() || window.Telegram?.WebApp?.initData || '';
+    const initData = window.ElNordTelegram?.initData?.() || window.Telegram?.WebApp?.initData || '';
     if (!initData) throw new Error('Откройте приложение из Telegram');
 
     const response = await fetch(API_URL, {
@@ -33,7 +36,7 @@
     return data;
   }
 
-  window.MilanBackend = {
+  window.ElNordBackend = {
     publicBootstrap,
     me: () => api('me'),
     rsvp: (watchPartyId, status, guests = 0) =>
