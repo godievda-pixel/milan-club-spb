@@ -1,12 +1,12 @@
 :root {
-  --bg: #080808;
-  --surface: #111111;
-  --surface-2: #171717;
+  --bg: #06152b;
+  --surface: #091e3b;
+  --surface-2: #102747;
   --line: rgba(255,255,255,.09);
   --text: #f4f0e9;
   --muted: #918e89;
-  --red: #d71920;
-  --red-2: #ef2430;
+  --red: #efb748;
+  --red-2: #f5c35d;
   --good: #7fc489;
   --radius-xl: 30px;
   --radius-lg: 24px;
@@ -31,7 +31,7 @@ body {
   overscroll-behavior: none;
   touch-action: manipulation;
   background:
-    radial-gradient(circle at 10% 0%, rgba(215,25,32,.12), transparent 28%),
+    radial-gradient(circle at 10% 0%, rgba(245,188,70,.12), transparent 28%),
     radial-gradient(circle at 95% 25%, rgba(255,255,255,.035), transparent 34%),
     var(--bg);
   color: var(--text);
@@ -75,7 +75,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .brand { border: 0; background: transparent; display: flex; gap: 10px; align-items: center; padding: 0; cursor: pointer; text-align: left; }
 .brand-mark {
   width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px;
-  background: linear-gradient(145deg, #ef2731, #990c12); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18), 0 8px 26px rgba(215,25,32,.22);
+  background: linear-gradient(145deg, #ef2731, #7e1d40); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18), 0 8px 26px rgba(245,188,70,.22);
   font-weight: 900; font-size: 20px; letter-spacing: -.05em;
 }
 .brand-logo-wrap {
@@ -95,7 +95,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .brand-copy strong { font-size: 12px; letter-spacing: .11em; }
 .brand-copy small { font-size: 9px; letter-spacing: .16em; color: var(--muted); }
 .profile-chip { border: 1px solid var(--line); background: rgba(255,255,255,.035); border-radius: 99px; padding: 9px 12px; display: flex; gap: 7px; align-items: center; font-size: 11px; cursor: pointer; }
-.profile-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red-2); box-shadow: 0 0 14px rgba(239,36,48,.7); }
+.profile-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red-2); box-shadow: 0 0 14px rgba(245,188,70,.7); }
 
 .content {
   flex: 1 1 auto;
@@ -121,7 +121,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   background:
     linear-gradient(180deg, rgba(255,255,255,.055), transparent 32%),
     radial-gradient(circle at 25% 15%, rgba(255,255,255,.08), transparent 30%),
-    linear-gradient(140deg, #2b0508 0%, #b71219 48%, #5c080d 100%);
+    linear-gradient(140deg, #071b3b 0%, #812245 48%, #152e57 100%);
   box-shadow: var(--shadow);
   padding: 22px;
 }
@@ -172,9 +172,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .match-teams { font-weight: 850; font-size: 19px; letter-spacing: -.035em; line-height: 1.15; margin: 22px 0 17px; }
 .match-card-bottom { display: flex; justify-content: space-between; align-items: end; font-size: 11px; }
 .match-card-bottom strong { font-size: 13px; }
-.watch-pill { color: #ff6168; font-size: 9px; text-transform: uppercase; letter-spacing: .09em; }
+.watch-pill { color: #f5c35d; font-size: 9px; text-transform: uppercase; letter-spacing: .09em; }
 
-.club-teaser { position: relative; overflow: hidden; border-radius: var(--radius-xl); min-height: 250px; border: 1px solid var(--line); background: linear-gradient(135deg, #151515, #080808); padding: 22px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; }
+.club-teaser { position: relative; overflow: hidden; border-radius: var(--radius-xl); min-height: 250px; border: 1px solid var(--line); background: linear-gradient(135deg, #151515, #06152b); padding: 22px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; }
 .club-teaser:before { content:"SPB"; position: absolute; right: -10px; top: 10px; font-size: 110px; font-weight: 950; color: rgba(255,255,255,.025); letter-spacing: -.08em; }
 .club-teaser .big-copy { font-size: 28px; line-height: 1; font-weight: 850; letter-spacing: -.04em; max-width: 300px; margin: 7px 0 12px; }
 .club-teaser p { color: var(--muted); font-size: 12px; margin: 0; max-width: 330px; line-height: 1.5; }
@@ -215,7 +215,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   border-radius: 28px;
   border: 1px solid rgba(255,255,255,.12);
   background:
-    radial-gradient(circle at 50% 30%, rgba(215,25,32,.09), transparent 45%),
+    radial-gradient(circle at 50% 30%, rgba(245,188,70,.09), transparent 45%),
     #f2efe8;
   display: grid;
   place-items: center;
@@ -260,7 +260,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .member-name { font-size: 33px; margin: 8px 0 18px; letter-spacing: -.05em; }
 .progress { height: 8px; background: #1a1a1a; border-radius: 99px; overflow: hidden; margin-top: 12px; }
 .progress > span { display: block; height: 100%; width: 62%; background: linear-gradient(90deg,var(--red),#ff5e66); border-radius: inherit; }
-.notice { margin-top: 16px; padding: 14px; border: 1px solid rgba(215,25,32,.22); background: rgba(215,25,32,.07); border-radius: 18px; color: #d8a5a7; font-size: 11px; line-height: 1.5; }
+.notice { margin-top: 16px; padding: 14px; border: 1px solid rgba(245,188,70,.22); background: rgba(245,188,70,.07); border-radius: 18px; color: #d8a5a7; font-size: 11px; line-height: 1.5; }
 
 .bottom-nav {
   position: fixed; left: 50%; transform: translateX(-50%); bottom: max(10px, env(safe-area-inset-bottom)); width: min(calc(100% - 20px), 540px);
@@ -271,7 +271,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .nav-item.active { color: #fff; }
 .nav-icon { font-size: 17px; line-height: 1; }
 .nav-main { margin-top: -21px; color: #9c9c9c; }
-.nav-main-circle { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(145deg, #ed2731, #a30d13); color: white; font-size: 18px; font-weight: 900; border: 4px solid #101010; box-shadow: 0 8px 28px rgba(215,25,32,.28); }
+.nav-main-circle { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(145deg, #ed2731, #a30d13); color: white; font-size: 18px; font-weight: 900; border: 4px solid #101010; box-shadow: 0 8px 28px rgba(245,188,70,.28); }
 .nav-main.active .nav-main-circle { outline: 1px solid rgba(255,255,255,.3); }
 
 .toast { position: fixed; left: 50%; bottom: 104px; transform: translateX(-50%) translateY(15px); opacity: 0; pointer-events: none; background: #f3efe8; color: #101010; border-radius: 99px; padding: 12px 16px; font-size: 11px; font-weight: 700; transition: .25s ease; z-index: 60; white-space: nowrap; }
@@ -303,8 +303,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .bar-form select { appearance:none; }
 .bar-form input:focus,
 .bar-form select:focus,
-.bar-form textarea:focus { border-color:rgba(215,25,32,.7); box-shadow:0 0 0 3px rgba(215,25,32,.08); }
-.bar-form input:focus { border-color:rgba(215,25,32,.7); box-shadow:0 0 0 3px rgba(215,25,32,.08); }
+.bar-form textarea:focus { border-color:rgba(245,188,70,.7); box-shadow:0 0 0 3px rgba(245,188,70,.08); }
+.bar-form input:focus { border-color:rgba(245,188,70,.7); box-shadow:0 0 0 3px rgba(245,188,70,.08); }
 .form-actions { display:grid; gap:8px; margin-top:6px; }
 .secondary-wide { width:100%; border:1px solid var(--line); background:#151515; color:var(--text); border-radius:16px; padding:14px 16px; font-size:11px; font-weight:700; cursor:pointer; text-align:center; text-decoration:none; box-sizing:border-box; }
 .link-button { display:block; margin-top:4px; }
@@ -371,8 +371,8 @@ body.telegram-miniapp .app-shell {
   line-height: 1.5;
 }
 .admin-tile {
-  border-color: rgba(215,25,32,.28);
-  background: linear-gradient(145deg, rgba(215,25,32,.12), rgba(255,255,255,.02));
+  border-color: rgba(245,188,70,.28);
+  background: linear-gradient(145deg, rgba(245,188,70,.12), rgba(255,255,255,.02));
 }
 .check-row {
   display: flex !important;
@@ -531,7 +531,7 @@ button:disabled {
 }
 .home-manifesto span {
   color: #fff;
-  text-shadow: 0 0 30px rgba(215,25,32,.14);
+  text-shadow: 0 0 30px rgba(245,188,70,.14);
 }
 .club-name-title {
   font-size: clamp(34px, 9.4vw, 52px);
@@ -614,7 +614,7 @@ button:disabled {
   padding: 16px;
   min-height: 168px;
   background:
-    radial-gradient(circle at 100% 0%, rgba(215,25,32,.08), transparent 46%),
+    radial-gradient(circle at 100% 0%, rgba(245,188,70,.08), transparent 46%),
     linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.012));
   box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
 }
@@ -712,7 +712,7 @@ button:disabled {
 .primary-btn.joined {
   border-color: rgba(255,255,255,.13);
   background:
-    radial-gradient(circle at 30% 0%, rgba(215,25,32,.13), transparent 54%),
+    radial-gradient(circle at 30% 0%, rgba(245,188,70,.13), transparent 54%),
     linear-gradient(180deg, #1a1a1a, #101010);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.05),
@@ -798,8 +798,8 @@ button:disabled {
 
 .club-teaser {
   background:
-    radial-gradient(circle at 82% 20%, rgba(215,25,32,.13), transparent 40%),
-    linear-gradient(135deg, #171717, #080808);
+    radial-gradient(circle at 82% 20%, rgba(245,188,70,.13), transparent 40%),
+    linear-gradient(135deg, #102747, #06152b);
 }
 .club-teaser-logo {
   position: absolute;
@@ -823,7 +823,7 @@ button:disabled {
   overflow: hidden;
   border-color: rgba(255,255,255,.09);
   background:
-    radial-gradient(circle at 100% 0%, rgba(215,25,32,.07), transparent 48%),
+    radial-gradient(circle at 100% 0%, rgba(245,188,70,.07), transparent 48%),
     linear-gradient(155deg, rgba(255,255,255,.043), rgba(255,255,255,.012));
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.025),
@@ -896,10 +896,10 @@ button:disabled {
   height: 50px;
   border: 4px solid #111;
   background:
-    radial-gradient(circle at 35% 20%, #f53740 0, #d71920 48%, #990c12 100%);
+    radial-gradient(circle at 35% 20%, #f53740 0, #efb748 48%, #7e1d40 100%);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.24),
-    0 10px 30px rgba(215,25,32,.34);
+    0 10px 30px rgba(245,188,70,.34);
 }
 .nav-main-svg {
   width: 22px;
@@ -1076,14 +1076,14 @@ button:disabled {
   border: 1px solid rgba(255,255,255,.09);
   border-radius: 24px;
   background:
-    radial-gradient(circle at 100% 0%, rgba(215,25,32,.08), transparent 42%),
+    radial-gradient(circle at 100% 0%, rgba(245,188,70,.08), transparent 42%),
     linear-gradient(155deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.025),
     0 14px 34px rgba(0,0,0,.14);
 }
 .venue-card-primary {
-  border-color: rgba(215,25,32,.2);
+  border-color: rgba(245,188,70,.2);
 }
 .venue-card-head {
   display: flex;
@@ -1125,7 +1125,7 @@ button:disabled {
   margin: 0;
 }
 .venue-menu-btn {
-  border-color: rgba(215,25,32,.18);
+  border-color: rgba(245,188,70,.18);
 }
 @media (max-width: 360px) {
   .venue-actions {
@@ -1255,7 +1255,7 @@ button:disabled {
   border: 1px solid rgba(255,255,255,.09);
   border-radius: 18px;
   background:
-    radial-gradient(circle at 100% 0%, rgba(215,25,32,.08), transparent 46%),
+    radial-gradient(circle at 100% 0%, rgba(245,188,70,.08), transparent 46%),
     linear-gradient(155deg, rgba(255,255,255,.04), rgba(255,255,255,.012));
   display: flex;
   align-items: center;
@@ -1325,7 +1325,7 @@ button:disabled {
   place-items: center;
   border: 1px solid rgba(255,255,255,.1);
   background:
-    radial-gradient(circle at 35% 20%, rgba(215,25,32,.2), transparent 58%),
+    radial-gradient(circle at 35% 20%, rgba(245,188,70,.2), transparent 58%),
     #151515;
   color: #eee9e2;
   font-size: 15px;
@@ -1374,8 +1374,8 @@ button:disabled {
   color: #a8d9b0;
 }
 .attendance-btn.active.attendance-no {
-  border-color: rgba(215,25,32,.34);
-  background: rgba(215,25,32,.11);
+  border-color: rgba(245,188,70,.34);
+  background: rgba(245,188,70,.11);
   color: #ee8f94;
 }
 .attendance-state {
@@ -1452,7 +1452,7 @@ button:disabled {
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,.08);
   background:
-    radial-gradient(circle at 100% 0%, rgba(215,25,32,.07), transparent 48%),
+    radial-gradient(circle at 100% 0%, rgba(245,188,70,.07), transparent 48%),
     linear-gradient(155deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
   display: grid;
   align-content: center;
@@ -1483,9 +1483,9 @@ button:disabled {
   background: linear-gradient(155deg,rgba(255,255,255,.032),rgba(255,255,255,.01));
 }
 .ranking-row.is-me {
-  border-color: rgba(215,25,32,.34);
+  border-color: rgba(245,188,70,.34);
   background:
-    radial-gradient(circle at 100% 0%, rgba(215,25,32,.12), transparent 50%),
+    radial-gradient(circle at 100% 0%, rgba(245,188,70,.12), transparent 50%),
     linear-gradient(155deg,rgba(255,255,255,.04),rgba(255,255,255,.012));
 }
 .ranking-top {
@@ -1495,7 +1495,7 @@ button:disabled {
   border-color: rgba(255,255,255,.16);
   background:
     radial-gradient(circle at 0% 0%, rgba(255,255,255,.075), transparent 45%),
-    radial-gradient(circle at 100% 0%, rgba(215,25,32,.09), transparent 48%),
+    radial-gradient(circle at 100% 0%, rgba(245,188,70,.09), transparent 48%),
     linear-gradient(155deg,rgba(255,255,255,.042),rgba(255,255,255,.012));
 }
 .ranking-position {
@@ -1516,7 +1516,7 @@ button:disabled {
   place-items: center;
   border: 1px solid rgba(255,255,255,.1);
   background:
-    radial-gradient(circle at 35% 20%, rgba(215,25,32,.18), transparent 58%),
+    radial-gradient(circle at 35% 20%, rgba(245,188,70,.18), transparent 58%),
     #151515;
   font-size: 14px;
   font-weight: 850;
@@ -1542,7 +1542,7 @@ button:disabled {
   font-size: 9px;
 }
 .ranking-person small {
-  color: #9d393d;
+  color: #b58a43;
   font-size: 8px;
   font-weight: 800;
   letter-spacing: .08em;
@@ -1626,7 +1626,7 @@ button:disabled {
   text-align: center;
 }
 .registration-deadline.is-closed {
-  color: #9d393d;
+  color: #b58a43;
 }
 .registration-closed {
   opacity: .62;
@@ -1638,7 +1638,7 @@ button:disabled {
   border: 1px solid rgba(255,255,255,.085);
   border-radius: 20px;
   background:
-    radial-gradient(circle at 100% 0%, rgba(215,25,32,.08), transparent 48%),
+    radial-gradient(circle at 100% 0%, rgba(245,188,70,.08), transparent 48%),
     linear-gradient(155deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
 }
 .admin-participant-head {
@@ -1752,8 +1752,8 @@ button:disabled {
   min-height: 32px;
   padding: 0 10px;
   border-radius: 10px;
-  border: 1px solid rgba(215,25,32,.28);
-  background: rgba(215,25,32,.11);
+  border: 1px solid rgba(245,188,70,.28);
+  background: rgba(245,188,70,.11);
   color: #efb4b6;
   font-size: 9px;
   font-weight: 800;
@@ -1806,7 +1806,7 @@ button:disabled {
   border: 1px solid rgba(255,255,255,.085);
   border-radius: 26px;
   background:
-    radial-gradient(circle at 100% 0%, rgba(215,25,32,.11), transparent 42%),
+    radial-gradient(circle at 100% 0%, rgba(245,188,70,.11), transparent 42%),
     linear-gradient(150deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
 }
 .fan-profile-card:after {
@@ -1837,7 +1837,7 @@ button:disabled {
   overflow: hidden;
   border: 1px solid rgba(255,255,255,.12);
   background:
-    radial-gradient(circle at 35% 20%, rgba(215,25,32,.2), transparent 56%),
+    radial-gradient(circle at 35% 20%, rgba(245,188,70,.2), transparent 56%),
     #151515;
   box-shadow: 0 16px 36px rgba(0,0,0,.32);
 }
@@ -1986,7 +1986,7 @@ button:disabled {
   border: 1px solid rgba(255,255,255,.075);
   border-radius: 17px;
   background:
-    radial-gradient(circle at 100% 0%, rgba(215,25,32,.07), transparent 48%),
+    radial-gradient(circle at 100% 0%, rgba(245,188,70,.07), transparent 48%),
     rgba(255,255,255,.018);
 }
 .ranking-help-card p {
@@ -2106,7 +2106,7 @@ button:disabled {
   border: 1px solid rgba(255,255,255,.085);
   border-radius: 20px;
   background:
-    radial-gradient(circle at 100% 0%, rgba(215,25,32,.055), transparent 48%),
+    radial-gradient(circle at 100% 0%, rgba(245,188,70,.055), transparent 48%),
     linear-gradient(155deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
   color: var(--text);
   display: grid;
@@ -2143,8 +2143,8 @@ button:disabled {
   min-height: 26px;
   padding: 0 9px;
   border-radius: 9px;
-  border: 1px solid rgba(215,25,32,.22);
-  background: rgba(215,25,32,.07);
+  border: 1px solid rgba(245,188,70,.22);
+  background: rgba(245,188,70,.07);
   color: #d69295;
   display: inline-grid;
   place-items: center;
@@ -2180,7 +2180,7 @@ button:disabled {
   border-bottom: 0;
   border-radius: 28px 28px 0 0;
   background:
-    radial-gradient(circle at 90% 0%, rgba(215,25,32,.09), transparent 34%),
+    radial-gradient(circle at 90% 0%, rgba(245,188,70,.09), transparent 34%),
     #0b0b0b;
   box-shadow: 0 -18px 55px rgba(0,0,0,.58);
   touch-action: pan-y;
@@ -2260,10 +2260,10 @@ button:disabled {
   z-index: 2;
   height: 54px;
   transform: translateY(-50%);
-  border: 1px solid rgba(215,25,32,.22);
+  border: 1px solid rgba(245,188,70,.22);
   border-radius: 16px;
   background:
-    linear-gradient(90deg, rgba(215,25,32,.05), rgba(215,25,32,.015));
+    linear-gradient(90deg, rgba(245,188,70,.05), rgba(245,188,70,.015));
   pointer-events: none;
 }
 .fan-year-wheel {
@@ -2305,7 +2305,7 @@ button:disabled {
 }
 .fan-year-option.is-selected {
   color: #f2eee8;
-  background: rgba(215,25,32,.08);
+  background: rgba(245,188,70,.08);
   font-size: 24px;
   font-weight: 870;
   letter-spacing: -.045em;
@@ -2448,8 +2448,8 @@ button:disabled {
   scroll-snap-stop: always;
 }
 .fan-year-option.is-selected {
-  background: rgba(215,25,32,.055);
-  box-shadow: inset 0 0 0 1px rgba(215,25,32,.09);
+  background: rgba(245,188,70,.055);
+  box-shadow: inset 0 0 0 1px rgba(245,188,70,.09);
 }
 .fan-year-wheel-marker {
   box-shadow:
@@ -2604,10 +2604,10 @@ button:disabled {
   display: none;
 }
 .fan-year-grid .fan-year-option.is-selected {
-  border-color: rgba(215,25,32,.46);
+  border-color: rgba(245,188,70,.46);
   background:
-    radial-gradient(circle at 50% 0%, rgba(215,25,32,.22), transparent 70%),
-    linear-gradient(180deg, rgba(215,25,32,.13), rgba(215,25,32,.05));
+    radial-gradient(circle at 50% 0%, rgba(245,188,70,.22), transparent 70%),
+    linear-gradient(180deg, rgba(245,188,70,.13), rgba(245,188,70,.05));
   color: #fff7f1;
   font-size: 15px;
   font-weight: 860;
@@ -2790,7 +2790,7 @@ button:disabled {
   background:
     linear-gradient(180deg, rgba(255,255,255,.055), transparent 32%),
     radial-gradient(circle at 25% 15%, rgba(255,255,255,.08), transparent 30%),
-    linear-gradient(140deg, #2b0508 0%, #b71219 48%, #5c080d 100%) !important;
+    linear-gradient(140deg, #071b3b 0%, #812245 48%, #152e57 100%) !important;
 }
 
 .home-tournament-watermark {
@@ -3166,7 +3166,7 @@ button:disabled {
   background:
     linear-gradient(180deg, rgba(255,255,255,.055), transparent 32%),
     radial-gradient(circle at 25% 15%, rgba(255,255,255,.08), transparent 30%),
-    linear-gradient(140deg, #2b0508 0%, #b71219 48%, #5c080d 100%) !important;
+    linear-gradient(140deg, #071b3b 0%, #812245 48%, #152e57 100%) !important;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.08),
     0 22px 52px rgba(0,0,0,.30);
@@ -3692,15 +3692,15 @@ body.ios-miniapp .page {
 }
 
 .attendance-btn.active.attendance-no {
-  border-color: rgba(215,25,32,.28);
+  border-color: rgba(245,188,70,.28);
   background:
-    linear-gradient(180deg, rgba(215,25,32,.12), rgba(215,25,32,.06));
+    linear-gradient(180deg, rgba(245,188,70,.12), rgba(245,188,70,.06));
   color: #f0a0a4;
 }
 
 .attendance-btn.active.attendance-no .attendance-dot {
-  background: #d71920;
-  box-shadow: 0 0 0 3px rgba(215,25,32,.10);
+  background: #efb748;
+  box-shadow: 0 0 0 3px rgba(245,188,70,.10);
 }
 
 .attendance-btn:disabled {
@@ -3793,7 +3793,7 @@ body.ios-miniapp .page {
   border: 1px dashed rgba(255,255,255,.14);
   border-radius: 15px;
   background:
-    radial-gradient(circle at 100% 0%, rgba(215,25,32,.07), transparent 45%),
+    radial-gradient(circle at 100% 0%, rgba(245,188,70,.07), transparent 45%),
     rgba(255,255,255,.018);
   display: flex;
   align-items: center;
@@ -4101,3 +4101,28 @@ body.watch-photo-viewer-open {
 .match-card.fixture-clickable:active {
   transform: scale(.992);
 }
+
+/* EL NORD — FC Barcelona Supporters Club */
+:root {
+ --bg:#06152b;--surface:#091e3b;--surface-2:#102747;
+ --text:#f7f4e9;--muted:#a7afc0;--red:#eeb548;--red-2:#f5c35d;
+ --line:rgba(245,195,93,.16);
+}
+body {background:radial-gradient(circle at 15% 0%,rgba(126,29,64,.26),transparent 35%),radial-gradient(circle at 90% 45%,rgba(15,58,120,.25),transparent 38%),var(--bg);}
+.topbar { background:linear-gradient(180deg,rgba(6,21,43,.99),rgba(6,21,43,.88) 75%,transparent); }
+.brand-copy strong {color:#f5c35d;letter-spacing:.15em;}
+.profile-dot {background:#f5c35d;box-shadow:0 0 12px rgba(245,195,93,.6);}
+.hero,.watch-feature,.watch-brand-surface {background:radial-gradient(circle at 70% 20%,rgba(171,32,79,.45),transparent 52%),linear-gradient(140deg,#0a244b,#081731 46%,#69203b);border-color:rgba(245,195,93,.22);}
+.home-manifesto span:first-child{color:#f5c35d;}
+.home-manifesto span:last-child{color:#f7f4e9;}
+.club-teaser{background:linear-gradient(130deg,#091d39,#201b3c 55%,#5c1c38);border-color:rgba(245,195,93,.21);}
+.brand-logo-wrap{width:50px;height:50px;}
+.el-nord-empty .page-subtitle{max-width:470px;}
+.el-nord-welcome{min-height:355px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;}
+.el-nord-welcome-logo{width:min(225px,65vw);height:225px;max-height:36vh;object-fit:contain;filter:drop-shadow(0 12px 28px rgba(0,0,0,.25));}
+.el-nord-welcome-copy{display:grid;gap:9px;justify-items:center;position:relative;z-index:2;}
+.el-nord-welcome-copy>span{font-size:10px;color:#f5c35d;font-weight:800;letter-spacing:.28em;}
+.el-nord-welcome-copy>strong{font-size:clamp(19px,5.6vw,27px);line-height:1.02;letter-spacing:.02em;color:#f5c35d;}
+.el-nord-welcome-copy>small{font-size:11px;line-height:1.5;color:rgba(255,255,255,.8);max-width:255px;}
+.el-nord-explore{margin-top:16px;border-color:rgba(245,195,93,.3);}
+.eyebrow{color:#f5c35d;}
