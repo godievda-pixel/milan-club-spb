@@ -82,8 +82,8 @@
 
   function fullName() {
     const u = user();
-    if (!u) return 'Milanista';
-    return [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || 'Milanista';
+    if (!u) return 'Culé';
+    return [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || 'Culé';
   }
 
   function nativePostEvent(eventType, eventData) {
@@ -121,9 +121,9 @@
     try {
       tg.ready();
       tg.expand();
-      if (tg.setHeaderColor) tg.setHeaderColor('#080808');
-      if (tg.setBackgroundColor) tg.setBackgroundColor('#080808');
-      if (tg.setBottomBarColor) tg.setBottomBarColor('#080808');
+      if (tg.setHeaderColor) tg.setHeaderColor('#06152b');
+      if (tg.setBackgroundColor) tg.setBackgroundColor('#06152b');
+      if (tg.setBottomBarColor) tg.setBottomBarColor('#06152b');
       if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
       syncBackButton();
       return true;
@@ -236,7 +236,7 @@
     }
   }
 
-  window.MilanTelegram = {
+  window.ElNordTelegram = {
     get tg() { return getTG(); },
     init,
     initData,
