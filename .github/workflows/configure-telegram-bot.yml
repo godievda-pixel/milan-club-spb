@@ -2,12 +2,6 @@ name: Configure Telegram Bot
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - scripts/setup-bot.mjs
-      - .github/workflows/configure-telegram-bot.yml
 
 permissions:
   contents: read
@@ -21,7 +15,7 @@ jobs:
 
       - name: Configure menu button
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          MINI_APP_URL: https://milan-club-spb.ciao-web.workers.dev
-          MENU_BUTTON_TEXT: Milan Club
+          TELEGRAM_BOT_TOKEN: ${{ secrets.EL_NORD_TELEGRAM_BOT_TOKEN }}
+          MINI_APP_URL: ${{ secrets.EL_NORD_MINI_APP_URL }}
+          MENU_BUTTON_TEXT: El Nord
         run: npm run configure-bot
